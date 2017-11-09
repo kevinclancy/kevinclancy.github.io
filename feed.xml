@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2017-11-09T12:49:50-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">A Class System for Typed Lua</title><link href="/2016/08/18/a-class-system-for-typed-lua.html" rel="alternate" type="text/html" title="A Class System for Typed Lua" /><published>2016-08-18T13:04:58-04:00</published><updated>2016-08-18T13:04:58-04:00</updated><id>/2016/08/18/a-class-system-for-typed-lua</id><content type="html" xml:base="/2016/08/18/a-class-system-for-typed-lua.html">&lt;p&gt;I spent this summer implementing a class system for Typed Lua, as part of the Google Summer of Code 2016. To try out the new class sytem, clone my fork of the TypedLua repository, cd to the root directory of the cloned repository, and run the my modified version of the Typed Lua compiler via “tlc &lt;em&gt;source_filename&lt;/em&gt;”.&lt;/p&gt;
+
+&lt;p&gt;I haven’t merged any of my changes yet, and still plan to clean up some of the code within the next few weeks. Below is a description of the features that I have added.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-basics&quot;&gt;The Basics&lt;/h1&gt;
+
+&lt;p&gt;The following syntax is used to declare a class&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Vector2
+  x : number
+  y : number
+
+  constructor new(x : number, y : number)
+    self.x = x
+    self.y = y
+  end
+
+  method DotProduct(other : Vector2) : number
+    return self.x*other.x + self.y*other.y
+  end
+
+  method Offset(offset : Vector2)
+    self.x = self.x + offset.x
+    self.y = self.y + offset.y
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The Vector2 class first declares two data members x and y, both having Lua’s 64-bit floating-point type number.&lt;/p&gt;
+
+&lt;p&gt;Next, it declares a constructor named new. The body of the constructor must assign values to all data members that the class defines. Unlike languages such as Java, where all variables can be assigned to a nil value, variables in Typed Lua are generally non-nil, and so leaving data members with a the default value nil would not be safe.&lt;/p&gt;
+
+&lt;p&gt;Finally, two methods called DotProduct and Offset are defined. Notice that the x and y fields of the invoked object are accessed via the &lt;em&gt;self&lt;/em&gt; variable. This class system does not yet have encapsulation, so we can access the x and y fields of &lt;em&gt;other&lt;/em&gt; externally. Omitting a return type annotation on a method declaration sets the expected return type to an infinite tuple of nils, which is appropriate for methods which, like Offset, do not return values.&lt;/p&gt;
+
+&lt;p&gt;Now let’s try instantiating the class and calling some of its methods.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local v = Vector2.new(1,0)
+local u = Vector2.new(0,1)
+print(u:DotProduct(v))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;A class declaration adds a &lt;em&gt;class value&lt;/em&gt; of the same name into scope. A class value is a table which contains all of the class’s constructors. In this case, our class table is &lt;em&gt;Vector2&lt;/em&gt;, which contains one constructor &lt;em&gt;new&lt;/em&gt;. Running tlc on the concatenation of the above code blocks should produce a lua file which prints 0 when it is run.&lt;/p&gt;
+
+&lt;h1 id=&quot;inheritance&quot;&gt;Inheritance&lt;/h1&gt;
+
+&lt;p&gt;We can inherit using the &lt;em&gt;extends&lt;/em&gt; keyword. Inheritance creates a child class which reuses code from the parent class and has an instance type that is a subtype of the parent class’s instance type.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local debugVectorId = 0
+class DebugVector2 extends Vector2
+  const id : string
+
+  constructor new(x : number, y : number)
+    self.x = x
+    self.y = y
+    self.id = tostring(debugVectorId)
+    debugVectorId = debugVectorId + 1
+    print(&quot;DebugVector #&quot; .. self.id .. &quot; created with x = &quot; .. tostring(x) .. &quot; and y = &quot; .. tostring(y))
+  end
+
+  method Offset(offset : Vector2)
+    local strInitial = &quot;(&quot; .. tostring(self.x) .. &quot;, &quot; .. tostring(self.y) .. &quot;)&quot;
+    self.x = self.x + offset.x
+    self.y = self.y + offset.y
+    local strFinal = &quot;(&quot; .. tostring(self.x) .. &quot;, &quot; .. tostring(self.y) .. &quot;)&quot;
+    print(&quot;DebugVector #&quot; .. self.id .. &quot; offset from &quot; .. strInitial .. &quot; to &quot; .. strFinal)
+  end
+end
+
+v = DebugVector2.new(1,0)
+u = DebugVector2.new(0,1)
+print(v:DotProduct(u))
+u:Offset(v)
+print(v:DotProduct(u))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Vector2’s fields x and y, as well as the methods Offset and DotProduct, are automatically included into the DebugVector2 class. However, DebugVector2 overrides the Offset with its own implementation.&lt;/p&gt;
+
+&lt;p&gt;Concatenating the above code block and then running the result should give the following output.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;DebugVector #0 created with x = 1 and y = 0
+DebugVector #1 created with x = 0 and y = 1
+0
+DebugVector #1 offset from (0, 1) to (1, 1)
+1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;the-super-keyword&quot;&gt;The super keyword&lt;/h1&gt;
+
+&lt;p&gt;We can improve the above code by reusing the functionality of the parent class via the &lt;em&gt;super&lt;/em&gt; reference.&lt;/p&gt;
+
+&lt;p&gt;A constructor may call exactly one superclass constructor on its first line using the syntax “super.constructorname(arguments)”. If this happens, then the child class constructor does not need to initialize inherited members.&lt;/p&gt;
+
+&lt;p&gt;A superclass method may be called from anywhere inside a child class method, using the syntax “super:&lt;em&gt;methodname(arguments)&lt;/em&gt;”.&lt;/p&gt;
+
+&lt;h1 id=&quot;interfaces&quot;&gt;Interfaces&lt;/h1&gt;
+
+&lt;p&gt;We may want to declare a type, without any associated implementation, that describes a set of operations which several classes share in common. Such a type is called an &lt;em&gt;interface&lt;/em&gt;, and is declared using the following syntax.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;interface Showable
+  method ToString() : () =&amp;gt; (string)
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can associate a class to an interface by using an &lt;em&gt;implements clause&lt;/em&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Vector2 implements Showable
+...
+  method ToString() : string
+    return &quot;(&quot; .. self.x .. &quot;, &quot; .. self.y .. &quot;)&quot;
+  end
+...
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Instances of class Vector2 can then be used in contexts where instances of the Showable interface are expected.&lt;/p&gt;
+
+&lt;h1 id=&quot;typedefs&quot;&gt;Typedefs&lt;/h1&gt;
+
+&lt;p&gt;Typedefs are a lightweight alternative mechanism for defining types. Consider the following type, which represents a linked list of numbers.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;typedef NumList = { &quot;val&quot; : number, &quot;next&quot; : NumList }?
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here we have defined a typedef called NumList, which expands to { val : number, next : NumList }?. Like classes and interfaces, typedefs may contain recursive references to themselves. This can be useful for defining data-description schemas and data structures of unbounded size. NumList, for example, describes finite number lists of any size; nil, { val = 1, next = nil }, and { val = 1, next = { val = 1, next = nil } } are each NumLists. They represent the empty list, [1], and [1,1] respectively.&lt;/p&gt;
+
+&lt;p&gt;There’s an important difference between classes and interfaces on the one hand, and typedefs on the other. Classes and interfaces are &lt;em&gt;nominal&lt;/em&gt; types, whereas typedefs are &lt;em&gt;structural&lt;/em&gt; ones. Subtyping relations between nominal types are declared explicitly by the programmer, whereas subtyping relations between structural types are deduced by the subtyping algorithm. For example, this implies that instances of the following two classes are not interchangeable:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Foo1
+  x : boolean
+  constructor new(x : boolean)
+    self.x = x
+  end
+end
+
+class Foo2
+  x : boolean
+  constructor new(x : boolean)
+    self.x = x
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In fact, passing an instance of Foo1 into a function that expects an instance of Foo2 will generate a type error:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local fooFunction(foo : Foo2) : boolean
+  return foo.x
+end
+
+local f1 = Foo1.new(true)
+fooFunction(f1)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The following code block, however, is considered well-typed by the Typed Lua compiler.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;typedef NumList1 = { &quot;val&quot; : number, &quot;next&quot; : NumList1 }?
+typedef NumList2 = { &quot;val&quot; : number, &quot;next&quot; : NumList2 }?
+
+local function listFunction(l1 : NumList1)
+  local l2 : NumList2 = l1
+  if l2 then
+    print(tostring(l2.val) .. &quot;\n&quot;)
+    listFunction(l2.next)
+  else
+    print(&quot;done.&quot;)
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;mutually-recursive-types&quot;&gt;Mutually recursive types&lt;/h1&gt;
+
+&lt;p&gt;By default a type definition can only refer to previously defined types. But what if we want to have two types A and B such that A is defined in terms of B and B is defined in terms of A? One of these types must be defined first; how can it reference the other one?&lt;/p&gt;
+
+&lt;p&gt;To handle this, several mutually recursive type definitions can be chained together with the &lt;em&gt;and&lt;/em&gt; keyword, as in the following code block.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;typedef WeirdList1 = { &quot;val&quot; : boolean, &quot;next&quot; : WeirdList2 }?
+and typedef WeirdList2 = { &quot;val&quot; : number, &quot;next&quot; : WeirdList1 }?
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;em&gt;and&lt;/em&gt; can be used to join an arbitrary collection of typedefs, classes, and interfaces into a mutually recursive bundle.&lt;/p&gt;
+
+&lt;h1 id=&quot;global-typenames-and-aliases&quot;&gt;Global typenames and aliases&lt;/h1&gt;
+
+&lt;p&gt;When a type is declared, it is given both a &lt;em&gt;global name&lt;/em&gt; and an &lt;em&gt;alias&lt;/em&gt;. The global name is the name specified by the programmer, with the name of the module containing the definition prepended to it. The global name of a class Foo defined in a module Bar is Bar.Foo. Once a global name is generated, it lasts throughout the duration of the type-checking process. Referring to all types by their global names would be tedious, and so an alias mechanism is also provided. An alias is a short name that is translated into a global name. All type definitions generate an alias, associating the name that the programmer typed with the generated global name. Our Foo class would generate an alias Foo that maps to the global name Bar.Foo.&lt;/p&gt;
+
+&lt;p&gt;Unlike global names, aliases are locally scoped. In particular, they are not preserved across multiple files. Types defined in external files must therefore be referred to by their global names.&lt;/p&gt;
+
+&lt;h1 id=&quot;class-value-lookup&quot;&gt;Class value lookup&lt;/h1&gt;
+
+&lt;p&gt;The expression class(&lt;em&gt;typename&lt;/em&gt;) will evaluate to the class value of the class named &lt;em&gt;typename&lt;/em&gt;. This is useful for instantiating classes defined in external modules.&lt;/p&gt;
+
+&lt;p&gt;A module Foo could define a class Test:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Test
+  constructor new()
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;and then Test could be instantiated in a module Bar as follows:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;require(&quot;Foo&quot;)
+local t = class(Foo.Test).new()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;generic-classes&quot;&gt;Generic classes&lt;/h1&gt;
+
+&lt;p&gt;Classes, interfaces, functions, and methods can all be parameterized by types, a feature often called &lt;em&gt;generics&lt;/em&gt;. Among other things, this allows us to create collections that are parameterized by their element types.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Stack&amp;lt;ElementType&amp;gt;
+  contents : {ElementType}
+
+  constructor new()
+    self.contents = {}
+  end
+
+  method push(x : ElementType)
+    self.contents[#self.contents + 1] = x
+  end
+
+  method pop() : ElementType
+    local ret = self.contents[#self.contents]
+    self.contents[#self.contents] = nil
+    assert(ret)
+    return ret
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;NOTE: The above code snippet will not compile in my fork, because assertions have not been integrated with occurrence typing. This functionality has been implemented in a separate fork.&lt;/p&gt;
+
+&lt;p&gt;A class’s type parameters appear in a comma-separated list between angle brackets, after the class name. The above Stack class contains a single type parameter called ElementType. We can instantiate the above class as follows:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local stack = Stack.new&amp;lt;number&amp;gt;()
+stack.push(3)
+print(stack.pop())
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The type parameters of a class definition are wrapped around each of its constructors. We can instantiate these parameters by providing type arguments between angle brackets before the constructor’s normal arguments. In the above code, we instantiate ElementType with number. This produces an instance whose type matches the instance type described by Stack, but with each occurrence of ElementType replaced with number.&lt;/p&gt;
+
+&lt;h1 id=&quot;generic-functions-and-methods&quot;&gt;Generic functions and methods&lt;/h1&gt;
+
+&lt;p&gt;Programmers may define their own type-parameterized functions. This can be useful for standard library functions.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local function init_array&amp;lt;ElementType&amp;gt;(x : ElementType, size : number) : {ElementType}
+  local ret : {ElementType} = {}
+  for i = 1, size do
+    ret[i] = x
+  end
+  return ret
+end
+
+local r = init_array&amp;lt;string&amp;gt;(&quot;thumbs up&quot;, 2)
+for i=1,#r do
+  local s = r[i]
+  if s then
+    print(s)
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can also provide type parameters for methods.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Foo
+  method id&amp;lt;T&amp;gt;(x : T) : T
+    return x
+  end
+end
+
+interface Bar
+  method id&amp;lt;T&amp;gt; : (T) =&amp;gt; (T)
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;type-parameter-bounds&quot;&gt;Type parameter bounds&lt;/h1&gt;
+
+&lt;p&gt;We can restrict type parameters so that they can only be instantiated with types which are a subtype of a specified type. This specified type is referred to as the bound of the type parameter that it is attached to. Suppose that we have the following interface:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;interface Showable
+  method Show : () =&amp;gt; (string)
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can use type parameter bounds to implement a function which prints out a string representation of all elements of an array, assuming that the element type of the array implements the Showable interface.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local function show_array&amp;lt;ElementType &amp;lt;: Showable&amp;gt;(x : {ElementType})
+  for i=1,#x do
+    local e = x[i]
+    if e then
+      print(e:Show())
+    end
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As the above example demonstrates, we attach a bound to a type parameter by writing “&amp;lt;: BoundType” after the type parameter’s occurrence in the parameter list.&lt;/p&gt;
+
+&lt;h1 id=&quot;generic-subtyping&quot;&gt;Generic subtyping&lt;/h1&gt;
+
+&lt;p&gt;We can inherit from and implement generic classes.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;interface Container&amp;lt;ElementType&amp;gt;
+  method GetElements : () =&amp;gt; ({ElementType})
+end
+
+class Array&amp;lt;ElementType&amp;gt; implements Container&amp;lt;ElementType&amp;gt;
+  contents : {ElementType}
+
+  constructor new(contents : {ElementType})
+    self.contents = contents
+  end
+
+  method GetElements() : {ElementType}
+    return self.contents
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;An implements clause generally consists of a nominal type applied to arbitrary type arguments which may include occurrences of the parameters of the class being defined. When class parameters occur in the implements clause, a family of subtyping relations is generated; the above implements clause implies that for &lt;em&gt;all&lt;/em&gt; types ElementType, Array&lt;ElementType&gt; is a subtype of Container&lt;ElementType&gt;.&lt;/ElementType&gt;&lt;/ElementType&gt;&lt;/p&gt;
+
+&lt;p&gt;As the next example demonstrates, the parameters of a class do not have to correspond to the parameters of the nominal types that it implements. The below class definition implies that for all pairs of types KeyType and ValueType, Map&amp;lt;KeyType, ValueType&amp;gt; is a subtype of Container&lt;ValueType&gt;.&lt;/ValueType&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Map&amp;lt;KeyType, ValueType&amp;gt; implements Container&amp;lt;ValueType&amp;gt;
+  contents : { any : ValueType }
+
+  constructor new()
+    self.contents = {}
+  end
+
+  method set(key : KeyType, val : ValueType)
+    self.contents[key] = val
+  end
+
+  method get(key : KeyType) : ValueType?
+    return self.contents[key]
+  end
+
+  method GetElements() : {ValueType}
+    local ret : {ValueType} = {}
+    for k,v in pairs(self.contents) do
+      ret[#ret + 1] = v
+    end
+    return ret
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The arguments to a nominal type constructor occurring in an implements clause can be &lt;em&gt;arbitrary&lt;/em&gt; types, both structural and nominal. The next example demonstrates the use of a structural type, namely Point2, as an argument in an implements clause.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;typedef Point2 = { x : number, y : number }
+
+class Polygon implements Container&amp;lt;Point2&amp;gt;
+  points : {Point2}
+
+  constructor new(points : {Point2})
+    self.points = points
+  end
+
+  method GetElements() : {Point2}
+    return self.points
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;recursive-inheritance-and-shapes&quot;&gt;Recursive inheritance and shapes&lt;/h1&gt;
+
+&lt;p&gt;Suppose we want to bound a type parameter in a way that requires values of its argument to be comparable to each other. We might use the following interface, which describes types that are comparable to some type T.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;interface Ordered&amp;lt;T&amp;gt;
+  method lessThanEq : (T) =&amp;gt; (boolean)
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then we would implement this interface with the following class.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class NumSet implements Ordered&amp;lt;NumSet&amp;gt;
+  contents : { number : boolean? }
+
+  method lessThanEq(other : NumSet) : boolean
+    for k,v in pairs(self.contents) do
+      if not other.contents[k] then
+        return false
+      end
+    end
+    return true
+  end
+
+  constructor new(contents : { number : boolean? })
+    self.contents = contents
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;However, the compiler generates an error from the above implements clause. The reason for this is that it creates a cycle in the &lt;em&gt;type graph&lt;/em&gt;. The type graph is a graph in which nominal typenames are nodes. Every implements and extends clause adds an edge from the class being defined (NumSet in this case), to every nominal typename occurring in the implements or extends clause (here this includes both Ordered and NumSet) labeled with the name of the outer nominal type of the implements or extends clause (Ordered in this case). To ensure that our subtyping algorithm terminates, we forbid any implements or extends clause which introduces cycles into this graph.&lt;/p&gt;
+
+&lt;p&gt;Still, there’s a need for recursive inheritance as described above. To deal with this, we include another kind of nominal type definition in addition to classes and interfaces: shapes. A shape definition is exactly like an interface definition, but the word interface is replaced with shape:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;shape Ordered&amp;lt;T&amp;gt;
+  method lessThanEq : (T) =&amp;gt; (boolean)
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When searching for cycles in our type graph, we ignore those edges that are labeled with shapes. After changing Ordered to a shape, the NumSet class should compile without producing any errors. Occurrences of shape types are restricted to the outer level of type bounds and implements clauses; for a somewhat technical reason, this ensures that our subtyping algorithm terminates even when our type graph has cycles which include shape edges.&lt;/p&gt;
+
+&lt;p&gt;To utilize recursively inheriting types, we use type bounds which refer to the variable being bounded.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;local comparable&amp;lt;T &amp;lt;: Ordered&amp;lt;T&amp;gt;&amp;gt;(x : T, y : T) : boolean
+  return (x:lessThanEq(y) or y:lessThanEq(x))
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;variance-annotations&quot;&gt;Variance annotations&lt;/h1&gt;
+
+&lt;p&gt;To give nominal types greater subtyping flexibility, we allow the user to provide variance annotations for the type parameters of classes, interfaces, and shapes. Prefixing a type parameter with + designates that the parameter is covariant, whereas prefixing a parameter with - designates that it is contravariant.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;interface Describable&amp;lt;+DescriptionType&amp;gt;
+  method Describe : () =&amp;gt; (DescriptionType)
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The above interface indicates that its type parameter DescriptionType is covariant by prefixing it with a +. What this implies for subtyping is that if A and B are types and B is a subtype of A, the Ord&lt;b&gt; is a subtype of Ord&lt;a&gt;. Covariant means &lt;em&gt;with change&lt;/em&gt;. A covariant parameter is one whose subtyping precision changes in the same direction as the type that contains it; Ord&lt;b&gt; is more precise than Ord&lt;a&gt; only when B is more precise than A.&lt;/a&gt;&lt;/b&gt;&lt;/a&gt;&lt;/b&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;interface Accumulator&amp;lt;-ValueType&amp;gt;
+  method Accumulate : (ValueType) =&amp;gt; ()
+end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here is an interface for classes which describe objects which can “absorb” values of some type ValueType. ValueType has been marked as contravariant by prefixing it with a -. Contravariance means &lt;em&gt;against change&lt;/em&gt;. A contravariant type parameter is one whose subtyping precision changes in the opposite direction of the subtyping precision of the type that contains it; if B is a subtype of A then Accumulator&lt;a&gt; is a subtype of Accumulator&lt;b&gt;.&lt;/b&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;The positions of the occurrences of a type parameter in a type definition dictate which variance annotations it can have. Roughly, types variables occurring only in input positions are allowed to be contravariant, whereas type variables occurring only in output positions are allowed to be covariant.&lt;/p&gt;
+
+&lt;p&gt;DescriptionType is allowed to be covariant because it occurs as a method return type, and classifies values that instances of the class are outputting into an external context. Suppose DetailedDescription is a subtype of Description; then retrieving a DetailedDescription from the Describe method of Describable&lt;Description&gt; is perfectly acceptable, because we were expecting a Description, and values of type DetailedDescription can be used in any context where values of type Description are expected.&lt;/Description&gt;&lt;/p&gt;
+
+&lt;p&gt;On the other hand, ValueType is allowed to be contravariant because it occurs as a method input type. Suppose OddInteger is a subtype of Integer. Then passing an OddInteger into the Accumulate method of an object of type Accumulator&lt;Integer&gt; is perfectly acceptable, and so we can use an object of type Accumulator&lt;Integer&gt; where an object of type Accumulator&lt;OddInteger&gt; is expected.&lt;/OddInteger&gt;&lt;/Integer&gt;&lt;/Integer&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;additional-features&quot;&gt;Additional features&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;A class can implement multiple interfaces by using a comma-separated list for an implements clause.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Foo extends Interface1, Interface2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;A nominal subtyping edge may be added without introducing any new nominal type definitions using an implements statement.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;...
+a = 5
+Foo implements Bar
+a = a + 1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;A class may be used as an interface&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Foo ... end
+class Bar implements Foo ... end
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Failed subtyping queries now generate explanations of why the specified subtyping judgment does not hold. These can currently be a bit messy, which is something I hope to improve soon.&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">I spent this summer implementing a class system for Typed Lua, as part of the Google Summer of Code 2016. To try out the new class sytem, clone my fork of the TypedLua repository, cd to the root directory of the cloned repository, and run the my modified version of the Typed Lua compiler via “tlc source_filename”.</summary></entry></feed>
