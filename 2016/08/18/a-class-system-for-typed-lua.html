@@ -397,9 +397,9 @@ class Array&lt;ElementType&gt; implements Container&lt;ElementType&gt;
 end
 </code></pre></div></div>
 
-<p>An implements clause generally consists of a nominal type applied to arbitrary type arguments which may include occurrences of the parameters of the class being defined. When class parameters occur in the implements clause, a family of subtyping relations is generated; the above implements clause implies that for <em>all</em> types ElementType, Array<ElementType> is a subtype of Container<ElementType>.</ElementType></ElementType></p>
+<p>An implements clause generally consists of a nominal type applied to arbitrary type arguments which may include occurrences of the parameters of the class being defined. When class parameters occur in the implements clause, a family of subtyping relations is generated; the above implements clause implies that for <em>all</em> types ElementType, Array&lt;ElementType&gt; is a subtype of Container&lt;ElementType&gt;.</p>
 
-<p>As the next example demonstrates, the parameters of a class do not have to correspond to the parameters of the nominal types that it implements. The below class definition implies that for all pairs of types KeyType and ValueType, Map&lt;KeyType, ValueType&gt; is a subtype of Container<ValueType>.</ValueType></p>
+<p>As the next example demonstrates, the parameters of a class do not have to correspond to the parameters of the nominal types that it implements. The below class definition implies that for all pairs of types KeyType and ValueType, Map&lt;KeyType, ValueType&gt; is a subtype of Container&lt;ValueType&gt;.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Map&lt;KeyType, ValueType&gt; implements Container&lt;ValueType&gt;
   contents : { any : ValueType }
@@ -499,20 +499,20 @@ end
 end
 </code></pre></div></div>
 
-<p>The above interface indicates that its type parameter DescriptionType is covariant by prefixing it with a +. What this implies for subtyping is that if A and B are types and B is a subtype of A, the Ord<b> is a subtype of Ord<a>. Covariant means <em>with change</em>. A covariant parameter is one whose subtyping precision changes in the same direction as the type that contains it; Ord<b> is more precise than Ord<a> only when B is more precise than A.</a></b></a></b></p>
+<p>The above interface indicates that its type parameter DescriptionType is covariant by prefixing it with a +. What this implies for subtyping is that if A and B are types and B is a subtype of A, the Ord&lt;B&gt; is a subtype of Ord&lt;A&gt;. Covariant means <em>with change</em>. A covariant parameter is one whose subtyping precision changes in the same direction as the type that contains it; Ord&lt;B&gt; is more precise than Ord&lt;A&gt; only when B is more precise than A.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Accumulator&lt;-ValueType&gt;
   method Accumulate : (ValueType) =&gt; ()
 end
 </code></pre></div></div>
 
-<p>Here is an interface for classes which describe objects which can “absorb” values of some type ValueType. ValueType has been marked as contravariant by prefixing it with a -. Contravariance means <em>against change</em>. A contravariant type parameter is one whose subtyping precision changes in the opposite direction of the subtyping precision of the type that contains it; if B is a subtype of A then Accumulator<a> is a subtype of Accumulator<b>.</b></a></p>
+<p>Here is an interface for classes which describe objects which can “absorb” values of some type ValueType. ValueType has been marked as contravariant by prefixing it with a -. Contravariance means <em>against change</em>. A contravariant type parameter is one whose subtyping precision changes in the opposite direction of the subtyping precision of the type that contains it; if B is a subtype of A then Accumulator&lt;A&gt; is a subtype of Accumulator&lt;B&gt;.</p>
 
 <p>The positions of the occurrences of a type parameter in a type definition dictate which variance annotations it can have. Roughly, types variables occurring only in input positions are allowed to be contravariant, whereas type variables occurring only in output positions are allowed to be covariant.</p>
 
 <p>DescriptionType is allowed to be covariant because it occurs as a method return type, and classifies values that instances of the class are outputting into an external context. Suppose DetailedDescription is a subtype of Description; then retrieving a DetailedDescription from the Describe method of Describable<Description> is perfectly acceptable, because we were expecting a Description, and values of type DetailedDescription can be used in any context where values of type Description are expected.</Description></p>
 
-<p>On the other hand, ValueType is allowed to be contravariant because it occurs as a method input type. Suppose OddInteger is a subtype of Integer. Then passing an OddInteger into the Accumulate method of an object of type Accumulator<Integer> is perfectly acceptable, and so we can use an object of type Accumulator<Integer> where an object of type Accumulator<OddInteger> is expected.</OddInteger></Integer></Integer></p>
+<p>On the other hand, ValueType is allowed to be contravariant because it occurs as a method input type. Suppose OddInteger is a subtype of Integer. Then passing an OddInteger into the Accumulate method of an object of type Accumulator&lt;Integer&gt; is perfectly acceptable, and so we can use an object of type Accumulator&lt;Integer&gt; where an object of type Accumulator&lt;OddInteger&gt; is expected.</p>
 
 <h1 id="additional-features">Additional features</h1>
 
