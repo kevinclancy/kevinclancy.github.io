@@ -1,34 +1,164 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2017-11-09T14:43:35-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Types</title><link href="/2017/11/09/monotonicity-through-types.html" rel="alternate" type="text/html" title="Monotonicity Through Types" /><published>2017-11-09T14:05:41-05:00</published><updated>2017-11-09T14:05:41-05:00</updated><id>/2017/11/09/monotonicity-through-types</id><content type="html" xml:base="/2017/11/09/monotonicity-through-types.html">&lt;p&gt;A partially ordered set is a set &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; endowed with a relation &lt;script type=&quot;math/tex&quot;&gt;\leq \subset P \times P&lt;/script&gt; such that for all &lt;script type=&quot;math/tex&quot;&gt;p, q, r \in P&lt;/script&gt; we have:&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2017-11-10T18:14:33-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Types</title><link href="/2017/11/09/monotonicity-through-types.html" rel="alternate" type="text/html" title="Monotonicity Through Types" /><published>2017-11-09T14:05:41-05:00</published><updated>2017-11-09T14:05:41-05:00</updated><id>/2017/11/09/monotonicity-through-types</id><content type="html" xml:base="/2017/11/09/monotonicity-through-types.html">&lt;p&gt;A partially ordered set is a set &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; endowed with a binary relation &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; on &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; such that for all &lt;script type=&quot;math/tex&quot;&gt;p, q, r \in P&lt;/script&gt; we have:&lt;/p&gt;
 
-&lt;p&gt;1.) &lt;script type=&quot;math/tex&quot;&gt;&lt;/script&gt; (reflexivity)&lt;/p&gt;
+&lt;p&gt;1.) &lt;script type=&quot;math/tex&quot;&gt;p \leq p&lt;/script&gt; (reflexivity)&lt;/p&gt;
 
-&lt;p&gt;2.) and implies (transitivity)&lt;/p&gt;
+&lt;p&gt;2.) &lt;script type=&quot;math/tex&quot;&gt;p \leq q&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;q \leq r&lt;/script&gt; implies &lt;script type=&quot;math/tex&quot;&gt;p \leq r&lt;/script&gt; (transitivity)&lt;/p&gt;
 
-&lt;p&gt;3.) and implies (anti-symmetry)&lt;/p&gt;
+&lt;p&gt;3.) &lt;script type=&quot;math/tex&quot;&gt;p \leq q&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;q \leq p&lt;/script&gt; implies &lt;script type=&quot;math/tex&quot;&gt;p = q&lt;/script&gt; (anti-symmetry)&lt;/p&gt;
 
-&lt;p&gt;If and are partially ordered sets, we say that a function between them is monotone if for all with , we have .&lt;/p&gt;
+&lt;p&gt;If &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;Q&lt;/script&gt; are partially ordered sets, we say that a function &lt;script type=&quot;math/tex&quot;&gt;f : P \to Q&lt;/script&gt; between them is monotone if for all &lt;script type=&quot;math/tex&quot;&gt;p_1, p_2 \in P&lt;/script&gt; with &lt;script type=&quot;math/tex&quot;&gt;p_1 \leq p_2&lt;/script&gt;, we have &lt;script type=&quot;math/tex&quot;&gt;f(p_1) \leq f(p_2)&lt;/script&gt;.&lt;/p&gt;
 
-&lt;p&gt;Several recent research papers ([lasp], BloomL) propose programming frameworks which utilize monotone functions
-as primitives of program composition, but they provide the user with a fixed set of monotone functions to work with. A type system capable of proving program functions monotone may enable the development of extensible versions of such frameworks.&lt;/p&gt;
+&lt;p&gt;Several recent research papers (for example &lt;a href=&quot;http://christophermeiklejohn.com/publications/ppdp-2015-preprint.pdf&quot;&gt;Lasp&lt;/a&gt; and &lt;a href=&quot;http://www.neilconway.org/docs/socc2012_bloom_lattices.pdf&quot;&gt;BloomL&lt;/a&gt;) propose programming frameworks which utilize monotone functions as primitives of program composition, but they provide the user with a fixed set of monotone functions to work with. A type system capable of proving program functions monotone may enable the development of extensible versions of such frameworks.&lt;/p&gt;
 
-&lt;p&gt;Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus which adds a new function abstraction construct called the sfun. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the sfun, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of an sfun is type checked using a refinement type system, which I call the lifted type system in which monotonicity is tracked.&lt;/p&gt;
+&lt;p&gt;Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the &lt;em&gt;sfun abstraction&lt;/em&gt;, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.&lt;/p&gt;
 
-&lt;p&gt;Reasoning about pointwise orderings on function spaces seems a bit heavy weight, and hasn’t been necessary for any of my use cases. An sfun is therefore is first order; that is, both its return type and all of its argument types must be data types rather than higher order functions. However, we would like to be able to prove that a multi-argument function is monotone separately in each of its
-arguments; i.e. if then , etc. Since the standard technique of currying for representing multiple-argument functions has been ruled, an sfun therefore has multiple arguments.&lt;/p&gt;
+&lt;p&gt;Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone &lt;em&gt;separately&lt;/em&gt; in each of its
+arguments; that is, for $i \in 1..n$, if &lt;script type=&quot;math/tex&quot;&gt;p\_i \leq p_i'&lt;/script&gt; then &lt;script type=&quot;math/tex&quot;&gt;f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)&lt;/script&gt;, etc.&lt;/p&gt;
 
 &lt;p&gt;The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:&lt;/p&gt;
 
-&lt;p&gt;1.)&lt;/p&gt;
+&lt;p&gt;1.) plus : &lt;script type=&quot;math/tex&quot;&gt;(x : Int, y : Int) \Rightarrow Int[\uparrow x, \uparrow y]&lt;/script&gt;&lt;/p&gt;
 
-&lt;p&gt;2.)&lt;/p&gt;
+&lt;p&gt;2.) minus : &lt;script type=&quot;math/tex&quot;&gt;(x : Int, y : Int) \Rightarrow Int[\uparrow x, \downarrow y]&lt;/script&gt;&lt;/p&gt;
 
-&lt;p&gt;An sfun type, written with rather than , names its formal arguments and also qualifies each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, is associated with arguments that are separately monotone and is associated with arguments that are separately antitone. The first argument of a binary function is separately antitone if implies , etc.&lt;/p&gt;
+&lt;p&gt;An &lt;em&gt;sfun type&lt;/em&gt;, written with &lt;script type=&quot;math/tex&quot;&gt;\Rightarrow&lt;/script&gt; rather than &lt;script type=&quot;math/tex&quot;&gt;\rightarrow&lt;/script&gt;, names its formal arguments and also &lt;em&gt;qualifies&lt;/em&gt; each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, &lt;script type=&quot;math/tex&quot;&gt;\uparrow&lt;/script&gt; is associated with arguments that are separately monotone and &lt;script type=&quot;math/tex&quot;&gt;\downarrow&lt;/script&gt; is associated with arguments that are separately antitone. The second argument of a binary function &lt;script type=&quot;math/tex&quot;&gt;f&lt;/script&gt; is separately antitone if &lt;script type=&quot;math/tex&quot;&gt;p_2 \leq p_2'&lt;/script&gt; implies &lt;script type=&quot;math/tex&quot;&gt;f(p_1, p_2) \geq f(p_1, p_2')&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;Terms outside of sfun abstractions are typed using a &lt;em&gt;global&lt;/em&gt; typing relation,
+which, aside from an sfun abstraction typing rule, is not different from the
+typing relations we are familiar with. A global typing judgment has the following form.&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\Gamma \vdash t : T&lt;/script&gt;
 
 &lt;p&gt;A typing judgment of the lifted type system, used to type check the body of an sfun, has the following form:&lt;/p&gt;
 
-&lt;p&gt;Here contains all of the variables bound outside of the sfun, contains the list of the sfun’s formal arguments, and contains those variables in ’s context bound inside the sfun.&lt;/p&gt;
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\Gamma;\Omega;\Phi \vdash t : T&lt;/script&gt;
 
-&lt;p&gt;The variables bound in must be lifted types, well-formed with respect to&lt;/p&gt;
+&lt;p&gt;Here the &lt;em&gt;global type environment&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt; contains all of the variables bound outside of the sfun, the &lt;em&gt;ambient type environment&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt; contains the list of the sfun’s formal arguments, and the
+&lt;em&gt;lifted type environment&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\Phi&lt;/script&gt; contains those variables in &lt;script type=&quot;math/tex&quot;&gt;t&lt;/script&gt;’s context which are bound inside the sfun. Before getting into the significance of lifted typing judgments, let’s look
+at a specific instance of the global typing rule for sfun abstractions, which uses a single lifted premise.&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\frac{\Gamma;x:Int;x:Int[=~x] \vdash plus(x,x) : Int[\uparrow~x]}
+       {\Gamma \vdash \tilde{\lambda} x : Int. plus(x,x) : ( x : Int ) \Rightarrow Int[\uparrow~x]}&lt;/script&gt;
+
+&lt;p&gt;Here we type a single-argument sfun abstraction &lt;script type=&quot;math/tex&quot;&gt;\tilde{\lambda} x:Int. plus(x,x)&lt;/script&gt;. As you might
+have guessed, &lt;script type=&quot;math/tex&quot;&gt;\tilde{\lambda}&lt;/script&gt; is used rather that &lt;script type=&quot;math/tex&quot;&gt;\lambda&lt;/script&gt; to distinguish this as an
+sfun abstraction rather than a standard one. Examine the ambient and lifted type environments
+used in the premise. Perhaps surprisingly, the abstraction’s bound variable &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; is entered into both environments. When variables occur in types, they are considered references to formal arguments
+rather than actual arguments; that is, an occurrence of &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; in a type (for example &lt;script type=&quot;math/tex&quot;&gt;Int[\uparrow x]&lt;/script&gt;) does not refer to some integer, but instead a “slot” named &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; which expects to receive some integer.
+Inside the scope of the sfun abstraction, we would like the ability to refer to the abstraction’s formal argument &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;, and therefore we add &lt;script type=&quot;math/tex&quot;&gt;x : Int&lt;/script&gt; to the ambient environment.
+We would also like to include occurrences of &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; as terms in the body of the abstraction; for these, we add the entry &lt;script type=&quot;math/tex&quot;&gt;x : Int[=~x]&lt;/script&gt; into the lifted type environment, to be used as a
+placeholder for the actual argument supplied to the formal argument &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;. Because references to formal arguments occur only in types, and references to actual arguments occur only in terms,
+we can add entries with the same name to both the ambient and lifted environments without creating any ambiguity.&lt;/p&gt;
+
+&lt;p&gt;The premise of the above rule application includes the strange looking types &lt;script type=&quot;math/tex&quot;&gt;Int[=~x]&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;Int[\uparrow~x]&lt;/script&gt;.
+Normally, we would expect occurrences of x, which serve as placeholders for the actual argument
+of the the function, to have type &lt;script type=&quot;math/tex&quot;&gt;Int&lt;/script&gt;, and we would expect our abstraction’s body &lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt; to
+have type &lt;script type=&quot;math/tex&quot;&gt;Int&lt;/script&gt; as well. This traditional approach to typing a function abstraction
+characterizes the operational behavior of a single function &lt;em&gt;after&lt;/em&gt; it has been applied.
+Unfortunately, this isn’t adequate for reasoning about properties such as monotonicity,
+which involve multiple calls to the same function. My approach instead takes the
+perspective of inside of a function, &lt;em&gt;before&lt;/em&gt; it has been applied. Lifted typing then
+characterizes the structure of a function as the composition of its constituent parts.
+In the above example, an occurrence of the variable &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; in the term &lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt;
+has type &lt;script type=&quot;math/tex&quot;&gt;Int[=~x]&lt;/script&gt;, meaning that it is a function which takes the value provided to &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;
+(the enclosing sfun’s formal argument) as an input, and produces that value unchanged
+as a result. We ultimately care about the input/output relation of this function,
+and so the concrete values which inhabit this type are set-of-pairs function representations.
+The type &lt;script type=&quot;math/tex&quot;&gt;Int[=~x]&lt;/script&gt; happens to be a singleton type, containing the set of pairs
+&lt;script type=&quot;math/tex&quot;&gt;\{ (0,0), (1,1), (-1,-1), (2,2), (-2-2), \ldots \}&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;The sfun application &lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt; is viewed as a function composition,
+where the outputs of the functions represented by the two occurrences of &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;
+are forwarded into the left and right arguments of the sfun &lt;script type=&quot;math/tex&quot;&gt;plus&lt;/script&gt;. The domain
+of this function matches the domain &lt;script type=&quot;math/tex&quot;&gt;x:Int&lt;/script&gt; of the enclosing sfun, which it inherits from
+the two occurrences of &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;. Since &lt;script type=&quot;math/tex&quot;&gt;plus&lt;/script&gt; returns an &lt;script type=&quot;math/tex&quot;&gt;Int&lt;/script&gt;, so does the
+composite function. The premise of the above typing rule application tells
+us that &lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt; has type &lt;script type=&quot;math/tex&quot;&gt;Int[\uparrow~x]&lt;/script&gt;, but this premise must
+be derived. How do we go about proving that the composite function
+&lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt; is monotone?&lt;/p&gt;
+
+&lt;p&gt;First, pretend that the two occurrences of &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; reference different formal arguments
+&lt;script type=&quot;math/tex&quot;&gt;x_1&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;x_2&lt;/script&gt;. Holding the left formal argument fixed gives a single-argument
+function &lt;script type=&quot;math/tex&quot;&gt;plus(--,x_2)&lt;/script&gt;, which the type signature of &lt;script type=&quot;math/tex&quot;&gt;plus&lt;/script&gt; tells us must
+be monotone.
+&lt;script type=&quot;math/tex&quot;&gt;x_1&lt;/script&gt;, representing the identity function on integers, is clearly monotone,
+since for all integers &lt;script type=&quot;math/tex&quot;&gt;z_1, z_2&lt;/script&gt; with &lt;script type=&quot;math/tex&quot;&gt;z_1 \leq z_2&lt;/script&gt;, we have
+&lt;script type=&quot;math/tex&quot;&gt;id(z_1) = z_1 \leq z_2 = id(z_2)&lt;/script&gt;. &lt;script type=&quot;math/tex&quot;&gt;plus(x_1, x_2)&lt;/script&gt; is then the composition
+of two monotone functions, which itself must be monotone. The same reasoning tells
+us that &lt;script type=&quot;math/tex&quot;&gt;plus(x_1,x_2)&lt;/script&gt; is monotone as a function of &lt;script type=&quot;math/tex&quot;&gt;x_2&lt;/script&gt; when &lt;script type=&quot;math/tex&quot;&gt;x_1&lt;/script&gt;
+is held fixed. &lt;script type=&quot;math/tex&quot;&gt;plus(x_1, x_2)&lt;/script&gt; is therefore monotone separately
+in both &lt;script type=&quot;math/tex&quot;&gt;x_1&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;x_2&lt;/script&gt;. However, we are interested in &lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt;,
+which is the function we get when we contract &lt;script type=&quot;math/tex&quot;&gt;x_1&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;x_2&lt;/script&gt; into a single
+argument, supplying both of &lt;script type=&quot;math/tex&quot;&gt;plus&lt;/script&gt;’s “slots” with the same value.
+Contracting two arguments of a function which are both separately monotone
+results in a new argument which is also separately monotone, and so we
+can conclude that &lt;script type=&quot;math/tex&quot;&gt;plus(x,x)&lt;/script&gt; has type &lt;script type=&quot;math/tex&quot;&gt;Int[\uparrow~x]&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;The lifted sfun application typing rule utilizes two binary operators
+&lt;script type=&quot;math/tex&quot;&gt;\circ&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;+&lt;/script&gt; on qualifiers, which describe how monotonicity
+is propagated across function composition and argument contraction.
+The above example utilized the facts that &lt;script type=&quot;math/tex&quot;&gt;= \circ \uparrow&lt;/script&gt; is equal to
+&lt;script type=&quot;math/tex&quot;&gt;\uparrow&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;\uparrow + \uparrow&lt;/script&gt; is equal to &lt;script type=&quot;math/tex&quot;&gt;\uparrow&lt;/script&gt;.
+These operators are defined as lookup tables, recording a set of predefined facts
+about the propagation of monotonicity.&lt;/p&gt;
+
+&lt;p&gt;I’ll wrap things up by leaving you
+with one of the central features of my calculus.
+Namely, that the “global world” outside of an sfun abstraction is viewed
+as a degenerate subset of the “lifted world” inside the sfun abstraction.
+A globally well-typed sfun application is viewed as a projection onto this
+degenerate subset. Inside the sfun abstraction, we track the way in which each term depends
+on the sfun’s arguments, but terms originating outside of the sfun
+(both literal constants and occurrences of variables from the global type environment &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt;)
+depend on the sfun’s arguments in a specific way: they are not affected by them
+at all. So, for any sfun with ambient environment &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt;,
+we can view the literal integer &lt;script type=&quot;math/tex&quot;&gt;1&lt;/script&gt; as a constant-valued
+function which, given any valuation of &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt;, produces the value one
+as a result. Of course, constant functions are monotone, and so a lifted subtyping relation
+allows 1 to occur in any context where Integer-valued functions with monotone
+dependence on the ambient environment &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt; are expected.
+I view this as a weird refinement type system. Instead of starting
+with a simply typed system and decomposing its base types into preorders to induce a
+subtyping relation, I started with a simply typed system and positioned its base
+types as refinements of base types in a system with larger types (larger in that
+  they denote larger sets of values).
+Consider the ambient environment &lt;script type=&quot;math/tex&quot;&gt;\Omega = x:Int&lt;/script&gt;. Letting
+&lt;script type=&quot;math/tex&quot;&gt;Int[?~x]&lt;/script&gt; be the type of Int-valued functions which share the enclosing sfun’s formal parameter &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;, the following diagram decomposes the type &lt;script type=&quot;math/tex&quot;&gt;Int[?~x]&lt;/script&gt; into refinements.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/DiagramArrows.png&quot; alt=&quot;Refinement diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The red arrows indicate that projection from &lt;script type=&quot;math/tex&quot;&gt;Int[?~x]&lt;/script&gt; into the refinement
+&lt;script type=&quot;math/tex&quot;&gt;Int&lt;/script&gt; plays a special role.&lt;/p&gt;
+
+&lt;p&gt;depence on
+the enclosing sfun’s formal parameter &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; is unknown.&lt;/p&gt;
+
+&lt;p&gt;Under an ambient environment &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt;, we consider a qualified base type
+well-formed if it qualifies&lt;/p&gt;
+
+&lt;p&gt;Within the scope of an sfun abstraction with ambient environment
+&lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt;, the set of well-formed types is expanded. A global well-formedness
+judgment has the form &lt;script type=&quot;math/tex&quot;&gt;\vdash T&lt;/script&gt;, whereas a lifted type well-formedness judgment
+has the form &lt;script type=&quot;math/tex&quot;&gt;\Omega \vdash T&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;a lifted type well-formedness
+judgment has the form&lt;/p&gt;
+
+&lt;p&gt;In general, lifted base types, which in a lifted typing judgment
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma;\Omega;\Phi \vdash t : T&lt;/script&gt; occur as the types in &lt;script type=&quot;math/tex&quot;&gt;\Phi&lt;/script&gt;,
+annotations in &lt;script type=&quot;math/tex&quot;&gt;t&lt;/script&gt;, and the type &lt;script type=&quot;math/tex&quot;&gt;T&lt;/script&gt;, denote functions sharing the common domain
+&lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt;, and therefore can be augment the variables of &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt; with qualifiers.
+The distinction between lifted and global types is captured in a set of well-formedness rules.
+A global well-formedness judgment has the form &lt;script type=&quot;math/tex&quot;&gt;\vdash T&lt;/script&gt;; well-formedness of
+base types like&lt;/p&gt;
+
+&lt;p&gt;In the lifted type sy&lt;/p&gt;
+
+&lt;p&gt;Note that, because &lt;script type=&quot;math/tex&quot;&gt;Int[=~x]&lt;/script&gt; is a type, the occurrence of &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; here refers to the &lt;em&gt;formal argument&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;, the presence of which is represented by the entry &lt;script type=&quot;math/tex&quot;&gt;x : Int&lt;/script&gt; in the ambient environment.&lt;/p&gt;
+
+&lt;p&gt;Importantly, this variable &lt;script type=&quot;math/tex&quot;&gt;x : Int&lt;/script&gt; is &lt;em&gt;not&lt;/em&gt; used as placeholder for the
+actual argument to which we apply the sfun; as we’ll soon see, it instead allows
+us refer directly to the sfun’s formal arguments&lt;/p&gt;
 
 &lt;p&gt;This refinement system can characterized as a type system oriented from the perspective of inside of a function.&lt;/p&gt;
 
@@ -36,7 +166,7 @@ arguments; i.e. if then , etc. Since the standard technique of currying for repr
 
 &lt;p&gt;It involves a store of mutable variables&lt;/p&gt;
 
-&lt;p&gt;broad technique for reducing the need for coordination in concurrent programs&lt;/p&gt;</content><author><name></name></author><summary type="html">A partially ordered set is a set endowed with a relation such that for all we have:</summary></entry><entry><title type="html">A Class System for Typed Lua</title><link href="/2016/08/18/a-class-system-for-typed-lua.html" rel="alternate" type="text/html" title="A Class System for Typed Lua" /><published>2016-08-18T13:04:58-04:00</published><updated>2016-08-18T13:04:58-04:00</updated><id>/2016/08/18/a-class-system-for-typed-lua</id><content type="html" xml:base="/2016/08/18/a-class-system-for-typed-lua.html">&lt;p&gt;I spent this summer implementing a class system for Typed Lua, as part of the Google Summer of Code 2016. To try out the new class sytem, clone my fork of the TypedLua repository, cd to the root directory of the cloned repository, and run the my modified version of the Typed Lua compiler via “tlc &lt;em&gt;source_filename&lt;/em&gt;”.&lt;/p&gt;
+&lt;p&gt;broad technique for reducing the need for coordination in concurrent programs&lt;/p&gt;</content><author><name></name></author><summary type="html">A partially ordered set is a set endowed with a binary relation on such that for all we have:</summary></entry><entry><title type="html">A Class System for Typed Lua</title><link href="/2016/08/18/a-class-system-for-typed-lua.html" rel="alternate" type="text/html" title="A Class System for Typed Lua" /><published>2016-08-18T13:04:58-04:00</published><updated>2016-08-18T13:04:58-04:00</updated><id>/2016/08/18/a-class-system-for-typed-lua</id><content type="html" xml:base="/2016/08/18/a-class-system-for-typed-lua.html">&lt;p&gt;I spent this summer implementing a class system for Typed Lua, as part of the Google Summer of Code 2016. To try out the new class sytem, clone my fork of the TypedLua repository, cd to the root directory of the cloned repository, and run the my modified version of the Typed Lua compiler via “tlc &lt;em&gt;source_filename&lt;/em&gt;”.&lt;/p&gt;
 
 &lt;p&gt;I haven’t merged any of my changes yet, and still plan to clean up some of the code within the next few weeks. Below is a description of the features that I have added.&lt;/p&gt;
 

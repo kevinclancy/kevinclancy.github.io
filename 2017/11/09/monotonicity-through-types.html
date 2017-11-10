@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Monotonicity Through Types</title>
-  <meta name="description" content="A partially ordered set is a set endowed with a relation such that for all we have:">
+  <meta name="description" content="A partially ordered set is a set endowed with a binary relation on such that for all we have:">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="/2017/11/09/monotonicity-through-types.html">
@@ -69,6 +69,8 @@
       <div class="wrapper">
         <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
+	
+
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Monotonicity Through Types</h1>
     <p class="post-meta">
@@ -79,38 +81,170 @@
       </p>
   </header>
 
+
   <div class="post-content" itemprop="articleBody">
-    <p>A partially ordered set is a set <script type="math/tex">P</script> endowed with a relation <script type="math/tex">\leq \subset P \times P</script> such that for all <script type="math/tex">p, q, r \in P</script> we have:</p>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <p>A partially ordered set is a set <script type="math/tex">P</script> endowed with a binary relation <script type="math/tex">\leq</script> on <script type="math/tex">P</script> such that for all <script type="math/tex">p, q, r \in P</script> we have:</p>
 
-<p>1.) <script type="math/tex"></script> (reflexivity)</p>
+<p>1.) <script type="math/tex">p \leq p</script> (reflexivity)</p>
 
-<p>2.) and implies (transitivity)</p>
+<p>2.) <script type="math/tex">p \leq q</script> and <script type="math/tex">q \leq r</script> implies <script type="math/tex">p \leq r</script> (transitivity)</p>
 
-<p>3.) and implies (anti-symmetry)</p>
+<p>3.) <script type="math/tex">p \leq q</script> and <script type="math/tex">q \leq p</script> implies <script type="math/tex">p = q</script> (anti-symmetry)</p>
 
-<p>If and are partially ordered sets, we say that a function between them is monotone if for all with , we have .</p>
+<p>If <script type="math/tex">P</script> and <script type="math/tex">Q</script> are partially ordered sets, we say that a function <script type="math/tex">f : P \to Q</script> between them is monotone if for all <script type="math/tex">p_1, p_2 \in P</script> with <script type="math/tex">p_1 \leq p_2</script>, we have <script type="math/tex">f(p_1) \leq f(p_2)</script>.</p>
 
-<p>Several recent research papers ([lasp], BloomL) propose programming frameworks which utilize monotone functions
-as primitives of program composition, but they provide the user with a fixed set of monotone functions to work with. A type system capable of proving program functions monotone may enable the development of extensible versions of such frameworks.</p>
+<p>Several recent research papers (for example <a href="http://christophermeiklejohn.com/publications/ppdp-2015-preprint.pdf">Lasp</a> and <a href="http://www.neilconway.org/docs/socc2012_bloom_lattices.pdf">BloomL</a>) propose programming frameworks which utilize monotone functions as primitives of program composition, but they provide the user with a fixed set of monotone functions to work with. A type system capable of proving program functions monotone may enable the development of extensible versions of such frameworks.</p>
 
-<p>Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus which adds a new function abstraction construct called the sfun. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the sfun, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of an sfun is type checked using a refinement type system, which I call the lifted type system in which monotonicity is tracked.</p>
+<p>Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the <em>sfun abstraction</em>, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.</p>
 
-<p>Reasoning about pointwise orderings on function spaces seems a bit heavy weight, and hasn’t been necessary for any of my use cases. An sfun is therefore is first order; that is, both its return type and all of its argument types must be data types rather than higher order functions. However, we would like to be able to prove that a multi-argument function is monotone separately in each of its
-arguments; i.e. if then , etc. Since the standard technique of currying for representing multiple-argument functions has been ruled, an sfun therefore has multiple arguments.</p>
+<p>Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone <em>separately</em> in each of its
+arguments; that is, for $i \in 1..n$, if <script type="math/tex">p\_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
 
 <p>The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:</p>
 
-<p>1.)</p>
+<p>1.) plus : <script type="math/tex">(x : Int, y : Int) \Rightarrow Int[\uparrow x, \uparrow y]</script></p>
 
-<p>2.)</p>
+<p>2.) minus : <script type="math/tex">(x : Int, y : Int) \Rightarrow Int[\uparrow x, \downarrow y]</script></p>
 
-<p>An sfun type, written with rather than , names its formal arguments and also qualifies each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, is associated with arguments that are separately monotone and is associated with arguments that are separately antitone. The first argument of a binary function is separately antitone if implies , etc.</p>
+<p>An <em>sfun type</em>, written with <script type="math/tex">\Rightarrow</script> rather than <script type="math/tex">\rightarrow</script>, names its formal arguments and also <em>qualifies</em> each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, <script type="math/tex">\uparrow</script> is associated with arguments that are separately monotone and <script type="math/tex">\downarrow</script> is associated with arguments that are separately antitone. The second argument of a binary function <script type="math/tex">f</script> is separately antitone if <script type="math/tex">p_2 \leq p_2'</script> implies <script type="math/tex">f(p_1, p_2) \geq f(p_1, p_2')</script>.</p>
+
+<p>Terms outside of sfun abstractions are typed using a <em>global</em> typing relation,
+which, aside from an sfun abstraction typing rule, is not different from the
+typing relations we are familiar with. A global typing judgment has the following form.</p>
+
+<script type="math/tex; mode=display">\Gamma \vdash t : T</script>
 
 <p>A typing judgment of the lifted type system, used to type check the body of an sfun, has the following form:</p>
 
-<p>Here contains all of the variables bound outside of the sfun, contains the list of the sfun’s formal arguments, and contains those variables in ’s context bound inside the sfun.</p>
+<script type="math/tex; mode=display">\Gamma;\Omega;\Phi \vdash t : T</script>
 
-<p>The variables bound in must be lifted types, well-formed with respect to</p>
+<p>Here the <em>global type environment</em> <script type="math/tex">\Gamma</script> contains all of the variables bound outside of the sfun, the <em>ambient type environment</em> <script type="math/tex">\Omega</script> contains the list of the sfun’s formal arguments, and the
+<em>lifted type environment</em> <script type="math/tex">\Phi</script> contains those variables in <script type="math/tex">t</script>’s context which are bound inside the sfun. Before getting into the significance of lifted typing judgments, let’s look
+at a specific instance of the global typing rule for sfun abstractions, which uses a single lifted premise.</p>
+
+<script type="math/tex; mode=display">\frac{\Gamma;x:Int;x:Int[=~x] \vdash plus(x,x) : Int[\uparrow~x]}
+       {\Gamma \vdash \tilde{\lambda} x : Int. plus(x,x) : ( x : Int ) \Rightarrow Int[\uparrow~x]}</script>
+
+<p>Here we type a single-argument sfun abstraction <script type="math/tex">\tilde{\lambda} x:Int. plus(x,x)</script>. As you might
+have guessed, <script type="math/tex">\tilde{\lambda}</script> is used rather that <script type="math/tex">\lambda</script> to distinguish this as an
+sfun abstraction rather than a standard one. Examine the ambient and lifted type environments
+used in the premise. Perhaps surprisingly, the abstraction’s bound variable <script type="math/tex">x</script> is entered into both environments. When variables occur in types, they are considered references to formal arguments
+rather than actual arguments; that is, an occurrence of <script type="math/tex">x</script> in a type (for example <script type="math/tex">Int[\uparrow x]</script>) does not refer to some integer, but instead a “slot” named <script type="math/tex">x</script> which expects to receive some integer.
+Inside the scope of the sfun abstraction, we would like the ability to refer to the abstraction’s formal argument <script type="math/tex">x</script>, and therefore we add <script type="math/tex">x : Int</script> to the ambient environment.
+We would also like to include occurrences of <script type="math/tex">x</script> as terms in the body of the abstraction; for these, we add the entry <script type="math/tex">x : Int[=~x]</script> into the lifted type environment, to be used as a
+placeholder for the actual argument supplied to the formal argument <script type="math/tex">x</script>. Because references to formal arguments occur only in types, and references to actual arguments occur only in terms,
+we can add entries with the same name to both the ambient and lifted environments without creating any ambiguity.</p>
+
+<p>The premise of the above rule application includes the strange looking types <script type="math/tex">Int[=~x]</script> and <script type="math/tex">Int[\uparrow~x]</script>.
+Normally, we would expect occurrences of x, which serve as placeholders for the actual argument
+of the the function, to have type <script type="math/tex">Int</script>, and we would expect our abstraction’s body <script type="math/tex">plus(x,x)</script> to
+have type <script type="math/tex">Int</script> as well. This traditional approach to typing a function abstraction
+characterizes the operational behavior of a single function <em>after</em> it has been applied.
+Unfortunately, this isn’t adequate for reasoning about properties such as monotonicity,
+which involve multiple calls to the same function. My approach instead takes the
+perspective of inside of a function, <em>before</em> it has been applied. Lifted typing then
+characterizes the structure of a function as the composition of its constituent parts.
+In the above example, an occurrence of the variable <script type="math/tex">x</script> in the term <script type="math/tex">plus(x,x)</script>
+has type <script type="math/tex">Int[=~x]</script>, meaning that it is a function which takes the value provided to <script type="math/tex">x</script>
+(the enclosing sfun’s formal argument) as an input, and produces that value unchanged
+as a result. We ultimately care about the input/output relation of this function,
+and so the concrete values which inhabit this type are set-of-pairs function representations.
+The type <script type="math/tex">Int[=~x]</script> happens to be a singleton type, containing the set of pairs
+<script type="math/tex">\{ (0,0), (1,1), (-1,-1), (2,2), (-2-2), \ldots \}</script>.</p>
+
+<p>The sfun application <script type="math/tex">plus(x,x)</script> is viewed as a function composition,
+where the outputs of the functions represented by the two occurrences of <script type="math/tex">x</script>
+are forwarded into the left and right arguments of the sfun <script type="math/tex">plus</script>. The domain
+of this function matches the domain <script type="math/tex">x:Int</script> of the enclosing sfun, which it inherits from
+the two occurrences of <script type="math/tex">x</script>. Since <script type="math/tex">plus</script> returns an <script type="math/tex">Int</script>, so does the
+composite function. The premise of the above typing rule application tells
+us that <script type="math/tex">plus(x,x)</script> has type <script type="math/tex">Int[\uparrow~x]</script>, but this premise must
+be derived. How do we go about proving that the composite function
+<script type="math/tex">plus(x,x)</script> is monotone?</p>
+
+<p>First, pretend that the two occurrences of <script type="math/tex">x</script> reference different formal arguments
+<script type="math/tex">x_1</script> and <script type="math/tex">x_2</script>. Holding the left formal argument fixed gives a single-argument
+function <script type="math/tex">plus(--,x_2)</script>, which the type signature of <script type="math/tex">plus</script> tells us must
+be monotone.
+<script type="math/tex">x_1</script>, representing the identity function on integers, is clearly monotone,
+since for all integers <script type="math/tex">z_1, z_2</script> with <script type="math/tex">z_1 \leq z_2</script>, we have
+<script type="math/tex">id(z_1) = z_1 \leq z_2 = id(z_2)</script>. <script type="math/tex">plus(x_1, x_2)</script> is then the composition
+of two monotone functions, which itself must be monotone. The same reasoning tells
+us that <script type="math/tex">plus(x_1,x_2)</script> is monotone as a function of <script type="math/tex">x_2</script> when <script type="math/tex">x_1</script>
+is held fixed. <script type="math/tex">plus(x_1, x_2)</script> is therefore monotone separately
+in both <script type="math/tex">x_1</script> and <script type="math/tex">x_2</script>. However, we are interested in <script type="math/tex">plus(x,x)</script>,
+which is the function we get when we contract <script type="math/tex">x_1</script> and <script type="math/tex">x_2</script> into a single
+argument, supplying both of <script type="math/tex">plus</script>’s “slots” with the same value.
+Contracting two arguments of a function which are both separately monotone
+results in a new argument which is also separately monotone, and so we
+can conclude that <script type="math/tex">plus(x,x)</script> has type <script type="math/tex">Int[\uparrow~x]</script>.</p>
+
+<p>The lifted sfun application typing rule utilizes two binary operators
+<script type="math/tex">\circ</script> and <script type="math/tex">+</script> on qualifiers, which describe how monotonicity
+is propagated across function composition and argument contraction.
+The above example utilized the facts that <script type="math/tex">= \circ \uparrow</script> is equal to
+<script type="math/tex">\uparrow</script> and <script type="math/tex">\uparrow + \uparrow</script> is equal to <script type="math/tex">\uparrow</script>.
+These operators are defined as lookup tables, recording a set of predefined facts
+about the propagation of monotonicity.</p>
+
+<p>I’ll wrap things up by leaving you
+with one of the central features of my calculus.
+Namely, that the “global world” outside of an sfun abstraction is viewed
+as a degenerate subset of the “lifted world” inside the sfun abstraction.
+A globally well-typed sfun application is viewed as a projection onto this
+degenerate subset. Inside the sfun abstraction, we track the way in which each term depends
+on the sfun’s arguments, but terms originating outside of the sfun
+(both literal constants and occurrences of variables from the global type environment <script type="math/tex">\Gamma</script>)
+depend on the sfun’s arguments in a specific way: they are not affected by them
+at all. So, for any sfun with ambient environment <script type="math/tex">\Omega</script>,
+we can view the literal integer <script type="math/tex">1</script> as a constant-valued
+function which, given any valuation of <script type="math/tex">\Omega</script>, produces the value one
+as a result. Of course, constant functions are monotone, and so a lifted subtyping relation
+allows 1 to occur in any context where Integer-valued functions with monotone
+dependence on the ambient environment <script type="math/tex">\Omega</script> are expected.
+I view this as a weird refinement type system. Instead of starting
+with a simply typed system and decomposing its base types into preorders to induce a
+subtyping relation, I started with a simply typed system and positioned its base
+types as refinements of base types in a system with larger types (larger in that
+  they denote larger sets of values).
+Consider the ambient environment <script type="math/tex">\Omega = x:Int</script>. Letting
+<script type="math/tex">Int[?~x]</script> be the type of Int-valued functions which share the enclosing sfun’s formal parameter <script type="math/tex">x</script>, the following diagram decomposes the type <script type="math/tex">Int[?~x]</script> into refinements.</p>
+
+<p><img src="/assets/DiagramArrows.png" alt="Refinement diagram" /></p>
+
+<p>The red arrows indicate that projection from <script type="math/tex">Int[?~x]</script> into the refinement
+<script type="math/tex">Int</script> plays a special role.</p>
+
+<p>depence on
+the enclosing sfun’s formal parameter <script type="math/tex">x</script> is unknown.</p>
+
+<p>Under an ambient environment <script type="math/tex">\Omega</script>, we consider a qualified base type
+well-formed if it qualifies</p>
+
+<p>Within the scope of an sfun abstraction with ambient environment
+<script type="math/tex">\Omega</script>, the set of well-formed types is expanded. A global well-formedness
+judgment has the form <script type="math/tex">\vdash T</script>, whereas a lifted type well-formedness judgment
+has the form <script type="math/tex">\Omega \vdash T</script>.</p>
+
+<p>a lifted type well-formedness
+judgment has the form</p>
+
+<p>In general, lifted base types, which in a lifted typing judgment
+<script type="math/tex">\Gamma;\Omega;\Phi \vdash t : T</script> occur as the types in <script type="math/tex">\Phi</script>,
+annotations in <script type="math/tex">t</script>, and the type <script type="math/tex">T</script>, denote functions sharing the common domain
+<script type="math/tex">\Omega</script>, and therefore can be augment the variables of <script type="math/tex">\Omega</script> with qualifiers.
+The distinction between lifted and global types is captured in a set of well-formedness rules.
+A global well-formedness judgment has the form <script type="math/tex">\vdash T</script>; well-formedness of
+base types like</p>
+
+<p>In the lifted type sy</p>
+
+<p>Note that, because <script type="math/tex">Int[=~x]</script> is a type, the occurrence of <script type="math/tex">x</script> here refers to the <em>formal argument</em> <script type="math/tex">x</script>, the presence of which is represented by the entry <script type="math/tex">x : Int</script> in the ambient environment.</p>
+
+<p>Importantly, this variable <script type="math/tex">x : Int</script> is <em>not</em> used as placeholder for the
+actual argument to which we apply the sfun; as we’ll soon see, it instead allows
+us refer directly to the sfun’s formal arguments</p>
 
 <p>This refinement system can characterized as a type system oriented from the perspective of inside of a function.</p>
 
