@@ -1,4 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2017-11-09T13:18:35-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">A Class System for Typed Lua</title><link href="/2016/08/18/a-class-system-for-typed-lua.html" rel="alternate" type="text/html" title="A Class System for Typed Lua" /><published>2016-08-18T13:04:58-04:00</published><updated>2016-08-18T13:04:58-04:00</updated><id>/2016/08/18/a-class-system-for-typed-lua</id><content type="html" xml:base="/2016/08/18/a-class-system-for-typed-lua.html">&lt;p&gt;I spent this summer implementing a class system for Typed Lua, as part of the Google Summer of Code 2016. To try out the new class sytem, clone my fork of the TypedLua repository, cd to the root directory of the cloned repository, and run the my modified version of the Typed Lua compiler via “tlc &lt;em&gt;source_filename&lt;/em&gt;”.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2017-11-09T14:43:35-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Types</title><link href="/2017/11/09/monotonicity-through-types.html" rel="alternate" type="text/html" title="Monotonicity Through Types" /><published>2017-11-09T14:05:41-05:00</published><updated>2017-11-09T14:05:41-05:00</updated><id>/2017/11/09/monotonicity-through-types</id><content type="html" xml:base="/2017/11/09/monotonicity-through-types.html">&lt;p&gt;A partially ordered set is a set &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; endowed with a relation &lt;script type=&quot;math/tex&quot;&gt;\leq \subset P \times P&lt;/script&gt; such that for all &lt;script type=&quot;math/tex&quot;&gt;p, q, r \in P&lt;/script&gt; we have:&lt;/p&gt;
+
+&lt;p&gt;1.) &lt;script type=&quot;math/tex&quot;&gt;&lt;/script&gt; (reflexivity)&lt;/p&gt;
+
+&lt;p&gt;2.) and implies (transitivity)&lt;/p&gt;
+
+&lt;p&gt;3.) and implies (anti-symmetry)&lt;/p&gt;
+
+&lt;p&gt;If and are partially ordered sets, we say that a function between them is monotone if for all with , we have .&lt;/p&gt;
+
+&lt;p&gt;Several recent research papers ([lasp], BloomL) propose programming frameworks which utilize monotone functions
+as primitives of program composition, but they provide the user with a fixed set of monotone functions to work with. A type system capable of proving program functions monotone may enable the development of extensible versions of such frameworks.&lt;/p&gt;
+
+&lt;p&gt;Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus which adds a new function abstraction construct called the sfun. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the sfun, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of an sfun is type checked using a refinement type system, which I call the lifted type system in which monotonicity is tracked.&lt;/p&gt;
+
+&lt;p&gt;Reasoning about pointwise orderings on function spaces seems a bit heavy weight, and hasn’t been necessary for any of my use cases. An sfun is therefore is first order; that is, both its return type and all of its argument types must be data types rather than higher order functions. However, we would like to be able to prove that a multi-argument function is monotone separately in each of its
+arguments; i.e. if then , etc. Since the standard technique of currying for representing multiple-argument functions has been ruled, an sfun therefore has multiple arguments.&lt;/p&gt;
+
+&lt;p&gt;The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:&lt;/p&gt;
+
+&lt;p&gt;1.)&lt;/p&gt;
+
+&lt;p&gt;2.)&lt;/p&gt;
+
+&lt;p&gt;An sfun type, written with rather than , names its formal arguments and also qualifies each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, is associated with arguments that are separately monotone and is associated with arguments that are separately antitone. The first argument of a binary function is separately antitone if implies , etc.&lt;/p&gt;
+
+&lt;p&gt;A typing judgment of the lifted type system, used to type check the body of an sfun, has the following form:&lt;/p&gt;
+
+&lt;p&gt;Here contains all of the variables bound outside of the sfun, contains the list of the sfun’s formal arguments, and contains those variables in ’s context bound inside the sfun.&lt;/p&gt;
+
+&lt;p&gt;The variables bound in must be lifted types, well-formed with respect to&lt;/p&gt;
+
+&lt;p&gt;This refinement system can characterized as a type system oriented from the perspective of inside of a function.&lt;/p&gt;
+
+&lt;p&gt;techniques which utilize a strategy that I am going to call the monotonic data pattern. It involves defining a partial order over the values of each data type and maintaining a store of variables which can only be mutated inflatively; that is, a typed variable (the type of which is endowed with a partial order) can only be reassigned to a new value that is higher with respect to its type’s partial order. Under this restriction, each variable, and indeed the entire store, is monotone as a function of time.&lt;/p&gt;
+
+&lt;p&gt;It involves a store of mutable variables&lt;/p&gt;
+
+&lt;p&gt;broad technique for reducing the need for coordination in concurrent programs&lt;/p&gt;</content><author><name></name></author><summary type="html">A partially ordered set is a set endowed with a relation such that for all we have:</summary></entry><entry><title type="html">A Class System for Typed Lua</title><link href="/2016/08/18/a-class-system-for-typed-lua.html" rel="alternate" type="text/html" title="A Class System for Typed Lua" /><published>2016-08-18T13:04:58-04:00</published><updated>2016-08-18T13:04:58-04:00</updated><id>/2016/08/18/a-class-system-for-typed-lua</id><content type="html" xml:base="/2016/08/18/a-class-system-for-typed-lua.html">&lt;p&gt;I spent this summer implementing a class system for Typed Lua, as part of the Google Summer of Code 2016. To try out the new class sytem, clone my fork of the TypedLua repository, cd to the root directory of the cloned repository, and run the my modified version of the Typed Lua compiler via “tlc &lt;em&gt;source_filename&lt;/em&gt;”.&lt;/p&gt;
 
 &lt;p&gt;I haven’t merged any of my changes yet, and still plan to clean up some of the code within the next few weeks. Below is a description of the features that I have added.&lt;/p&gt;
 
