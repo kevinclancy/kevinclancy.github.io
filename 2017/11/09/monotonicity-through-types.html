@@ -99,7 +99,7 @@
 <p>Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the <em>sfun abstraction</em>, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.</p>
 
 <p>Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone <em>separately</em> in each of its
-arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script type="math/tex">p\_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
+arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script type="math/tex">p_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
 
 <p>The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:</p>
 
@@ -107,7 +107,7 @@ arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script 
 
 <p>2.) minus : <script type="math/tex">(x : Int, y : Int) \Rightarrow Int[\uparrow x, \downarrow y]</script></p>
 
-<p>An <em>sfun type</em>, written with <script type="math/tex">\Rightarrow</script> rather than <script type="math/tex">\rightarrow</script>, names its formal arguments and also <em>qualifies</em> each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, <script type="math/tex">\uparrow</script> is associated with arguments that are separately monotone and <script type="math/tex">\downarrow</script> is associated with arguments that are separately antitone. The second argument of a binary function <script type="math/tex">f</script> is separately antitone if <script type="math/tex">p_2 \leq p_2'</script> implies <script type="math/tex">f(p_1, p_2) \geq f(p_1, p_2')</script>.</p>
+<p>An <em>sfun type</em>, written with <script type="math/tex">\Rightarrow</script> rather than <script type="math/tex">\rightarrow</script>, names its formal arguments and also <em>qualifies</em> each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, the qualifier <script type="math/tex">\uparrow</script> is associated with arguments that are separately monotone and <script type="math/tex">\downarrow</script> is associated with arguments that are separately antitone. The second argument of a binary function <script type="math/tex">f</script> is separately antitone if <script type="math/tex">p_2 \leq p_2'</script> implies <script type="math/tex">f(p_1, p_2) \geq f(p_1, p_2')</script>.</p>
 
 <p>Terms outside of sfun abstractions are typed using a <em>global</em> typing relation,
 which, aside from an sfun abstraction typing rule, is not different from the
@@ -130,7 +130,7 @@ at a specific instance of the global typing rule for sfun abstractions, which us
 have guessed, <script type="math/tex">\tilde{\lambda}</script> is used rather that <script type="math/tex">\lambda</script> to distinguish this as an
 sfun abstraction rather than a standard one. Examine the ambient and lifted type environments
 used in the premise. Perhaps surprisingly, the abstraction’s bound variable <script type="math/tex">x</script> is entered into both environments. When variables occur in types, they are considered references to formal arguments
-rather than actual arguments; that is, an occurrence of <script type="math/tex">x</script> in a type (for example <script type="math/tex">Int[\uparrow x]</script>) does not refer to some integer, but instead a “slot” named <script type="math/tex">x</script> which expects to receive some integer.
+rather than actual arguments; that is, an occurrence of <script type="math/tex">x</script> in a type (for example <script type="math/tex">Int[\uparrow x]</script>) does not refer to some integer, but instead a “slot” named <script type="math/tex">x</script> which expects to receive some integer from an external source.
 Inside the scope of the sfun abstraction, we would like the ability to refer to the abstraction’s formal argument <script type="math/tex">x</script>, and therefore we add <script type="math/tex">x : Int</script> to the ambient environment.
 We would also like to include occurrences of <script type="math/tex">x</script> as terms in the body of the abstraction; for these, we add the entry <script type="math/tex">x : Int[=~x]</script> into the lifted type environment, to be used as a
 placeholder for the actual argument supplied to the formal argument <script type="math/tex">x</script>. Because references to formal arguments occur only in types, and references to actual arguments occur only in terms,
@@ -156,7 +156,7 @@ The type <script type="math/tex">Int[=~x]</script> happens to be a singleton typ
 <p>The sfun application <script type="math/tex">plus(x,x)</script> is viewed as a function composition,
 where the outputs of the functions represented by the two occurrences of <script type="math/tex">x</script>
 are forwarded into the left and right arguments of the sfun <script type="math/tex">plus</script>. The domain
-of this function matches the domain <script type="math/tex">x:Int</script> of the enclosing sfun, which it inherits from
+of this composite function matches the domain <script type="math/tex">x:Int</script> of the enclosing sfun, which it inherits from
 the two occurrences of <script type="math/tex">x</script>. Since <script type="math/tex">plus</script> returns an <script type="math/tex">Int</script>, so does the
 composite function. The premise of the above typing rule application tells
 us that <script type="math/tex">plus(x,x)</script> has type <script type="math/tex">Int[\uparrow~x]</script>, but this premise must
@@ -165,7 +165,7 @@ be derived. How do we go about proving that the composite function
 
 <p>First, pretend that the two occurrences of <script type="math/tex">x</script> reference different formal arguments
 <script type="math/tex">x_1</script> and <script type="math/tex">x_2</script>. Holding the left formal argument fixed gives a single-argument
-function <script type="math/tex">plus(--,x_2)</script>, which the type signature of <script type="math/tex">plus</script> tells us must
+function <script type="math/tex">plus(-,x_2)</script>, which the type signature of <script type="math/tex">plus</script> tells us must
 be monotone.
 <script type="math/tex">x_1</script>, representing the identity function on integers, is clearly monotone,
 since for all integers <script type="math/tex">z_1, z_2</script> with <script type="math/tex">z_1 \leq z_2</script>, we have
@@ -214,7 +214,7 @@ Consider the ambient environment <script type="math/tex">\Omega = x:Int</script>
 <p><img src="/assets/DiagramArrows.png" alt="Refinement diagram" /></p>
 
 <p>The red arrows indicate that projection from <script type="math/tex">Int[?~x]</script> into the refinement
-<script type="math/tex">Int</script> plays a special role. Still curios? See <a href="https://infoscience.epfl.ch/record/231867/files/monotonicity-types.pdf">this paper</a> for motivating examples, a full formalization, and a soundness proof,</p>
+<script type="math/tex">Int</script> plays a special role. Still curios? See <a href="https://infoscience.epfl.ch/record/231867/files/monotonicity-types.pdf">this paper</a> for motivating examples, a full formalization, and a soundness proof.</p>
 
   </div>
 
