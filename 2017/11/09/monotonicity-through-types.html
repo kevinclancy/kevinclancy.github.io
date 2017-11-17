@@ -99,7 +99,7 @@
 <p>Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the <em>sfun abstraction</em>, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.</p>
 
 <p>Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone <em>separately</em> in each of its
-arguments; that is, for $i \in 1..n$, if <script type="math/tex">p\_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
+arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script type="math/tex">p\_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
 
 <p>The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:</p>
 
