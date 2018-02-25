@@ -69,7 +69,7 @@
       <div class="wrapper">
         <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-	
+
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Monotonicity Through Types</h1>
@@ -83,8 +83,11 @@
 
 
   <div class="post-content" itemprop="articleBody">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-    <p>A partially ordered set is a set <script type="math/tex">P</script> endowed with a binary relation <script type="math/tex">\leq</script> on <script type="math/tex">P</script> such that for all <script type="math/tex">p, q, r \in P</script> we have:</p>
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+			-->
+			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+		<p>A partially ordered set is a set <script type="math/tex">P</script> endowed with a binary relation <script type="math/tex">\leq</script> on <script type="math/tex">P</script> such that for all <script type="math/tex">p, q, r \in P</script> we have:</p>
 
 <p>1.) <script type="math/tex">p \leq p</script> (reflexivity)</p>
 
@@ -99,7 +102,7 @@
 <p>Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the <em>sfun abstraction</em>, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.</p>
 
 <p>Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone <em>separately</em> in each of its
-arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script type="math/tex">p_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
+arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script type="math/tex">p_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>.</p>
 
 <p>The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:</p>
 
@@ -121,7 +124,7 @@ typing relations we are familiar with. A global typing judgment has the followin
 
 <p>Here the <em>global type environment</em> <script type="math/tex">\Gamma</script> contains all of the variables bound outside of the sfun, the <em>ambient type environment</em> <script type="math/tex">\Omega</script> contains the list of the sfun’s formal arguments, and the
 <em>lifted type environment</em> <script type="math/tex">\Phi</script> contains those variables in <script type="math/tex">t</script>’s context which are bound inside the sfun. Before getting into the significance of lifted typing judgments, let’s look
-at a specific instance of the global typing rule for sfun abstractions, which uses a single lifted premise.</p>
+at a specific application of the global typing rule for sfun abstractions, which uses a single lifted premise.</p>
 
 <script type="math/tex; mode=display">\frac{\Gamma;x:Int;x:Int[=~x] \vdash plus(x,x) : Int[\uparrow~x]}
        {\Gamma \vdash \tilde{\lambda} x : Int. plus(x,x) : ( x : Int ) \Rightarrow Int[\uparrow~x]}</script>

@@ -1,4 +1,388 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2017-11-17T18:21:37-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Types</title><link href="/2017/11/09/monotonicity-through-types.html" rel="alternate" type="text/html" title="Monotonicity Through Types" /><published>2017-11-09T14:05:41-05:00</published><updated>2017-11-09T14:05:41-05:00</updated><id>/2017/11/09/monotonicity-through-types</id><content type="html" xml:base="/2017/11/09/monotonicity-through-types.html">&lt;p&gt;A partially ordered set is a set &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; endowed with a binary relation &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; on &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; such that for all &lt;script type=&quot;math/tex&quot;&gt;p, q, r \in P&lt;/script&gt; we have:&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-02-25T02:14:29-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
+&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\catq}[0]{ \mathbf{Q} }&lt;/script&gt;
+&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\qmon}[0]{ \mathbf{Q_{mon}} }&lt;/script&gt;
+&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\ato}[0]{ \overset{-}{\to} }&lt;/script&gt;
+&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\pto}[0]{ \overset{+}{\to} }&lt;/script&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;more-monotonicity&quot;&gt;More monotonicity&lt;/h1&gt;
+
+&lt;p&gt;Thanks to a tip from &lt;a href=&quot;http://bentbib.org&quot;&gt;Bob Atkey&lt;/a&gt;, I’ve recently been looking
+at coeffects as a means to prove program functions monotone.
+This post
+contains an introduction to coeffects, along with an explanation
+of how they can be used to reason about monotonicity. My goal
+is to cover the key ideas of coeffects without getting into a full
+treatment of their semantics.
+The particular coeffect system that I will examine is taken from
+&lt;a href=&quot;http://tomasp.net/academic/papers/structural/coeffects-icfp.pdf&quot;&gt;Coeffects: A calculus of context-dependent computation&lt;/a&gt;
+by Tomas Petricek, Dominic Orchard, and Alan Mycroft.&lt;/p&gt;
+
+&lt;p&gt;The content of this post depends on some basic category theory.
+In particular, it involves functors, natural transformations,
+and cartesian closed categories.&lt;/p&gt;
+
+&lt;h1 id=&quot;coeffects&quot;&gt;Coeffects&lt;/h1&gt;
+
+&lt;p&gt;In a structural type-and-coeffect system, a function  &lt;script type=&quot;math/tex&quot;&gt;f&lt;/script&gt; has a type of the form &lt;script type=&quot;math/tex&quot;&gt;\tau \overset{q}{\to} \sigma&lt;/script&gt;, where &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;\sigma&lt;/script&gt; are &lt;script type=&quot;math/tex&quot;&gt;f&lt;/script&gt;’s domain and codomain types, and &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt; is a &lt;em&gt;coeffect scalar&lt;/em&gt;. The coeffect scalar denotes some ``contextual capability’’ which augments the domain &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;.
+We will formalize the notion of a contextual capability in the next section, and in the meantime it will stay intuitive.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/dataflowDeriv.png&quot; alt=&quot;Fif&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Petricek et al. provide an example targeted at dataflow languages such as Lustre. In this example, time is modeled as a sequence of discrete steps, and variables denote value streams which contain one element per time step. A variable occurrence denotes its stream’s value at the
+current time step, and values at previous timesteps can be accessed by wrapping occurrences of the variable in a syntactic
+form called &lt;em&gt;pre&lt;/em&gt;. As depicted above, a coeffect scalar in this system is a natural number denoting a lower bound on the number of cached values at consecutive previous timesteps for a particular stream. Note that certain contextual capabilities are stronger than others. For example, in the dataflow system, the coeffect scalar &lt;script type=&quot;math/tex&quot;&gt;1&lt;/script&gt; allows us to read a stream’s value at 1 timestep prior, while the coeffect scalar &lt;script type=&quot;math/tex&quot;&gt;2&lt;/script&gt; is &lt;em&gt;stronger than&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;1&lt;/script&gt; because it allows us to read a stream’s value both 1 &lt;em&gt;and&lt;/em&gt; 2 timesteps prior.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/coeffects.png&quot; alt=&quot;FigTwo&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We can assume that a function constant of type &lt;script type=&quot;math/tex&quot;&gt;\tau \overset{s}{\to} \sigma&lt;/script&gt; ``utilizes’’ at most
+the contextual capabilities indicated by its scalar &lt;script type=&quot;math/tex&quot;&gt;s&lt;/script&gt;. But an upper bound on the contextual requirements
+of a lambda abstraction must be proven, using the type-and-coeffect system of &lt;em&gt;Figure 2&lt;/em&gt;.
+A type-and-coeffect judgment has the form
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R \vdash e : \tau&lt;/script&gt;. Here &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt;, and &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt; are the familiar
+typing context, expression, and type. &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; is a vector of coeffect scalars, associating one scalar to each entry in
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt;; we refer to such a vector simply as a &lt;em&gt;coeffect&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;The &lt;em&gt;ABS&lt;/em&gt; rule says that under context &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt; and coeffect &lt;script type=&quot;math/tex&quot;&gt;\langle \ldots \rangle&lt;/script&gt;,
+an abstraction &lt;script type=&quot;math/tex&quot;&gt;\lambda x. e&lt;/script&gt; has type &lt;script type=&quot;math/tex&quot;&gt;\sigma \overset{s}{\to} \tau&lt;/script&gt; whenever we can type-check its body under the
+the extended context &lt;script type=&quot;math/tex&quot;&gt;\Gamma, x:\tau&lt;/script&gt; and extended coeffect &lt;script type=&quot;math/tex&quot;&gt;\langle \ldots, s \rangle&lt;/script&gt;.
+The key to ensuring that our abstraction does not ``overuse’’ the capability denoted by &lt;script type=&quot;math/tex&quot;&gt;s&lt;/script&gt; is
+to restrict, within the body &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt;, both the positions in which the variable &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; may occur &lt;em&gt;and&lt;/em&gt; the positions in which it may be discarded; the weaker the capability
+a scalar denotes, the more restrictive it is syntactically. The particular set of restrictions a scalar makes is
+dependent on a parameter to the structural type-and-coeffect system called the &lt;em&gt;coeffect scalar structure&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;A &lt;em&gt;coeffect scalar structure&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\mathbf Q = (Q, \otimes, \oplus, use, ign, \leq)&lt;/script&gt; consists of&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;An underlying set &lt;script type=&quot;math/tex&quot;&gt;Q&lt;/script&gt; of scalars&lt;/li&gt;
+  &lt;li&gt;Binary &lt;em&gt;composition&lt;/em&gt; and &lt;em&gt;contraction&lt;/em&gt; operators &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;\oplus&lt;/script&gt; on &lt;script type=&quot;math/tex&quot;&gt;Q&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;A coeffect scalar &lt;script type=&quot;math/tex&quot;&gt;use&lt;/script&gt;, the most restrctive scalar that
+permits a variable to appear in an hole context,
+i.e. the most restrictive scalar &lt;script type=&quot;math/tex&quot;&gt;s&lt;/script&gt; such that &lt;script type=&quot;math/tex&quot;&gt;x:\tau @ \langle s \rangle \vdash x : \tau&lt;/script&gt; is derivable&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;A coeffect scalar &lt;script type=&quot;math/tex&quot;&gt;ign&lt;/script&gt;, the most restrictive scalar which constrains a variable in a way that permits
+it to be discarded, i.e. whenever &lt;script type=&quot;math/tex&quot;&gt;\Gamma,x:\tau @ \langle \ldots \rangle \vdash e : \sigma&lt;/script&gt; is derivable so is
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma @ \langle \ldots, ign \rangle \vdash e : \sigma&lt;/script&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;A preorder &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; on &lt;script type=&quot;math/tex&quot;&gt;Q&lt;/script&gt;, where &lt;script type=&quot;math/tex&quot;&gt;q_1 \leq q_2&lt;/script&gt; means that &lt;script type=&quot;math/tex&quot;&gt;q_1&lt;/script&gt; is more restrictive than &lt;script type=&quot;math/tex&quot;&gt;q_2&lt;/script&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We require &lt;script type=&quot;math/tex&quot;&gt;(Q, \otimes, use)&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;(Q, \oplus, ign)&lt;/script&gt; to be monoids. Further,
+  for all &lt;script type=&quot;math/tex&quot;&gt;p,q,r \in Q&lt;/script&gt; we require these &lt;em&gt;distributivity&lt;/em&gt; equalities&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;p~\otimes~(q~\oplus~r) = (p~\otimes~q)~\oplus~(p~\otimes~r)&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;(q~\otimes~r)~\otimes~p =(q~\otimes~p)~\oplus~(r~\otimes~p)&lt;/script&gt;
+
+&lt;p&gt;Finally, both &lt;script type=&quot;math/tex&quot;&gt;\oplus&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; should be monotone separately in each argument,
+  that is &lt;script type=&quot;math/tex&quot;&gt;q \leq r&lt;/script&gt; implies&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;p \oplus q \leq p \oplus r&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;q \oplus p \leq r \oplus p&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;p \otimes q \leq p \otimes r&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;q \otimes p \leq r \otimes p&lt;/script&gt;
+
+&lt;p&gt;The coeffect scalar structure for the dataflow coeffect system is
+  &lt;script type=&quot;math/tex&quot;&gt;\mathbf{Q_{df}} = (\mathbb N, +, max, 0, 0, \leq)&lt;/script&gt;, where &lt;script type=&quot;math/tex&quot;&gt;\mathbb N&lt;/script&gt; is the set of natural numbers,
+  &lt;script type=&quot;math/tex&quot;&gt;+&lt;/script&gt; is the addition operator on natural numbers, &lt;script type=&quot;math/tex&quot;&gt;max&lt;/script&gt; is the operator which produces the greater
+  of two natural number arguments, and &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; is the standard comparison operator for
+  natural numbers. It’s instructive to consider the system of &lt;em&gt;Figure 2&lt;/em&gt; instantiated
+  with this structure, in which the &lt;em&gt;VAR&lt;/em&gt; axiom &lt;script type=&quot;math/tex&quot;&gt;x : \tau @ \langle 0 \rangle \vdash x : \tau&lt;/script&gt; says
+  that a variable occurrence does not require the capability to read that variable’s stream at prior time steps. Assuming &lt;script type=&quot;math/tex&quot;&gt;B&lt;/script&gt; is the sole base type, the &lt;script type=&quot;math/tex&quot;&gt;pre&lt;/script&gt; construct, which allows us to access a stream at the previous time step,
+  is then implemented as a built-in
+  function constant of type &lt;script type=&quot;math/tex&quot;&gt;B \overset{1}{\to} B&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;To get a feel for the &lt;em&gt;APP&lt;/em&gt; rule, consider this derivation.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/preExample.png&quot; alt=&quot;preExample&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The conclusion combines (using the &lt;script type=&quot;math/tex&quot;&gt;\oplus&lt;/script&gt; operator) disjoint typing contexts
+and coeffects from its function and argument premises. While the scalars in the left premise match those of the conclusion,
+the scalars in the right premise differ. The right premise of &lt;em&gt;Figure 3&lt;/em&gt; places the variable
+&lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; in an empty context, where it denotes an stream capable of accessing 0 prior timesteps.
+In the left premise, &lt;script type=&quot;math/tex&quot;&gt;pre&lt;/script&gt; is a function producing a stream capable of accessing 1 prior timestep of its argument.
+Hence, in the conclusion &lt;script type=&quot;math/tex&quot;&gt;pre~x&lt;/script&gt; denotes a stream capable of accessing &lt;script type=&quot;math/tex&quot;&gt;0 + 1 = 1&lt;/script&gt; prior timestep of the stream denoted by &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;. The essential power of type-and-coeffect
+systems is to reason about such composition of contextual capabilities, and this is handled with &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; operator,
+which in the dataflow coeffect scalar structure &lt;script type=&quot;math/tex&quot;&gt;\mathbf{Q_{df}}&lt;/script&gt;
+is the &lt;script type=&quot;math/tex&quot;&gt;+&lt;/script&gt; operator on natural numbers. In the &lt;em&gt;APP&lt;/em&gt; rule,
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma_2&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;S&lt;/script&gt; may in general contain multiple entries. When a vector coeffect rather than a scalar
+is used for the second argument of &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt;, we apply &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; componentwise:
+for all coeffects &lt;script type=&quot;math/tex&quot;&gt;\langle s_1, s_2, \ldots, s_n \rangle&lt;/script&gt; and all scalars &lt;script type=&quot;math/tex&quot;&gt;t&lt;/script&gt; we have
+&lt;script type=&quot;math/tex&quot;&gt;t \otimes \langle s_1, s_2, \ldots, s_n \rangle =
+  \langle t \oplus s_1, t \oplus s_2, \ldots, t \oplus s_n \rangle&lt;/script&gt;&lt;/p&gt;
+
+&lt;p&gt;Since the &lt;em&gt;APP&lt;/em&gt; rule combines mutually disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by &lt;em&gt;contracting&lt;/em&gt; two variables in context and combining their associated contextual capabilities. This requires an application of the &lt;em&gt;CTXT&lt;/em&gt; typing rule, which allows us to prove a typing judgment with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt; using a typing derivation with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R&lt;/script&gt;, obtained from a structural manipulation of &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt;. The right premise allows us to apply a structural manipulation rule of the form &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta&lt;/script&gt;; in particular, to contract two variables (and their associated capabilities) we must use the &lt;em&gt;CONTR&lt;/em&gt; rule.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/contractionExample2.png&quot; alt=&quot;contractionExample&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;formalizing-contextual-capabilities&quot;&gt;Formalizing contextual capabilities&lt;/h1&gt;
+
+&lt;p&gt;So far we have been keeping the notion of a contextual capability intuitive.
+We will now briefly summarize the formalization of contextual capabilities.
+Recall that a standard typed lambda calculus can be modeled as a cartesian closed category &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt;,
+where for every type &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;, the denotation &lt;script type=&quot;math/tex&quot;&gt;\sem{\tau}&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt; is an object of &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt;.
+In particular, the interpretation of a function type &lt;script type=&quot;math/tex&quot;&gt;\sem{\sigma \to \tau}&lt;/script&gt; is the
+exponential object &lt;script type=&quot;math/tex&quot;&gt;\sem{\sigma} \Rightarrow \sem{\tau}&lt;/script&gt;. Furthermore, the interpretation
+of a typing judgment is
+an arrow &lt;script type=&quot;math/tex&quot;&gt;\sem{x_1:\tau,\ldots,x_n:\tau_n \vdash e : \sigma} : \sem{\tau_1} \times \ldots \times \sem{\tau_n} \to \sem{\sigma}&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;To model type-and-coeffect judgments categorically, we interpret
+the scalar coeffect structure &lt;script type=&quot;math/tex&quot;&gt;\catq = (Q,\otimes,\oplus,use,ign,\leq)&lt;/script&gt; as a category using
+the standard interpretation of preorders as categories. However, we use the transpose of &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; for
+the preorder.
+That is, the objects of &lt;script type=&quot;math/tex&quot;&gt;\catq&lt;/script&gt;
+are the elements of &lt;script type=&quot;math/tex&quot;&gt;Q&lt;/script&gt;, and for each &lt;script type=&quot;math/tex&quot;&gt;q_1, q_2 \in Q&lt;/script&gt; with &lt;script type=&quot;math/tex&quot;&gt;q_2 \leq q_1&lt;/script&gt;,
+&lt;script type=&quot;math/tex&quot;&gt;\catq&lt;/script&gt; has one arrow with domain &lt;script type=&quot;math/tex&quot;&gt;q_1&lt;/script&gt; and codomain &lt;script type=&quot;math/tex&quot;&gt;q_2&lt;/script&gt;. We consider &lt;script type=&quot;math/tex&quot;&gt;\catq&lt;/script&gt; a strictly monoidal
+category with monoidal product &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; and unit &lt;script type=&quot;math/tex&quot;&gt;use&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;We interpret a structural type-and-coeffect system (instantiated with a scalar coeffect structure &lt;script type=&quot;math/tex&quot;&gt;\catq&lt;/script&gt;)
+with respect to a cartesian closed category &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt; and an &lt;em&gt;indexed comonad&lt;/em&gt; functor &lt;script type=&quot;math/tex&quot;&gt;D&lt;/script&gt;&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D : \catq \to [\mathbf C,\mathbf C]&lt;/script&gt;
+
+&lt;p&gt;Writing &lt;script type=&quot;math/tex&quot;&gt;D_{q}&lt;/script&gt; for the application &lt;script type=&quot;math/tex&quot;&gt;D&lt;/script&gt; to the scalar &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt;, D is associated with a &lt;em&gt;counit&lt;/em&gt;
+natural transformation&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\epsilon_{use} : D_{use} \to 1_{\mathbf C}&lt;/script&gt;
+
+&lt;p&gt;and a family of &lt;em&gt;comultiplication&lt;/em&gt; natural transformations&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\delta_{q,r} : D_{q \otimes r} \to D_{q} \circ D_{r}&lt;/script&gt;
+
+&lt;p&gt;making the following diagrams commute for all objects &lt;script type=&quot;math/tex&quot;&gt;C&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/commutativeDiagrams2.png&quot; alt=&quot;commDiagramsC&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In true categorical fashion, a contextual capability is defined not by its structure, but how it behaves.
+In particular, the contextual capability denoted by &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt; is the endofunctor &lt;script type=&quot;math/tex&quot;&gt;D_{q} : \mathbf C \to \mathbf C&lt;/script&gt;.
+&lt;script type=&quot;math/tex&quot;&gt;D_{q}&lt;/script&gt; operates on an object &lt;script type=&quot;math/tex&quot;&gt;C&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt; by ``placing it into a context with capability &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt;’’.
+It operates on an arrow &lt;script type=&quot;math/tex&quot;&gt;f : A \to B&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt;,
+which for our purposes represents a transformation,
+by converting it into a transformation &lt;script type=&quot;math/tex&quot;&gt;D_{q} f : D_q A \to D_q B&lt;/script&gt; that preserves
+contextual capability &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\epsilon_{use}&lt;/script&gt; is the transformation of pulling an object out of a context,
+while for scalars &lt;script type=&quot;math/tex&quot;&gt;q,r \in \catq&lt;/script&gt;, &lt;script type=&quot;math/tex&quot;&gt;\delta_{q,r}&lt;/script&gt; is the transformation of decomposing a single context into a
+context-in-a-context. Whenever &lt;script type=&quot;math/tex&quot;&gt;p, q \in \catq&lt;/script&gt; such that &lt;script type=&quot;math/tex&quot;&gt;p \leq q&lt;/script&gt;, the functorality of &lt;script type=&quot;math/tex&quot;&gt;D&lt;/script&gt;
+gives a natural transformation &lt;script type=&quot;math/tex&quot;&gt;sub_{p,q} : D_{q} \to D_{p}&lt;/script&gt; which helps justify the &lt;em&gt;SUB&lt;/em&gt; rule
+for context manipulation.&lt;/p&gt;
+
+&lt;p&gt;The bottom left corner of the top diagram therefore states that a transformation which&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Decomposes a context of capability &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt; into an empty context containing a context of capability &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt;.&lt;/li&gt;
+  &lt;li&gt;Then takes the inner context of capability &lt;script type=&quot;math/tex&quot;&gt;q&lt;/script&gt; out of the empty context.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;is equivalent to the identity transformation, which does nothing. The bottom diagram shows that context decomposition
+is in a sense associative.&lt;/p&gt;
+
+&lt;p&gt;With the indexed comonad &lt;script type=&quot;math/tex&quot;&gt;D&lt;/script&gt;, a function type &lt;script type=&quot;math/tex&quot;&gt;\sigma \overset{s}{\to} \tau&lt;/script&gt; is interpreted as the exponential
+&lt;script type=&quot;math/tex&quot;&gt;D_{s} \sem{\sigma} \Rightarrow \sem{\tau}&lt;/script&gt;. A single-variable type-and-coeffect judgment
+&lt;script type=&quot;math/tex&quot;&gt;x:\sigma @ \langle s \rangle \vdash e : \tau&lt;/script&gt; is interpreted as an arrow of type
+&lt;script type=&quot;math/tex&quot;&gt;D_{s}\sem{\sigma} \to \sem{\tau}&lt;/script&gt;. Of course, we also need a way to interpret type-and-coeffect judgments
+with multiple variables in context, as well as interpretations of structural rules such as contraction
+and weakening. For this we need &lt;em&gt;structural indexed comonads&lt;/em&gt;, a topic outside the scope of this post.
+For a full account of categorical semantics for coeffects, see &lt;a href=&quot;http://tomasp.net/academic/papers/structural/coeffects-icfp.pdf&quot;&gt;Petricek&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;We can interpret dataflow coeffects by letting &lt;script type=&quot;math/tex&quot;&gt;\mathbf C = \mathbf{Sets}&lt;/script&gt;, the category of sets and functions,
+and using the indexed comonad &lt;script type=&quot;math/tex&quot;&gt;D : \mathbf{Q_{df}} \to [\mathbf{Sets}, \mathbf{Sets}]&lt;/script&gt; where for
+all &lt;script type=&quot;math/tex&quot;&gt;n, m \in \mathbb{N}&lt;/script&gt;, sets &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;B&lt;/script&gt;, and functions &lt;script type=&quot;math/tex&quot;&gt;f : A \to B&lt;/script&gt;, we have&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{n}(A) = A \times A^n&lt;/script&gt;
+
+&lt;p&gt;and&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{n}(f : A \to B) = \lambda (a, (a_1, \ldots, a_n)).~(f~a, (f~a_1, \ldots, f~a_n))
+   : A \times A^n \to B \times B^n&lt;/script&gt;
+
+&lt;p&gt;We place the type &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; into a context of capability &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt; by pairing it up with
+its n-ary self-product, where the nth component of the product represents
+the value of the stream at the nth previous consecutive timestep.
+To transform a function &lt;script type=&quot;math/tex&quot;&gt;f&lt;/script&gt; into an equivalent function which
+preserves the contextual capability &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt;, we must apply the function not
+only at the current timestep, but also at the &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt; cached consecutive
+previous timesteps.&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;(\epsilon_0)_A = \lambda (a, ()). a&lt;/script&gt;
+
+&lt;p&gt;We pull a value of type &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; out of a context with 0 cached previous
+consecutive timesteps simply by getting its value at the current timestep.&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;(\delta_{n,m})_A  = \lambda (a, (a_1, \ldots, a_{m + n})). \\
+((a, (a_1, \ldots, a_m)), ((a_1, (a_2, \ldots, a_{m+1}), \ldots,
+(a_n, (a_{n + 1}, \ldots, a_{n + m}))&lt;/script&gt;
+
+&lt;p&gt;Having cached &lt;script type=&quot;math/tex&quot;&gt;n+m&lt;/script&gt; previous consecutive timesteps is equivalent to having
+cached the length-&lt;script type=&quot;math/tex&quot;&gt;m&lt;/script&gt; suffixes at the previous &lt;script type=&quot;math/tex&quot;&gt;n&lt;/script&gt; consecutive timesteps.&lt;/p&gt;
+
+&lt;p&gt;Finally, we can discard cached values. For &lt;script type=&quot;math/tex&quot;&gt;n \leq m&lt;/script&gt; we have&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;(sub_{n, m})_A = \lambda (a_1, \ldots, a_m). (a_1, \ldots, a_n)&lt;/script&gt;
+
+&lt;h1 id=&quot;monotonicity-as-coeffect&quot;&gt;Monotonicity as coeffect&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/monOperators.png&quot; alt=&quot;monOperators&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/monHasse.png&quot; alt=&quot;monHasse&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Instantiating the coeffect calculus of &lt;em&gt;Figure 2&lt;/em&gt; with the following coeffect scalar structure results in a system which allows us to prove functions monotone.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The scalar set is &lt;script type=&quot;math/tex&quot;&gt;Q = \{ ?, +, -, \sim \}&lt;/script&gt;, where &lt;script type=&quot;math/tex&quot;&gt;?&lt;/script&gt; denotes the capability to be transformed arbitrarily,
+&lt;script type=&quot;math/tex&quot;&gt;+&lt;/script&gt; to be transformed monotonically, &lt;script type=&quot;math/tex&quot;&gt;-&lt;/script&gt; to be transformed antitonically,
+and &lt;script type=&quot;math/tex&quot;&gt;\sim&lt;/script&gt; to be transformed in an order-robust manner
+(i.e. &lt;script type=&quot;math/tex&quot;&gt;\forall x,y. f(x) \leq f(y)&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;f(y) \leq f(x)&lt;/script&gt;).&lt;/li&gt;
+  &lt;li&gt;The composition and contraction operators
+ &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;\oplus&lt;/script&gt; are defined in &lt;em&gt;Figure 6&lt;/em&gt;.&lt;/li&gt;
+  &lt;li&gt;The &lt;script type=&quot;math/tex&quot;&gt;use&lt;/script&gt; scalar is &lt;script type=&quot;math/tex&quot;&gt;+&lt;/script&gt;.&lt;/li&gt;
+  &lt;li&gt;The &lt;script type=&quot;math/tex&quot;&gt;ign&lt;/script&gt; scalar is &lt;script type=&quot;math/tex&quot;&gt;\sim&lt;/script&gt;.&lt;/li&gt;
+  &lt;li&gt;The preorder is the partial order &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; depicted in &lt;em&gt;Figure 7&lt;/em&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For the underlying cartesian closed category &lt;script type=&quot;math/tex&quot;&gt;\mathbf C&lt;/script&gt; of our semantics, we choose &lt;script type=&quot;math/tex&quot;&gt;\mathbf{Preorder}&lt;/script&gt;, the category
+of preordered sets and monotone functions.
+For preordered sets &lt;script type=&quot;math/tex&quot;&gt;(A, \leq_A)&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;(B, \leq_B)&lt;/script&gt;, and monotone
+function &lt;script type=&quot;math/tex&quot;&gt;f : (A, \leq_A) \to (B, \leq_B)&lt;/script&gt;, our indexed comonad &lt;script type=&quot;math/tex&quot;&gt;D&lt;/script&gt; is defined as&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{?}(A, \leq_A) = (A, =_A)&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{+}(A, \leq_A) = (A, \leq_A)&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{-}(A, \leq_A) = (A, \geq_A)&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{\sim}(A, \leq_A) = (A, \ast_A )&lt;/script&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{q}(f) = f&lt;/script&gt;
+
+&lt;p&gt;where&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;(A, \geq_A)&lt;/script&gt; is the &lt;em&gt;dual&lt;/em&gt; of &lt;script type=&quot;math/tex&quot;&gt;(A, \leq_A)&lt;/script&gt;, that is, the preordered set defined such that for all
+&lt;script type=&quot;math/tex&quot;&gt;a_1,a_2 \in A&lt;/script&gt; we have &lt;script type=&quot;math/tex&quot;&gt;a_1 \geq_A a_2&lt;/script&gt; if and only if &lt;script type=&quot;math/tex&quot;&gt;a_2 \leq_A a_1&lt;/script&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;(A, =_A)&lt;/script&gt; is the discrete ordering on &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt;, containing only reflexive edges.&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;(A, \ast_A)&lt;/script&gt; is the complete preorder on &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt;, relating every pair of elements.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For all preorders &lt;script type=&quot;math/tex&quot;&gt;S&lt;/script&gt; and all &lt;script type=&quot;math/tex&quot;&gt;p,q \in Q&lt;/script&gt; we have&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;(\epsilon_{+})_{S} = (\lambda x.~x)\text{ and }(\delta_{p,q})_{S} = (\lambda x.~x)&lt;/script&gt;
+
+&lt;p&gt;Furthermore, if &lt;script type=&quot;math/tex&quot;&gt;p \leq q&lt;/script&gt; then we have&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;(sub_{p,q})_S = (\lambda x.~x)&lt;/script&gt;
+
+&lt;p&gt;These definitions are a bit anticlimactic, but they make sense when one considers
+that &lt;script type=&quot;math/tex&quot;&gt;D_{+}(S) = S&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;D_{p \otimes q}(S) = (D_{p} \circ D_{q})(S)&lt;/script&gt;&lt;/p&gt;
+
+&lt;p&gt;The natural transformations of monotonicity coeffects have a much different flavor
+than those of the dataflow coeffects, in that they have no significant “runtime
+content”. While it’s tempting to think of a contextual capability as
+some extra information that is paired with each input value supplied to a
+function, monotonicity coeffects show that this really isn’t the case.&lt;/p&gt;
+
+&lt;h1 id=&quot;example-derivation&quot;&gt;Example derivation&lt;/h1&gt;
+
+&lt;p&gt;I will demonstrate this system using an example from page 2 of &lt;a href=&quot;http://db.cs.berkeley.edu/papers/cidr11-bloom.pdf&quot;&gt;Consistency Analysis in Bloom: a CALM and Collected
+Approach&lt;/a&gt;. Let &lt;script type=&quot;math/tex&quot;&gt;Nat&lt;/script&gt; be the type of natural numbers,
+let &lt;script type=&quot;math/tex&quot;&gt;Set[Nat]&lt;/script&gt; be the type of finite sets of natural numbers, ordered by inclusion, and let &lt;script type=&quot;math/tex&quot;&gt;Bool&lt;/script&gt; be the two element
+preordered set containing the boolean values true and false, ordered such that &lt;script type=&quot;math/tex&quot;&gt;false \leq true&lt;/script&gt;.
+The example requires us to prove the expression &lt;script type=&quot;math/tex&quot;&gt;% &lt;![CDATA[
+Min(X) &lt; 10 %]]&gt;&lt;/script&gt; monotone, where&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;X&lt;/script&gt; is a variable of type &lt;script type=&quot;math/tex&quot;&gt;Set[Nat]&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;Min&lt;/script&gt; is a function of type &lt;script type=&quot;math/tex&quot;&gt;Set[Nat] \ato Nat&lt;/script&gt;, which produces the minimum element contained in the argument&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;% &lt;![CDATA[
+&lt; %]]&gt;&lt;/script&gt; is the standard “less than” operator on naturals, of type &lt;script type=&quot;math/tex&quot;&gt;Nat \ato (Nat \pto Bool)&lt;/script&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Renaming “&amp;lt;” to “lt”, &lt;script type=&quot;math/tex&quot;&gt;% &lt;![CDATA[
+Min(X) &lt; 10 %]]&gt;&lt;/script&gt; rewritten to prefix notation is &lt;script type=&quot;math/tex&quot;&gt;(Lt~(Min~X))~10&lt;/script&gt;.
+The following abbreviations allow our proofs to fit on the page.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;ty(Min)&lt;/script&gt; abbreviates &lt;script type=&quot;math/tex&quot;&gt;Set[Nat] \ato Nat&lt;/script&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;ty(Lt)&lt;/script&gt; abbreviates &lt;script type=&quot;math/tex&quot;&gt;Nat \ato (Nat \pto Bool)&lt;/script&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Using Petricek’s coeffect system, proof of the judgment
+&lt;script type=&quot;math/tex&quot;&gt;Lt : ty(Lt), Min : ty(Min), X : Set[Nat] @ \langle ?, ?, + \rangle \vdash (Lt~(Min~X))~10&lt;/script&gt; follows.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/derivation1.png&quot; alt=&quot;derivation1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;where &lt;script type=&quot;math/tex&quot;&gt;\Pi_1&lt;/script&gt; is&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/derivation2.png&quot; alt=&quot;derivation2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;and &lt;script type=&quot;math/tex&quot;&gt;\Pi_2&lt;/script&gt; is&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/derivations3-2.png&quot; alt=&quot;derivation3&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;and &lt;script type=&quot;math/tex&quot;&gt;\Pi_3&lt;/script&gt; is&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/derivations4-2.png&quot; alt=&quot;derivation4&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;and &lt;script type=&quot;math/tex&quot;&gt;\Pi_4&lt;/script&gt; is&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/derivations5-2.png&quot; alt=&quot;derivation5&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;Coeffects are a simple yet extremely general framework enabling type systems which can prove,
+among many other things, that a program function is monotone.
+I think that recently proposed programming frameworks such as Bloom, LVars, and Lasp
+can benefit from this power. In addition, I believe all of these frameworks
+would also benefit from the ability to prove that a program functions is a lattice
+homomorphism. For many lattice datatypes, a monotonicity-aware type system such
+as the one presented here can be used for this purpose, as a monotone function
+from a certain (common) kind of lattice’s join-irreducible elements can be converted into
+a homomorphism from the lattice itself.&lt;/p&gt;
+
+&lt;p&gt;While this post focused primarily on semantics, there are pragmatic issues
+which need addressing.&lt;/p&gt;
+
+&lt;p&gt;First, the coeffect calculus presented here
+in non-algorithmic. However, it’s not hard to imagine an algorithmic variant,
+developed under the same strategy as algorithmic linear type systems:
+a type-and-coeffect judgment would include an additional vector of
+&lt;em&gt;output&lt;/em&gt; coeffects, denoting that portion of the input capability which
+is not actually utilized by the term. It may be necessary to place
+some additional restrictions on the scalar coeffect structure, but I expect
+that the scalar coeffect structure for monotonicity coeffects would satisfy these
+restrictions.&lt;/p&gt;
+
+&lt;p&gt;Second, even with an algorithmic system, it isn’t currently clear to me
+that this approach is going to be mentally tractable for
+programmers, as there’s a fair amount of coeffect shuffling that happens
+to the left of the turnstile. In my opinion, a type system is most useful
+as a &lt;em&gt;design tool&lt;/em&gt;, a mental framework that a programmer uses to compose
+a complex program from simple parts. I’m ultimately looking for such
+a mental framework, rather than a mere verification tool, for proving
+program functions monotone.&lt;/p&gt;
+
+&lt;p&gt;It’s exciting to imagine a statically typed variant of BloomL.
+Perhaps coeffects can serve as the basis for static BloomL’s type system.&lt;/p&gt;
+
+&lt;h1 id=&quot;links&quot;&gt;Links&lt;/h1&gt;
+
+&lt;p&gt;If you found this post interesting, these links may interest you as well.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.rntz.net/datafun/&quot;&gt;Datafun&lt;/a&gt;, a functional calculus inspired by Datalog,
+currently has the best monotonicity type system that I know of, as well
+as a working prototype. Interestingly, it features the ability
+to take the fixpoint of a monotone function under conditions which
+guarantee its existence.&lt;/p&gt;
+
+&lt;p&gt;Tomas Petricek created a really cool &lt;a href=&quot;http://tomasp.net/coeffects/&quot;&gt;interactive web tutorial&lt;/a&gt;
+for coeffects.&lt;/p&gt;
+
+&lt;p&gt;The semantics of Petricek et al.’s coeffect calculus is based on category
+theory. I’ve found &lt;a href=&quot;https://www.amazon.com/Category-Theory-Oxford-Logic-Guides/dp/0199237182&quot;&gt;Awodey’s book&lt;/a&gt; one of the best sources on the subject.
+Presentations of categorical type system semantics can be daunting,
+but &lt;a href=&quot;https://arxiv.org/abs/1102.1313&quot;&gt;Abramsky and Tzevelekos’ lecture notes&lt;/a&gt; are a highly accessible
+exception to the rule.&lt;/p&gt;</content><author><name></name></author><summary type="html"></summary></entry><entry><title type="html">Monotonicity Through Types</title><link href="/2017/11/09/monotonicity-through-types.html" rel="alternate" type="text/html" title="Monotonicity Through Types" /><published>2017-11-09T14:05:41-05:00</published><updated>2017-11-09T14:05:41-05:00</updated><id>/2017/11/09/monotonicity-through-types</id><content type="html" xml:base="/2017/11/09/monotonicity-through-types.html">&lt;p&gt;A partially ordered set is a set &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; endowed with a binary relation &lt;script type=&quot;math/tex&quot;&gt;\leq&lt;/script&gt; on &lt;script type=&quot;math/tex&quot;&gt;P&lt;/script&gt; such that for all &lt;script type=&quot;math/tex&quot;&gt;p, q, r \in P&lt;/script&gt; we have:&lt;/p&gt;
 
 &lt;p&gt;1.) &lt;script type=&quot;math/tex&quot;&gt;p \leq p&lt;/script&gt; (reflexivity)&lt;/p&gt;
 
@@ -13,7 +397,7 @@
 &lt;p&gt;Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the &lt;em&gt;sfun abstraction&lt;/em&gt;, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.&lt;/p&gt;
 
 &lt;p&gt;Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone &lt;em&gt;separately&lt;/em&gt; in each of its
-arguments; that is, for &lt;script type=&quot;math/tex&quot;&gt;i \in 1..n&lt;/script&gt;, if &lt;script type=&quot;math/tex&quot;&gt;p_i \leq p_i'&lt;/script&gt; then &lt;script type=&quot;math/tex&quot;&gt;f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)&lt;/script&gt;, etc.&lt;/p&gt;
+arguments; that is, for &lt;script type=&quot;math/tex&quot;&gt;i \in 1..n&lt;/script&gt;, if &lt;script type=&quot;math/tex&quot;&gt;p_i \leq p_i'&lt;/script&gt; then &lt;script type=&quot;math/tex&quot;&gt;f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)&lt;/script&gt;.&lt;/p&gt;
 
 &lt;p&gt;The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:&lt;/p&gt;
 
@@ -35,7 +419,7 @@ typing relations we are familiar with. A global typing judgment has the followin
 
 &lt;p&gt;Here the &lt;em&gt;global type environment&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt; contains all of the variables bound outside of the sfun, the &lt;em&gt;ambient type environment&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\Omega&lt;/script&gt; contains the list of the sfun’s formal arguments, and the
 &lt;em&gt;lifted type environment&lt;/em&gt; &lt;script type=&quot;math/tex&quot;&gt;\Phi&lt;/script&gt; contains those variables in &lt;script type=&quot;math/tex&quot;&gt;t&lt;/script&gt;’s context which are bound inside the sfun. Before getting into the significance of lifted typing judgments, let’s look
-at a specific instance of the global typing rule for sfun abstractions, which uses a single lifted premise.&lt;/p&gt;
+at a specific application of the global typing rule for sfun abstractions, which uses a single lifted premise.&lt;/p&gt;
 
 &lt;script type=&quot;math/tex; mode=display&quot;&gt;\frac{\Gamma;x:Int;x:Int[=~x] \vdash plus(x,x) : Int[\uparrow~x]}
        {\Gamma \vdash \tilde{\lambda} x : Int. plus(x,x) : ( x : Int ) \Rightarrow Int[\uparrow~x]}&lt;/script&gt;

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Monotonicity Through Coeffects</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="/2018/02/16/monotonicity-through-coeffects.html">
+  <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Kevin Clancy&#39;s Blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Monotonicity Through Coeffects</h1>
+    <p class="post-meta">
+      <time datetime="2018-02-16T14:50:04-05:00" itemprop="datePublished">
+        
+        Feb 16, 2018
+      </time>
+      </p>
+  </header>
+
+
+  <div class="post-content" itemprop="articleBody">
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+			-->
+			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+		<p><script type="math/tex">\newcommand{\sem}[1]{ [\![ #1 ]\!]}</script>
+<script type="math/tex">\newcommand{\catq}[0]{ \mathbf{Q} }</script>
+<script type="math/tex">\newcommand{\qmon}[0]{ \mathbf{Q_{mon}} }</script>
+<script type="math/tex">\newcommand{\ato}[0]{ \overset{-}{\to} }</script>
+<script type="math/tex">\newcommand{\pto}[0]{ \overset{+}{\to} }</script></p>
+
+<h1 id="more-monotonicity">More monotonicity</h1>
+
+<p>Thanks to a tip from <a href="http://bentbib.org">Bob Atkey</a>, I’ve recently been looking
+at coeffects as a means to prove program functions monotone.
+This post
+contains an introduction to coeffects, along with an explanation
+of how they can be used to reason about monotonicity. My goal
+is to cover the key ideas of coeffects without getting into a full
+treatment of their semantics.
+The particular coeffect system that I will examine is taken from
+<a href="http://tomasp.net/academic/papers/structural/coeffects-icfp.pdf">Coeffects: A calculus of context-dependent computation</a>
+by Tomas Petricek, Dominic Orchard, and Alan Mycroft.</p>
+
+<p>The content of this post depends on some basic category theory.
+In particular, it involves functors, natural transformations,
+and cartesian closed categories.</p>
+
+<h1 id="coeffects">Coeffects</h1>
+
+<p>In a structural type-and-coeffect system, a function  <script type="math/tex">f</script> has a type of the form <script type="math/tex">\tau \overset{q}{\to} \sigma</script>, where <script type="math/tex">\tau</script> and <script type="math/tex">\sigma</script> are <script type="math/tex">f</script>’s domain and codomain types, and <script type="math/tex">q</script> is a <em>coeffect scalar</em>. The coeffect scalar denotes some ``contextual capability’’ which augments the domain <script type="math/tex">\tau</script>.
+We will formalize the notion of a contextual capability in the next section, and in the meantime it will stay intuitive.</p>
+
+<p><img src="/assets/dataflowDeriv.png" alt="Fif" /></p>
+
+<p>Petricek et al. provide an example targeted at dataflow languages such as Lustre. In this example, time is modeled as a sequence of discrete steps, and variables denote value streams which contain one element per time step. A variable occurrence denotes its stream’s value at the
+current time step, and values at previous timesteps can be accessed by wrapping occurrences of the variable in a syntactic
+form called <em>pre</em>. As depicted above, a coeffect scalar in this system is a natural number denoting a lower bound on the number of cached values at consecutive previous timesteps for a particular stream. Note that certain contextual capabilities are stronger than others. For example, in the dataflow system, the coeffect scalar <script type="math/tex">1</script> allows us to read a stream’s value at 1 timestep prior, while the coeffect scalar <script type="math/tex">2</script> is <em>stronger than</em> <script type="math/tex">1</script> because it allows us to read a stream’s value both 1 <em>and</em> 2 timesteps prior.</p>
+
+<p><img src="/assets/coeffects.png" alt="FigTwo" /></p>
+
+<p>We can assume that a function constant of type <script type="math/tex">\tau \overset{s}{\to} \sigma</script> ``utilizes’’ at most
+the contextual capabilities indicated by its scalar <script type="math/tex">s</script>. But an upper bound on the contextual requirements
+of a lambda abstraction must be proven, using the type-and-coeffect system of <em>Figure 2</em>.
+A type-and-coeffect judgment has the form
+<script type="math/tex">\Gamma @ R \vdash e : \tau</script>. Here <script type="math/tex">\Gamma</script>, <script type="math/tex">e</script>, and <script type="math/tex">\tau</script> are the familiar
+typing context, expression, and type. <script type="math/tex">R</script> is a vector of coeffect scalars, associating one scalar to each entry in
+<script type="math/tex">\Gamma</script>; we refer to such a vector simply as a <em>coeffect</em>.</p>
+
+<p>The <em>ABS</em> rule says that under context <script type="math/tex">\Gamma</script> and coeffect <script type="math/tex">\langle \ldots \rangle</script>,
+an abstraction <script type="math/tex">\lambda x. e</script> has type <script type="math/tex">\sigma \overset{s}{\to} \tau</script> whenever we can type-check its body under the
+the extended context <script type="math/tex">\Gamma, x:\tau</script> and extended coeffect <script type="math/tex">\langle \ldots, s \rangle</script>.
+The key to ensuring that our abstraction does not ``overuse’’ the capability denoted by <script type="math/tex">s</script> is
+to restrict, within the body <script type="math/tex">e</script>, both the positions in which the variable <script type="math/tex">x</script> may occur <em>and</em> the positions in which it may be discarded; the weaker the capability
+a scalar denotes, the more restrictive it is syntactically. The particular set of restrictions a scalar makes is
+dependent on a parameter to the structural type-and-coeffect system called the <em>coeffect scalar structure</em>.</p>
+
+<p>A <em>coeffect scalar structure</em> <script type="math/tex">\mathbf Q = (Q, \otimes, \oplus, use, ign, \leq)</script> consists of</p>
+
+<ul>
+  <li>An underlying set <script type="math/tex">Q</script> of scalars</li>
+  <li>Binary <em>composition</em> and <em>contraction</em> operators <script type="math/tex">\otimes</script> and <script type="math/tex">\oplus</script> on <script type="math/tex">Q</script></li>
+  <li>A coeffect scalar <script type="math/tex">use</script>, the most restrctive scalar that
+permits a variable to appear in an hole context,
+i.e. the most restrictive scalar <script type="math/tex">s</script> such that <script type="math/tex">x:\tau @ \langle s \rangle \vdash x : \tau</script> is derivable</li>
+  <li>
+    <p>A coeffect scalar <script type="math/tex">ign</script>, the most restrictive scalar which constrains a variable in a way that permits
+it to be discarded, i.e. whenever <script type="math/tex">\Gamma,x:\tau @ \langle \ldots \rangle \vdash e : \sigma</script> is derivable so is
+<script type="math/tex">\Gamma @ \langle \ldots, ign \rangle \vdash e : \sigma</script></p>
+  </li>
+  <li>A preorder <script type="math/tex">\leq</script> on <script type="math/tex">Q</script>, where <script type="math/tex">q_1 \leq q_2</script> means that <script type="math/tex">q_1</script> is more restrictive than <script type="math/tex">q_2</script></li>
+</ul>
+
+<p>We require <script type="math/tex">(Q, \otimes, use)</script> and <script type="math/tex">(Q, \oplus, ign)</script> to be monoids. Further,
+  for all <script type="math/tex">p,q,r \in Q</script> we require these <em>distributivity</em> equalities</p>
+
+<script type="math/tex; mode=display">p~\otimes~(q~\oplus~r) = (p~\otimes~q)~\oplus~(p~\otimes~r)</script>
+
+<script type="math/tex; mode=display">(q~\otimes~r)~\otimes~p =(q~\otimes~p)~\oplus~(r~\otimes~p)</script>
+
+<p>Finally, both <script type="math/tex">\oplus</script> and <script type="math/tex">\otimes</script> should be monotone separately in each argument,
+  that is <script type="math/tex">q \leq r</script> implies</p>
+
+<script type="math/tex; mode=display">p \oplus q \leq p \oplus r</script>
+
+<script type="math/tex; mode=display">q \oplus p \leq r \oplus p</script>
+
+<script type="math/tex; mode=display">p \otimes q \leq p \otimes r</script>
+
+<script type="math/tex; mode=display">q \otimes p \leq r \otimes p</script>
+
+<p>The coeffect scalar structure for the dataflow coeffect system is
+  <script type="math/tex">\mathbf{Q_{df}} = (\mathbb N, +, max, 0, 0, \leq)</script>, where <script type="math/tex">\mathbb N</script> is the set of natural numbers,
+  <script type="math/tex">+</script> is the addition operator on natural numbers, <script type="math/tex">max</script> is the operator which produces the greater
+  of two natural number arguments, and <script type="math/tex">\leq</script> is the standard comparison operator for
+  natural numbers. It’s instructive to consider the system of <em>Figure 2</em> instantiated
+  with this structure, in which the <em>VAR</em> axiom <script type="math/tex">x : \tau @ \langle 0 \rangle \vdash x : \tau</script> says
+  that a variable occurrence does not require the capability to read that variable’s stream at prior time steps. Assuming <script type="math/tex">B</script> is the sole base type, the <script type="math/tex">pre</script> construct, which allows us to access a stream at the previous time step,
+  is then implemented as a built-in
+  function constant of type <script type="math/tex">B \overset{1}{\to} B</script>.</p>
+
+<p>To get a feel for the <em>APP</em> rule, consider this derivation.</p>
+
+<p><img src="/assets/preExample.png" alt="preExample" /></p>
+
+<p>The conclusion combines (using the <script type="math/tex">\oplus</script> operator) disjoint typing contexts
+and coeffects from its function and argument premises. While the scalars in the left premise match those of the conclusion,
+the scalars in the right premise differ. The right premise of <em>Figure 3</em> places the variable
+<script type="math/tex">x</script> in an empty context, where it denotes an stream capable of accessing 0 prior timesteps.
+In the left premise, <script type="math/tex">pre</script> is a function producing a stream capable of accessing 1 prior timestep of its argument.
+Hence, in the conclusion <script type="math/tex">pre~x</script> denotes a stream capable of accessing <script type="math/tex">0 + 1 = 1</script> prior timestep of the stream denoted by <script type="math/tex">x</script>. The essential power of type-and-coeffect
+systems is to reason about such composition of contextual capabilities, and this is handled with <script type="math/tex">\otimes</script> operator,
+which in the dataflow coeffect scalar structure <script type="math/tex">\mathbf{Q_{df}}</script>
+is the <script type="math/tex">+</script> operator on natural numbers. In the <em>APP</em> rule,
+<script type="math/tex">\Gamma_2</script> and <script type="math/tex">S</script> may in general contain multiple entries. When a vector coeffect rather than a scalar
+is used for the second argument of <script type="math/tex">\otimes</script>, we apply <script type="math/tex">\otimes</script> componentwise:
+for all coeffects <script type="math/tex">\langle s_1, s_2, \ldots, s_n \rangle</script> and all scalars <script type="math/tex">t</script> we have
+<script type="math/tex">t \otimes \langle s_1, s_2, \ldots, s_n \rangle =
+  \langle t \oplus s_1, t \oplus s_2, \ldots, t \oplus s_n \rangle</script></p>
+
+<p>Since the <em>APP</em> rule combines mutually disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by <em>contracting</em> two variables in context and combining their associated contextual capabilities. This requires an application of the <em>CTXT</em> typing rule, which allows us to prove a typing judgment with context-and-coeffect <script type="math/tex">\Gamma'@R'</script> using a typing derivation with context-and-coeffect <script type="math/tex">\Gamma @ R</script>, obtained from a structural manipulation of <script type="math/tex">\Gamma'@R'</script>. The right premise allows us to apply a structural manipulation rule of the form <script type="math/tex">\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta</script>; in particular, to contract two variables (and their associated capabilities) we must use the <em>CONTR</em> rule.</p>
+
+<p><img src="/assets/contractionExample2.png" alt="contractionExample" /></p>
+
+<h1 id="formalizing-contextual-capabilities">Formalizing contextual capabilities</h1>
+
+<p>So far we have been keeping the notion of a contextual capability intuitive.
+We will now briefly summarize the formalization of contextual capabilities.
+Recall that a standard typed lambda calculus can be modeled as a cartesian closed category <script type="math/tex">\mathbf C</script>,
+where for every type <script type="math/tex">\tau</script>, the denotation <script type="math/tex">\sem{\tau}</script> of <script type="math/tex">\tau</script> is an object of <script type="math/tex">\mathbf C</script>.
+In particular, the interpretation of a function type <script type="math/tex">\sem{\sigma \to \tau}</script> is the
+exponential object <script type="math/tex">\sem{\sigma} \Rightarrow \sem{\tau}</script>. Furthermore, the interpretation
+of a typing judgment is
+an arrow <script type="math/tex">\sem{x_1:\tau,\ldots,x_n:\tau_n \vdash e : \sigma} : \sem{\tau_1} \times \ldots \times \sem{\tau_n} \to \sem{\sigma}</script>.</p>
+
+<p>To model type-and-coeffect judgments categorically, we interpret
+the scalar coeffect structure <script type="math/tex">\catq = (Q,\otimes,\oplus,use,ign,\leq)</script> as a category using
+the standard interpretation of preorders as categories. However, we use the transpose of <script type="math/tex">\leq</script> for
+the preorder.
+That is, the objects of <script type="math/tex">\catq</script>
+are the elements of <script type="math/tex">Q</script>, and for each <script type="math/tex">q_1, q_2 \in Q</script> with <script type="math/tex">q_2 \leq q_1</script>,
+<script type="math/tex">\catq</script> has one arrow with domain <script type="math/tex">q_1</script> and codomain <script type="math/tex">q_2</script>. We consider <script type="math/tex">\catq</script> a strictly monoidal
+category with monoidal product <script type="math/tex">\otimes</script> and unit <script type="math/tex">use</script>.</p>
+
+<p>We interpret a structural type-and-coeffect system (instantiated with a scalar coeffect structure <script type="math/tex">\catq</script>)
+with respect to a cartesian closed category <script type="math/tex">\mathbf C</script> and an <em>indexed comonad</em> functor <script type="math/tex">D</script></p>
+
+<script type="math/tex; mode=display">D : \catq \to [\mathbf C,\mathbf C]</script>
+
+<p>Writing <script type="math/tex">D_{q}</script> for the application <script type="math/tex">D</script> to the scalar <script type="math/tex">q</script>, D is associated with a <em>counit</em>
+natural transformation</p>
+
+<script type="math/tex; mode=display">\epsilon_{use} : D_{use} \to 1_{\mathbf C}</script>
+
+<p>and a family of <em>comultiplication</em> natural transformations</p>
+
+<script type="math/tex; mode=display">\delta_{q,r} : D_{q \otimes r} \to D_{q} \circ D_{r}</script>
+
+<p>making the following diagrams commute for all objects <script type="math/tex">C</script> of <script type="math/tex">\mathbf C</script></p>
+
+<p><img src="/assets/commutativeDiagrams2.png" alt="commDiagramsC" /></p>
+
+<p>In true categorical fashion, a contextual capability is defined not by its structure, but how it behaves.
+In particular, the contextual capability denoted by <script type="math/tex">q</script> is the endofunctor <script type="math/tex">D_{q} : \mathbf C \to \mathbf C</script>.
+<script type="math/tex">D_{q}</script> operates on an object <script type="math/tex">C</script> of <script type="math/tex">\mathbf C</script> by ``placing it into a context with capability <script type="math/tex">q</script>’’.
+It operates on an arrow <script type="math/tex">f : A \to B</script> of <script type="math/tex">\mathbf C</script>,
+which for our purposes represents a transformation,
+by converting it into a transformation <script type="math/tex">D_{q} f : D_q A \to D_q B</script> that preserves
+contextual capability <script type="math/tex">q</script>.</p>
+
+<p><script type="math/tex">\epsilon_{use}</script> is the transformation of pulling an object out of a context,
+while for scalars <script type="math/tex">q,r \in \catq</script>, <script type="math/tex">\delta_{q,r}</script> is the transformation of decomposing a single context into a
+context-in-a-context. Whenever <script type="math/tex">p, q \in \catq</script> such that <script type="math/tex">p \leq q</script>, the functorality of <script type="math/tex">D</script>
+gives a natural transformation <script type="math/tex">sub_{p,q} : D_{q} \to D_{p}</script> which helps justify the <em>SUB</em> rule
+for context manipulation.</p>
+
+<p>The bottom left corner of the top diagram therefore states that a transformation which</p>
+
+<ol>
+  <li>Decomposes a context of capability <script type="math/tex">q</script> into an empty context containing a context of capability <script type="math/tex">q</script>.</li>
+  <li>Then takes the inner context of capability <script type="math/tex">q</script> out of the empty context.</li>
+</ol>
+
+<p>is equivalent to the identity transformation, which does nothing. The bottom diagram shows that context decomposition
+is in a sense associative.</p>
+
+<p>With the indexed comonad <script type="math/tex">D</script>, a function type <script type="math/tex">\sigma \overset{s}{\to} \tau</script> is interpreted as the exponential
+<script type="math/tex">D_{s} \sem{\sigma} \Rightarrow \sem{\tau}</script>. A single-variable type-and-coeffect judgment
+<script type="math/tex">x:\sigma @ \langle s \rangle \vdash e : \tau</script> is interpreted as an arrow of type
+<script type="math/tex">D_{s}\sem{\sigma} \to \sem{\tau}</script>. Of course, we also need a way to interpret type-and-coeffect judgments
+with multiple variables in context, as well as interpretations of structural rules such as contraction
+and weakening. For this we need <em>structural indexed comonads</em>, a topic outside the scope of this post.
+For a full account of categorical semantics for coeffects, see <a href="http://tomasp.net/academic/papers/structural/coeffects-icfp.pdf">Petricek</a>.</p>
+
+<p>We can interpret dataflow coeffects by letting <script type="math/tex">\mathbf C = \mathbf{Sets}</script>, the category of sets and functions,
+and using the indexed comonad <script type="math/tex">D : \mathbf{Q_{df}} \to [\mathbf{Sets}, \mathbf{Sets}]</script> where for
+all <script type="math/tex">n, m \in \mathbb{N}</script>, sets <script type="math/tex">A</script> and <script type="math/tex">B</script>, and functions <script type="math/tex">f : A \to B</script>, we have</p>
+
+<script type="math/tex; mode=display">D_{n}(A) = A \times A^n</script>
+
+<p>and</p>
+
+<script type="math/tex; mode=display">D_{n}(f : A \to B) = \lambda (a, (a_1, \ldots, a_n)).~(f~a, (f~a_1, \ldots, f~a_n))
+   : A \times A^n \to B \times B^n</script>
+
+<p>We place the type <script type="math/tex">A</script> into a context of capability <script type="math/tex">n</script> by pairing it up with
+its n-ary self-product, where the nth component of the product represents
+the value of the stream at the nth previous consecutive timestep.
+To transform a function <script type="math/tex">f</script> into an equivalent function which
+preserves the contextual capability <script type="math/tex">n</script>, we must apply the function not
+only at the current timestep, but also at the <script type="math/tex">n</script> cached consecutive
+previous timesteps.</p>
+
+<script type="math/tex; mode=display">(\epsilon_0)_A = \lambda (a, ()). a</script>
+
+<p>We pull a value of type <script type="math/tex">A</script> out of a context with 0 cached previous
+consecutive timesteps simply by getting its value at the current timestep.</p>
+
+<script type="math/tex; mode=display">(\delta_{n,m})_A  = \lambda (a, (a_1, \ldots, a_{m + n})). \\
+((a, (a_1, \ldots, a_m)), ((a_1, (a_2, \ldots, a_{m+1}), \ldots,
+(a_n, (a_{n + 1}, \ldots, a_{n + m}))</script>
+
+<p>Having cached <script type="math/tex">n+m</script> previous consecutive timesteps is equivalent to having
+cached the length-<script type="math/tex">m</script> suffixes at the previous <script type="math/tex">n</script> consecutive timesteps.</p>
+
+<p>Finally, we can discard cached values. For <script type="math/tex">n \leq m</script> we have</p>
+
+<script type="math/tex; mode=display">(sub_{n, m})_A = \lambda (a_1, \ldots, a_m). (a_1, \ldots, a_n)</script>
+
+<h1 id="monotonicity-as-coeffect">Monotonicity as coeffect</h1>
+
+<p><img src="/assets/monOperators.png" alt="monOperators" /></p>
+
+<p><img src="/assets/monHasse.png" alt="monHasse" /></p>
+
+<p>Instantiating the coeffect calculus of <em>Figure 2</em> with the following coeffect scalar structure results in a system which allows us to prove functions monotone.</p>
+
+<ul>
+  <li>The scalar set is <script type="math/tex">Q = \{ ?, +, -, \sim \}</script>, where <script type="math/tex">?</script> denotes the capability to be transformed arbitrarily,
+<script type="math/tex">+</script> to be transformed monotonically, <script type="math/tex">-</script> to be transformed antitonically,
+and <script type="math/tex">\sim</script> to be transformed in an order-robust manner
+(i.e. <script type="math/tex">\forall x,y. f(x) \leq f(y)</script> and <script type="math/tex">f(y) \leq f(x)</script>).</li>
+  <li>The composition and contraction operators
+ <script type="math/tex">\otimes</script> and <script type="math/tex">\oplus</script> are defined in <em>Figure 6</em>.</li>
+  <li>The <script type="math/tex">use</script> scalar is <script type="math/tex">+</script>.</li>
+  <li>The <script type="math/tex">ign</script> scalar is <script type="math/tex">\sim</script>.</li>
+  <li>The preorder is the partial order <script type="math/tex">\leq</script> depicted in <em>Figure 7</em>.</li>
+</ul>
+
+<p>For the underlying cartesian closed category <script type="math/tex">\mathbf C</script> of our semantics, we choose <script type="math/tex">\mathbf{Preorder}</script>, the category
+of preordered sets and monotone functions.
+For preordered sets <script type="math/tex">(A, \leq_A)</script> and <script type="math/tex">(B, \leq_B)</script>, and monotone
+function <script type="math/tex">f : (A, \leq_A) \to (B, \leq_B)</script>, our indexed comonad <script type="math/tex">D</script> is defined as</p>
+
+<script type="math/tex; mode=display">D_{?}(A, \leq_A) = (A, =_A)</script>
+
+<script type="math/tex; mode=display">D_{+}(A, \leq_A) = (A, \leq_A)</script>
+
+<script type="math/tex; mode=display">D_{-}(A, \leq_A) = (A, \geq_A)</script>
+
+<script type="math/tex; mode=display">D_{\sim}(A, \leq_A) = (A, \ast_A )</script>
+
+<script type="math/tex; mode=display">D_{q}(f) = f</script>
+
+<p>where</p>
+<ul>
+  <li><script type="math/tex">(A, \geq_A)</script> is the <em>dual</em> of <script type="math/tex">(A, \leq_A)</script>, that is, the preordered set defined such that for all
+<script type="math/tex">a_1,a_2 \in A</script> we have <script type="math/tex">a_1 \geq_A a_2</script> if and only if <script type="math/tex">a_2 \leq_A a_1</script>.</li>
+  <li><script type="math/tex">(A, =_A)</script> is the discrete ordering on <script type="math/tex">A</script>, containing only reflexive edges.</li>
+  <li><script type="math/tex">(A, \ast_A)</script> is the complete preorder on <script type="math/tex">A</script>, relating every pair of elements.</li>
+</ul>
+
+<p>For all preorders <script type="math/tex">S</script> and all <script type="math/tex">p,q \in Q</script> we have</p>
+
+<script type="math/tex; mode=display">(\epsilon_{+})_{S} = (\lambda x.~x)\text{ and }(\delta_{p,q})_{S} = (\lambda x.~x)</script>
+
+<p>Furthermore, if <script type="math/tex">p \leq q</script> then we have</p>
+
+<script type="math/tex; mode=display">(sub_{p,q})_S = (\lambda x.~x)</script>
+
+<p>These definitions are a bit anticlimactic, but they make sense when one considers
+that <script type="math/tex">D_{+}(S) = S</script> and <script type="math/tex">D_{p \otimes q}(S) = (D_{p} \circ D_{q})(S)</script></p>
+
+<p>The natural transformations of monotonicity coeffects have a much different flavor
+than those of the dataflow coeffects, in that they have no significant “runtime
+content”. While it’s tempting to think of a contextual capability as
+some extra information that is paired with each input value supplied to a
+function, monotonicity coeffects show that this really isn’t the case.</p>
+
+<h1 id="example-derivation">Example derivation</h1>
+
+<p>I will demonstrate this system using an example from page 2 of <a href="http://db.cs.berkeley.edu/papers/cidr11-bloom.pdf">Consistency Analysis in Bloom: a CALM and Collected
+Approach</a>. Let <script type="math/tex">Nat</script> be the type of natural numbers,
+let <script type="math/tex">Set[Nat]</script> be the type of finite sets of natural numbers, ordered by inclusion, and let <script type="math/tex">Bool</script> be the two element
+preordered set containing the boolean values true and false, ordered such that <script type="math/tex">false \leq true</script>.
+The example requires us to prove the expression <script type="math/tex">% <![CDATA[
+Min(X) < 10 %]]></script> monotone, where</p>
+
+<ul>
+  <li><script type="math/tex">X</script> is a variable of type <script type="math/tex">Set[Nat]</script></li>
+  <li><script type="math/tex">Min</script> is a function of type <script type="math/tex">Set[Nat] \ato Nat</script>, which produces the minimum element contained in the argument</li>
+  <li><script type="math/tex">% <![CDATA[
+< %]]></script> is the standard “less than” operator on naturals, of type <script type="math/tex">Nat \ato (Nat \pto Bool)</script></li>
+</ul>
+
+<p>Renaming “&lt;” to “lt”, <script type="math/tex">% <![CDATA[
+Min(X) < 10 %]]></script> rewritten to prefix notation is <script type="math/tex">(Lt~(Min~X))~10</script>.
+The following abbreviations allow our proofs to fit on the page.</p>
+
+<ul>
+  <li><script type="math/tex">ty(Min)</script> abbreviates <script type="math/tex">Set[Nat] \ato Nat</script></li>
+  <li><script type="math/tex">ty(Lt)</script> abbreviates <script type="math/tex">Nat \ato (Nat \pto Bool)</script></li>
+</ul>
+
+<p>Using Petricek’s coeffect system, proof of the judgment
+<script type="math/tex">Lt : ty(Lt), Min : ty(Min), X : Set[Nat] @ \langle ?, ?, + \rangle \vdash (Lt~(Min~X))~10</script> follows.</p>
+
+<p><img src="/assets/derivation1.png" alt="derivation1" /></p>
+
+<p>where <script type="math/tex">\Pi_1</script> is</p>
+
+<p><img src="/assets/derivation2.png" alt="derivation2" /></p>
+
+<p>and <script type="math/tex">\Pi_2</script> is</p>
+
+<p><img src="/assets/derivations3-2.png" alt="derivation3" /></p>
+
+<p>and <script type="math/tex">\Pi_3</script> is</p>
+
+<p><img src="/assets/derivations4-2.png" alt="derivation4" /></p>
+
+<p>and <script type="math/tex">\Pi_4</script> is</p>
+
+<p><img src="/assets/derivations5-2.png" alt="derivation5" /></p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Coeffects are a simple yet extremely general framework enabling type systems which can prove,
+among many other things, that a program function is monotone.
+I think that recently proposed programming frameworks such as Bloom, LVars, and Lasp
+can benefit from this power. In addition, I believe all of these frameworks
+would also benefit from the ability to prove that a program functions is a lattice
+homomorphism. For many lattice datatypes, a monotonicity-aware type system such
+as the one presented here can be used for this purpose, as a monotone function
+from a certain (common) kind of lattice’s join-irreducible elements can be converted into
+a homomorphism from the lattice itself.</p>
+
+<p>While this post focused primarily on semantics, there are pragmatic issues
+which need addressing.</p>
+
+<p>First, the coeffect calculus presented here
+in non-algorithmic. However, it’s not hard to imagine an algorithmic variant,
+developed under the same strategy as algorithmic linear type systems:
+a type-and-coeffect judgment would include an additional vector of
+<em>output</em> coeffects, denoting that portion of the input capability which
+is not actually utilized by the term. It may be necessary to place
+some additional restrictions on the scalar coeffect structure, but I expect
+that the scalar coeffect structure for monotonicity coeffects would satisfy these
+restrictions.</p>
+
+<p>Second, even with an algorithmic system, it isn’t currently clear to me
+that this approach is going to be mentally tractable for
+programmers, as there’s a fair amount of coeffect shuffling that happens
+to the left of the turnstile. In my opinion, a type system is most useful
+as a <em>design tool</em>, a mental framework that a programmer uses to compose
+a complex program from simple parts. I’m ultimately looking for such
+a mental framework, rather than a mere verification tool, for proving
+program functions monotone.</p>
+
+<p>It’s exciting to imagine a statically typed variant of BloomL.
+Perhaps coeffects can serve as the basis for static BloomL’s type system.</p>
+
+<h1 id="links">Links</h1>
+
+<p>If you found this post interesting, these links may interest you as well.</p>
+
+<p><a href="http://www.rntz.net/datafun/">Datafun</a>, a functional calculus inspired by Datalog,
+currently has the best monotonicity type system that I know of, as well
+as a working prototype. Interestingly, it features the ability
+to take the fixpoint of a monotone function under conditions which
+guarantee its existence.</p>
+
+<p>Tomas Petricek created a really cool <a href="http://tomasp.net/coeffects/">interactive web tutorial</a>
+for coeffects.</p>
+
+<p>The semantics of Petricek et al.’s coeffect calculus is based on category
+theory. I’ve found <a href="https://www.amazon.com/Category-Theory-Oxford-Logic-Guides/dp/0199237182">Awodey’s book</a> one of the best sources on the subject.
+Presentations of categorical type system semantics can be daunting,
+but <a href="https://arxiv.org/abs/1102.1313">Abramsky and Tzevelekos’ lecture notes</a> are a highly accessible
+exception to the rule.</p>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Kevin Clancy&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Kevin Clancy&#39;s Blog
+            
+            </li>
+            
+            <li><a href="mailto:kclanc@gmail.com">kclanc@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/kevinclancy"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">kevinclancy</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A blog about programming languages and computer science.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -1,6 +1,21 @@
-To test out the blog on a local computer, make sure that the local server is enabled using 
+Do not do this because mathjax won't work:
+
+To test out the blog on a local computer, make sure that the local server is enabled using
 "shift-alt-T"
+
+--
+
+Instead do This
+cd ~/github.io
+jekyll serve
+
+---
+
+Run Mathjax server with:
+cd MathJax
+python -m SimpleHTTPServer
+
+
 To build, type "jekyll build --dest ~/github.io/" in the blog directory
 To push to github, cd to the ~/github.io directory, type "git add --all", "git commit",
 "git push", ...
-
