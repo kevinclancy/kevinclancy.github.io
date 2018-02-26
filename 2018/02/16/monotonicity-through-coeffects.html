@@ -320,10 +320,11 @@ cached the length-<script type="math/tex">m</script> suffixes at the previous <s
 <p>Instantiating the coeffect calculus of <em>Figure 2</em> with the following coeffect scalar structure results in a system which allows us to prove functions monotone.</p>
 
 <ul>
-  <li>The scalar set is <script type="math/tex">Q = \{ ?, +, -, \sim \}</script>, where <script type="math/tex">?</script> denotes the capability to be transformed arbitrarily,
+  <li>The scalar set is <script type="math/tex">Q = \{ ?, +, -, \sim \}</script>, where <script type="math/tex">?</script> denotes the capability to be transformed in an equivalence-class-preserving manner,
 <script type="math/tex">+</script> to be transformed monotonically, <script type="math/tex">-</script> to be transformed antitonically,
-and <script type="math/tex">\sim</script> to be transformed in an order-robust manner
-(i.e. <script type="math/tex">\forall x,y. f(x) \leq f(y)</script> and <script type="math/tex">f(y) \leq f(x)</script>).</li>
+and <script type="math/tex">\sim</script> to be transformed in an order-robust manner.
+(An order robust function maps two inputs values related by the symmetric transitive closure of
+  its domain to two isomorphic elements of its codomain.)</li>
   <li>The composition and contraction operators
  <script type="math/tex">\otimes</script> and <script type="math/tex">\oplus</script> are defined in <em>Figure 6</em>.</li>
   <li>The <script type="math/tex">use</script> scalar is <script type="math/tex">+</script>.</li>
@@ -348,10 +349,10 @@ function <script type="math/tex">f : (A, \leq_A) \to (B, \leq_B)</script>, our i
 
 <p>where</p>
 <ul>
-  <li><script type="math/tex">(A, \geq_A)</script> is the <em>dual</em> of <script type="math/tex">(A, \leq_A)</script>, that is, the preordered set defined such that for all
+  <li><script type="math/tex">\geq_A</script> is the <em>dual</em> of <script type="math/tex">(A, \leq_A)</script>, that is, the preordered set defined such that for all
 <script type="math/tex">a_1,a_2 \in A</script> we have <script type="math/tex">a_1 \geq_A a_2</script> if and only if <script type="math/tex">a_2 \leq_A a_1</script>.</li>
-  <li><script type="math/tex">(A, =_A)</script> is the discrete ordering on <script type="math/tex">A</script>, containing only reflexive edges.</li>
-  <li><script type="math/tex">(A, \ast_A)</script> is the complete preorder on <script type="math/tex">A</script>, relating every pair of elements.</li>
+  <li><script type="math/tex">=_A</script> is the equivalence relation induced by <script type="math/tex">\leq_A</script> result of removing each edge <script type="math/tex">(a,a')</script> from <script type="math/tex">\leq_A</script> which does not have a corresponding symmetric pair <script type="math/tex">(a',a)</script>.</li>
+  <li><script type="math/tex">\ast_A</script> is the symmetric transitive closure of <script type="math/tex">\leq_A</script>.</li>
 </ul>
 
 <p>For all preorders <script type="math/tex">S</script> and all <script type="math/tex">p,q \in Q</script> we have</p>
