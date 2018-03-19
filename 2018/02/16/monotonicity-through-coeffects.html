@@ -202,7 +202,7 @@ for all coeffects <script type="math/tex">\langle s_1, s_2, \ldots, s_n \rangle<
 <script type="math/tex">t \otimes \langle s_1, s_2, \ldots, s_n \rangle =
   \langle t \oplus s_1, t \oplus s_2, \ldots, t \oplus s_n \rangle</script></p>
 
-<p>Since the <em>APP</em> rule combines mutually disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by <em>contracting</em> two variables in context and combining their associated contextual capabilities. This requires an application of the <em>CTXT</em> typing rule, which allows us to prove a typing judgment with context-and-coeffect <script type="math/tex">\Gamma'@R'</script> using a typing derivation with context-and-coeffect <script type="math/tex">\Gamma @ R</script>, obtained from a structural manipulation of <script type="math/tex">\Gamma'@R'</script>. The right premise allows us to apply a structural manipulation rule of the form <script type="math/tex">\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta</script>; in particular, to contract two variables (and their associated capabilities) we must use the <em>CONTR</em> rule.</p>
+<p>Since the <em>APP</em> rule combines disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by <em>contracting</em> two variables in context and combining their associated contextual capabilities. This requires an application of the <em>CTXT</em> typing rule, which allows us to prove a typing judgment with context-and-coeffect <script type="math/tex">\Gamma'@R'</script> using a typing derivation with context-and-coeffect <script type="math/tex">\Gamma @ R</script>, obtained from a structural manipulation of <script type="math/tex">\Gamma'@R'</script>. The right premise allows us to apply a structural manipulation rule of the form <script type="math/tex">\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta</script>; in particular, to contract two variables (and their associated capabilities) we must use the <em>CONTR</em> rule.</p>
 
 <p><img src="/assets/contractionExample2.png" alt="contractionExample" /></p>
 
@@ -351,8 +351,8 @@ function <script type="math/tex">f : (A, \leq_A) \to (B, \leq_B)</script>, our i
 <ul>
   <li><script type="math/tex">\geq_A</script> is the <em>dual</em> of <script type="math/tex">(A, \leq_A)</script>, that is, the preordered set defined such that for all
 <script type="math/tex">a_1,a_2 \in A</script> we have <script type="math/tex">a_1 \geq_A a_2</script> if and only if <script type="math/tex">a_2 \leq_A a_1</script>.</li>
-  <li><script type="math/tex">=_A</script> is the equivalence relation induced by <script type="math/tex">\leq_A</script>,
- that is, the result of removing each edge <script type="math/tex">(a,a')</script> from <script type="math/tex">\leq_A</script> which does not have a corresponding symmetric pair <script type="math/tex">(a',a)</script>.</li>
+  <li><script type="math/tex">=_A</script> is the discrete order on <script type="math/tex">A</script>, containing one
+edge <script type="math/tex">(a,a)</script> for each <script type="math/tex">a \in A</script>.</li>
   <li><script type="math/tex">\ast_A</script> is the symmetric transitive closure of <script type="math/tex">\leq_A</script>.</li>
 </ul>
 
@@ -425,11 +425,11 @@ The following abbreviations allow our proofs to fit on the page.</p>
 among many other things, that a program function is monotone.
 I think that recently proposed programming frameworks such as Bloom, LVars, and Lasp
 can benefit from this power. In addition, I believe all of these frameworks
-would also benefit from the ability to prove that a program functions is a lattice
-homomorphism. For many lattice datatypes, a monotonicity-aware type system such
+would also benefit from the ability to prove that a program functions is a semilattice
+homomorphism. For many semilattice datatypes, a monotonicity-aware type system such
 as the one presented here can be used for this purpose, as a monotone function
-from a certain (common) kind of lattice’s join-irreducible elements can be converted into
-a homomorphism from the lattice itself.</p>
+from a certain (common) kind of semilattice’s join-irreducible elements can be converted into
+a homomorphism from the semilattice itself.</p>
 
 <p>While this post focused primarily on semantics, there are pragmatic issues
 which need addressing.</p>

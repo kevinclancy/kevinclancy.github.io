@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-02-26T18:15:51-05:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-03-19T15:35:23-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\catq}[0]{ \mathbf{Q} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\qmon}[0]{ \mathbf{Q_{mon}} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\ato}[0]{ \overset{-}{\to} }&lt;/script&gt;
@@ -113,7 +113,7 @@ for all coeffects &lt;script type=&quot;math/tex&quot;&gt;\langle s_1, s_2, \ldo
 &lt;script type=&quot;math/tex&quot;&gt;t \otimes \langle s_1, s_2, \ldots, s_n \rangle =
   \langle t \oplus s_1, t \oplus s_2, \ldots, t \oplus s_n \rangle&lt;/script&gt;&lt;/p&gt;
 
-&lt;p&gt;Since the &lt;em&gt;APP&lt;/em&gt; rule combines mutually disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by &lt;em&gt;contracting&lt;/em&gt; two variables in context and combining their associated contextual capabilities. This requires an application of the &lt;em&gt;CTXT&lt;/em&gt; typing rule, which allows us to prove a typing judgment with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt; using a typing derivation with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R&lt;/script&gt;, obtained from a structural manipulation of &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt;. The right premise allows us to apply a structural manipulation rule of the form &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta&lt;/script&gt;; in particular, to contract two variables (and their associated capabilities) we must use the &lt;em&gt;CONTR&lt;/em&gt; rule.&lt;/p&gt;
+&lt;p&gt;Since the &lt;em&gt;APP&lt;/em&gt; rule combines disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by &lt;em&gt;contracting&lt;/em&gt; two variables in context and combining their associated contextual capabilities. This requires an application of the &lt;em&gt;CTXT&lt;/em&gt; typing rule, which allows us to prove a typing judgment with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt; using a typing derivation with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R&lt;/script&gt;, obtained from a structural manipulation of &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt;. The right premise allows us to apply a structural manipulation rule of the form &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta&lt;/script&gt;; in particular, to contract two variables (and their associated capabilities) we must use the &lt;em&gt;CONTR&lt;/em&gt; rule.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/contractionExample2.png&quot; alt=&quot;contractionExample&quot; /&gt;&lt;/p&gt;
 
@@ -262,8 +262,8 @@ function &lt;script type=&quot;math/tex&quot;&gt;f : (A, \leq_A) \to (B, \leq_B)
 &lt;ul&gt;
   &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;\geq_A&lt;/script&gt; is the &lt;em&gt;dual&lt;/em&gt; of &lt;script type=&quot;math/tex&quot;&gt;(A, \leq_A)&lt;/script&gt;, that is, the preordered set defined such that for all
 &lt;script type=&quot;math/tex&quot;&gt;a_1,a_2 \in A&lt;/script&gt; we have &lt;script type=&quot;math/tex&quot;&gt;a_1 \geq_A a_2&lt;/script&gt; if and only if &lt;script type=&quot;math/tex&quot;&gt;a_2 \leq_A a_1&lt;/script&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;=_A&lt;/script&gt; is the equivalence relation induced by &lt;script type=&quot;math/tex&quot;&gt;\leq_A&lt;/script&gt;,
- that is, the result of removing each edge &lt;script type=&quot;math/tex&quot;&gt;(a,a')&lt;/script&gt; from &lt;script type=&quot;math/tex&quot;&gt;\leq_A&lt;/script&gt; which does not have a corresponding symmetric pair &lt;script type=&quot;math/tex&quot;&gt;(a',a)&lt;/script&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;=_A&lt;/script&gt; is the discrete order on &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt;, containing one
+edge &lt;script type=&quot;math/tex&quot;&gt;(a,a)&lt;/script&gt; for each &lt;script type=&quot;math/tex&quot;&gt;a \in A&lt;/script&gt;.&lt;/li&gt;
   &lt;li&gt;&lt;script type=&quot;math/tex&quot;&gt;\ast_A&lt;/script&gt; is the symmetric transitive closure of &lt;script type=&quot;math/tex&quot;&gt;\leq_A&lt;/script&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -336,11 +336,11 @@ The following abbreviations allow our proofs to fit on the page.&lt;/p&gt;
 among many other things, that a program function is monotone.
 I think that recently proposed programming frameworks such as Bloom, LVars, and Lasp
 can benefit from this power. In addition, I believe all of these frameworks
-would also benefit from the ability to prove that a program functions is a lattice
-homomorphism. For many lattice datatypes, a monotonicity-aware type system such
+would also benefit from the ability to prove that a program functions is a semilattice
+homomorphism. For many semilattice datatypes, a monotonicity-aware type system such
 as the one presented here can be used for this purpose, as a monotone function
-from a certain (common) kind of lattice’s join-irreducible elements can be converted into
-a homomorphism from the lattice itself.&lt;/p&gt;
+from a certain (common) kind of semilattice’s join-irreducible elements can be converted into
+a homomorphism from the semilattice itself.&lt;/p&gt;
 
 &lt;p&gt;While this post focused primarily on semantics, there are pragmatic issues
 which need addressing.&lt;/p&gt;
