@@ -129,7 +129,7 @@ of a lambda abstraction must be proven, using the type-and-coeffect system of <e
 A type-and-coeffect judgment has the form
 <script type="math/tex">\Gamma @ R \vdash e : \tau</script>. Here <script type="math/tex">\Gamma</script>, <script type="math/tex">e</script>, and <script type="math/tex">\tau</script> are the familiar
 typing context, expression, and type. <script type="math/tex">R</script> is a vector of coeffect scalars, associating one scalar to each entry in
-<script type="math/tex">\Gamma</script>; we refer to such a vector simply as a <em>coeffect</em>. We use the binary $\times$ operator to denote concatenation of coeffect vectors.</p>
+<script type="math/tex">\Gamma</script>; we refer to such a vector simply as a <em>coeffect</em>. We write the concatenation of coeffects <script type="math/tex">R</script> and <script type="math/tex">S</script> as <script type="math/tex">R \times S</script>.</p>
 
 <p>The <em>ABS</em> rule says that under context <script type="math/tex">\Gamma</script> and coeffect <script type="math/tex">\langle \ldots \rangle</script>,
 an abstraction <script type="math/tex">\lambda x. e</script> has type <script type="math/tex">\sigma \overset{s}{\to} \tau</script> whenever we can type-check its body under the
