@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-04-04T14:01:32-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-04-12T13:49:22-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\catq}[0]{ \mathbf{Q} }&lt;/script&gt;
+&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\mbf}[1]{ \mathbf{#1} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\qmon}[0]{ \mathbf{Q_{mon}} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\ato}[0]{ \overset{-}{\to} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\pto}[0]{ \overset{+}{\to} }&lt;/script&gt;&lt;/p&gt;
@@ -19,7 +20,17 @@ by Tomas Petricek, Dominic Orchard, and Alan Mycroft.&lt;/p&gt;
 
 &lt;p&gt;The content of this post depends on some basic category theory.
 In particular, it involves functors, natural transformations,
-and cartesian closed categories.&lt;/p&gt;
+and cartesian closed categories. We write objects using
+capital letters &lt;script type=&quot;math/tex&quot;&gt;A,B,C,&lt;/script&gt; etc. We write arrows as lower-case
+letters &lt;script type=&quot;math/tex&quot;&gt;f,g,&lt;/script&gt; etc. Categories are written using
+bold capital letters &lt;script type=&quot;math/tex&quot;&gt;\mbf{C}, \mbf{Q},&lt;/script&gt; etc. Natural transformations
+are written as lowercase greek letters: &lt;script type=&quot;math/tex&quot;&gt;\delta, \epsilon, \eta&lt;/script&gt;, etc.
+The component of a natural transformation &lt;script type=&quot;math/tex&quot;&gt;\eta&lt;/script&gt; at an object &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt;
+is written &lt;script type=&quot;math/tex&quot;&gt;(\eta)_A&lt;/script&gt;, where the natural transformation has been
+parenthesized and subscripted by the object. We write functors
+using capital letters &lt;script type=&quot;math/tex&quot;&gt;D,F,G,&lt;/script&gt; etc. We write the composition of two
+functors &lt;script type=&quot;math/tex&quot;&gt;F&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;G&lt;/script&gt; as &lt;script type=&quot;math/tex&quot;&gt;(G \circ F)&lt;/script&gt; and the application of
+a functor &lt;script type=&quot;math/tex&quot;&gt;F&lt;/script&gt; to an object &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; as &lt;script type=&quot;math/tex&quot;&gt;F(A)&lt;/script&gt;.&lt;/p&gt;
 
 &lt;h1 id=&quot;coeffects&quot;&gt;Coeffects&lt;/h1&gt;
 
@@ -185,6 +196,58 @@ is in a sense associative.&lt;/p&gt;
 with multiple variables in context, as well as interpretations of structural rules such as contraction
 and weakening. For this we need &lt;em&gt;structural indexed comonads&lt;/em&gt;, a topic outside the scope of this post.
 For a full account of categorical semantics for coeffects, see &lt;a href=&quot;http://tomasp.net/academic/papers/structural/coeffects-icfp.pdf&quot;&gt;Petricek&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;At this point, you might be wondering about the goal of all this indexed
+comonad business. Furthermore, if the coeffect &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; in a
+type-and-coeffect judgment &lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R \vdash e : \tau&lt;/script&gt; just denotes
+some applications of endofunctors, why bother making those applications
+explicity in the judgment system? In other words, why
+have a judgment of the form &lt;script type=&quot;math/tex&quot;&gt;x : Nat @ \langle - \rangle \vdash negate~x : Nat&lt;/script&gt;
+rather than &lt;script type=&quot;math/tex&quot;&gt;x : D_{-}(Nat) \vdash negate~x : Nat&lt;/script&gt;?
+The answer is that the domain has been decomposed into a portion &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt; that
+is handled manually by the programmer and a portion &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; that is handled automatically
+by the indexed comonad. To apply a function of type &lt;script type=&quot;math/tex&quot;&gt;\sigma \overset{t}{\to} \tau&lt;/script&gt;,
+the programmer must place an expression of type &lt;script type=&quot;math/tex&quot;&gt;\sigma&lt;/script&gt; in the argument position of the application.
+Importantly, the programmer does &lt;em&gt;not&lt;/em&gt; supply an argument of type &lt;script type=&quot;math/tex&quot;&gt;D_t( \sigma)&lt;/script&gt;;
+the contextual capability &lt;script type=&quot;math/tex&quot;&gt;t&lt;/script&gt; is automatically piped in to the function application.&lt;/p&gt;
+
+&lt;p&gt;To convey the intuition behind this automatic piping of contextual capabilities,
+we present the notion of an indexed coKleisli category.&lt;/p&gt;
+
+&lt;p&gt;If &lt;script type=&quot;math/tex&quot;&gt;D : \mbf{Q} \to [\mbf{C},\mbf{C}]&lt;/script&gt; is an indexed comonad, the &lt;em&gt;indexed
+coKleisli category determined by D&lt;/em&gt;, written &lt;script type=&quot;math/tex&quot;&gt;\mbf{D^\ast}&lt;/script&gt; is
+defined such that&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;The objects of &lt;script type=&quot;math/tex&quot;&gt;\mbf{D^\ast}&lt;/script&gt; are the same as the objects of &lt;script type=&quot;math/tex&quot;&gt;C&lt;/script&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;For all &lt;script type=&quot;math/tex&quot;&gt;t \in \mbf{Q}&lt;/script&gt;, and objects &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;B&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;\mbf{C}&lt;/script&gt;,
+an arrow &lt;script type=&quot;math/tex&quot;&gt;f' : D_{t}(A) \to B&lt;/script&gt; is considered as an arrow of &lt;script type=&quot;math/tex&quot;&gt;f : A \to B&lt;/script&gt;
+of &lt;script type=&quot;math/tex&quot;&gt;D^K&lt;/script&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Given arrows &lt;script type=&quot;math/tex&quot;&gt;f : A \to B&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;g : B \to C&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;D^K&lt;/script&gt; with underlying
+arrows &lt;script type=&quot;math/tex&quot;&gt;f' : D_t(A) \to B&lt;/script&gt; and &lt;script type=&quot;math/tex&quot;&gt;g' : D_s(B) \to C&lt;/script&gt; in &lt;script type=&quot;math/tex&quot;&gt;C&lt;/script&gt;,
+we define the composition &lt;script type=&quot;math/tex&quot;&gt;g \circ f : A \to C&lt;/script&gt; as the arrow generated
+from the arrow &lt;script type=&quot;math/tex&quot;&gt;(g \circ f)' : D_{s \otimes t}(A) \to C&lt;/script&gt; defined as
+&lt;script type=&quot;math/tex&quot;&gt;(g \circ f)' = g' \circ D_{s}(f')  \circ (\delta_{s,t})_A&lt;/script&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;For each object &lt;script type=&quot;math/tex&quot;&gt;A&lt;/script&gt; of &lt;script type=&quot;math/tex&quot;&gt;\mbf{D^\ast}&lt;/script&gt;, the identity arrow &lt;script type=&quot;math/tex&quot;&gt;1_A&lt;/script&gt; in &lt;script type=&quot;math/tex&quot;&gt;\mbf{D^\ast}&lt;/script&gt;
+has the underlying arrow &lt;script type=&quot;math/tex&quot;&gt;1'_A = (\epsilon_{use})_A&lt;/script&gt; in &lt;script type=&quot;math/tex&quot;&gt;\mbf{C}&lt;/script&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In an indexed coKleisli category, we can compose arrows without regard
+to the scalars attached to their underlying arrows. In this way, programming in a
+type-and-coeffect system is kind of like composing arrows in a coKleisli category.&lt;/p&gt;
+
+&lt;p&gt;To provide some further intuition, in an algorithmic type-and-coeffect system, &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; in the judgment
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R \vdash e : \tau&lt;/script&gt; is an output position like &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;
+rather than an input position like &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt;. The contextual capabilities required to execute expression &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt; must be synthesized from the structure
+of &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt; rather than inherited from &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt;’s context.&lt;/p&gt;
 
 &lt;p&gt;We can interpret dataflow coeffects by letting &lt;script type=&quot;math/tex&quot;&gt;\mathbf C = \mathbf{Sets}&lt;/script&gt;, the category of sets and functions,
 and using the indexed comonad &lt;script type=&quot;math/tex&quot;&gt;D : \mathbf{Q_{df}} \to [\mathbf{Sets}, \mathbf{Sets}]&lt;/script&gt; where for

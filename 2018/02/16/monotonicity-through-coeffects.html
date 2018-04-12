@@ -89,6 +89,7 @@
 
 		<p><script type="math/tex">\newcommand{\sem}[1]{ [\![ #1 ]\!]}</script>
 <script type="math/tex">\newcommand{\catq}[0]{ \mathbf{Q} }</script>
+<script type="math/tex">\newcommand{\mbf}[1]{ \mathbf{#1} }</script>
 <script type="math/tex">\newcommand{\qmon}[0]{ \mathbf{Q_{mon}} }</script>
 <script type="math/tex">\newcommand{\ato}[0]{ \overset{-}{\to} }</script>
 <script type="math/tex">\newcommand{\pto}[0]{ \overset{+}{\to} }</script></p>
@@ -108,7 +109,17 @@ by Tomas Petricek, Dominic Orchard, and Alan Mycroft.</p>
 
 <p>The content of this post depends on some basic category theory.
 In particular, it involves functors, natural transformations,
-and cartesian closed categories.</p>
+and cartesian closed categories. We write objects using
+capital letters <script type="math/tex">A,B,C,</script> etc. We write arrows as lower-case
+letters <script type="math/tex">f,g,</script> etc. Categories are written using
+bold capital letters <script type="math/tex">\mbf{C}, \mbf{Q},</script> etc. Natural transformations
+are written as lowercase greek letters: <script type="math/tex">\delta, \epsilon, \eta</script>, etc.
+The component of a natural transformation <script type="math/tex">\eta</script> at an object <script type="math/tex">A</script>
+is written <script type="math/tex">(\eta)_A</script>, where the natural transformation has been
+parenthesized and subscripted by the object. We write functors
+using capital letters <script type="math/tex">D,F,G,</script> etc. We write the composition of two
+functors <script type="math/tex">F</script> and <script type="math/tex">G</script> as <script type="math/tex">(G \circ F)</script> and the application of
+a functor <script type="math/tex">F</script> to an object <script type="math/tex">A</script> as <script type="math/tex">F(A)</script>.</p>
 
 <h1 id="coeffects">Coeffects</h1>
 
@@ -274,6 +285,58 @@ is in a sense associative.</p>
 with multiple variables in context, as well as interpretations of structural rules such as contraction
 and weakening. For this we need <em>structural indexed comonads</em>, a topic outside the scope of this post.
 For a full account of categorical semantics for coeffects, see <a href="http://tomasp.net/academic/papers/structural/coeffects-icfp.pdf">Petricek</a>.</p>
+
+<p>At this point, you might be wondering about the goal of all this indexed
+comonad business. Furthermore, if the coeffect <script type="math/tex">R</script> in a
+type-and-coeffect judgment <script type="math/tex">\Gamma @ R \vdash e : \tau</script> just denotes
+some applications of endofunctors, why bother making those applications
+explicity in the judgment system? In other words, why
+have a judgment of the form <script type="math/tex">x : Nat @ \langle - \rangle \vdash negate~x : Nat</script>
+rather than <script type="math/tex">x : D_{-}(Nat) \vdash negate~x : Nat</script>?
+The answer is that the domain has been decomposed into a portion <script type="math/tex">\Gamma</script> that
+is handled manually by the programmer and a portion <script type="math/tex">R</script> that is handled automatically
+by the indexed comonad. To apply a function of type <script type="math/tex">\sigma \overset{t}{\to} \tau</script>,
+the programmer must place an expression of type <script type="math/tex">\sigma</script> in the argument position of the application.
+Importantly, the programmer does <em>not</em> supply an argument of type <script type="math/tex">D_t( \sigma)</script>;
+the contextual capability <script type="math/tex">t</script> is automatically piped in to the function application.</p>
+
+<p>To convey the intuition behind this automatic piping of contextual capabilities,
+we present the notion of an indexed coKleisli category.</p>
+
+<p>If <script type="math/tex">D : \mbf{Q} \to [\mbf{C},\mbf{C}]</script> is an indexed comonad, the <em>indexed
+coKleisli category determined by D</em>, written <script type="math/tex">\mbf{D^\ast}</script> is
+defined such that</p>
+
+<ul>
+  <li>
+    <p>The objects of <script type="math/tex">\mbf{D^\ast}</script> are the same as the objects of <script type="math/tex">C</script>.</p>
+  </li>
+  <li>
+    <p>For all <script type="math/tex">t \in \mbf{Q}</script>, and objects <script type="math/tex">A</script> and <script type="math/tex">B</script> of <script type="math/tex">\mbf{C}</script>,
+an arrow <script type="math/tex">f' : D_{t}(A) \to B</script> is considered as an arrow of <script type="math/tex">f : A \to B</script>
+of <script type="math/tex">D^K</script>.</p>
+  </li>
+  <li>
+    <p>Given arrows <script type="math/tex">f : A \to B</script> and <script type="math/tex">g : B \to C</script> of <script type="math/tex">D^K</script> with underlying
+arrows <script type="math/tex">f' : D_t(A) \to B</script> and <script type="math/tex">g' : D_s(B) \to C</script> in <script type="math/tex">C</script>,
+we define the composition <script type="math/tex">g \circ f : A \to C</script> as the arrow generated
+from the arrow <script type="math/tex">(g \circ f)' : D_{s \otimes t}(A) \to C</script> defined as
+<script type="math/tex">(g \circ f)' = g' \circ D_{s}(f')  \circ (\delta_{s,t})_A</script>.</p>
+  </li>
+  <li>
+    <p>For each object <script type="math/tex">A</script> of <script type="math/tex">\mbf{D^\ast}</script>, the identity arrow <script type="math/tex">1_A</script> in <script type="math/tex">\mbf{D^\ast}</script>
+has the underlying arrow <script type="math/tex">1'_A = (\epsilon_{use})_A</script> in <script type="math/tex">\mbf{C}</script>.</p>
+  </li>
+</ul>
+
+<p>In an indexed coKleisli category, we can compose arrows without regard
+to the scalars attached to their underlying arrows. In this way, programming in a
+type-and-coeffect system is kind of like composing arrows in a coKleisli category.</p>
+
+<p>To provide some further intuition, in an algorithmic type-and-coeffect system, <script type="math/tex">R</script> in the judgment
+<script type="math/tex">\Gamma @ R \vdash e : \tau</script> is an output position like <script type="math/tex">\tau</script>
+rather than an input position like <script type="math/tex">\Gamma</script>. The contextual capabilities required to execute expression <script type="math/tex">e</script> must be synthesized from the structure
+of <script type="math/tex">e</script> rather than inherited from <script type="math/tex">e</script>’s context.</p>
 
 <p>We can interpret dataflow coeffects by letting <script type="math/tex">\mathbf C = \mathbf{Sets}</script>, the category of sets and functions,
 and using the indexed comonad <script type="math/tex">D : \mathbf{Q_{df}} \to [\mathbf{Sets}, \mathbf{Sets}]</script> where for
