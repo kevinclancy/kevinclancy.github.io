@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-04-12T14:46:38-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-04-16T17:58:03-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages and computer science.</subtitle><entry><title type="html">Monotonicity Through Coeffects</title><link href="/2018/02/16/monotonicity-through-coeffects.html" rel="alternate" type="text/html" title="Monotonicity Through Coeffects" /><published>2018-02-16T14:50:04-05:00</published><updated>2018-02-16T14:50:04-05:00</updated><id>/2018/02/16/monotonicity-through-coeffects</id><content type="html" xml:base="/2018/02/16/monotonicity-through-coeffects.html">&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;\newcommand{\sem}[1]{ [\![ #1 ]\!]}&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\catq}[0]{ \mathbf{Q} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\mbf}[1]{ \mathbf{#1} }&lt;/script&gt;
 &lt;script type=&quot;math/tex&quot;&gt;\newcommand{\qmon}[0]{ \mathbf{Q_{mon}} }&lt;/script&gt;
@@ -115,9 +115,9 @@ it to be discarded, i.e. whenever &lt;script type=&quot;math/tex&quot;&gt;\Gamma
 &lt;p&gt;The conclusion concatenates disjoint typing contexts
 and coeffects from its function and argument premises. While the scalar in the left premise (&lt;script type=&quot;math/tex&quot;&gt;0&lt;/script&gt;) matches its portion of the conclusion (the &lt;script type=&quot;math/tex&quot;&gt;0&lt;/script&gt; in &lt;script type=&quot;math/tex&quot;&gt;\langle 0, 1 \rangle&lt;/script&gt;),
 the scalar in the right premise (&lt;script type=&quot;math/tex&quot;&gt;0&lt;/script&gt;) differs from &lt;em&gt;its&lt;/em&gt; portion of the conclusion (the &lt;script type=&quot;math/tex&quot;&gt;1&lt;/script&gt; in &lt;script type=&quot;math/tex&quot;&gt;\langle 0, 1 \rangle&lt;/script&gt;). The right premise of &lt;em&gt;Figure 3&lt;/em&gt; places the variable
-&lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; in an empty context, where it denotes an stream capable of accessing 0 prior timesteps.
-In the left premise, &lt;script type=&quot;math/tex&quot;&gt;pre&lt;/script&gt; is a function producing a stream capable of accessing 1 prior timestep of its argument.
-Hence, in the conclusion &lt;script type=&quot;math/tex&quot;&gt;pre~x&lt;/script&gt; denotes a stream capable of accessing &lt;script type=&quot;math/tex&quot;&gt;0 + 1 = 1&lt;/script&gt; prior timestep of the stream denoted by &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt;. The essential power of type-and-coeffect
+&lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; in an empty context, where it required to provide its value at the current timestep, and &lt;script type=&quot;math/tex&quot;&gt;0&lt;/script&gt; prior timesteps (thus the scalar &lt;script type=&quot;math/tex&quot;&gt;0&lt;/script&gt;).
+In the left premise, &lt;script type=&quot;math/tex&quot;&gt;pre&lt;/script&gt; is a function requiring access to its argument at 1 prior timestep (thus the scalar &lt;script type=&quot;math/tex&quot;&gt;1&lt;/script&gt;).
+Hence, the conclusion &lt;script type=&quot;math/tex&quot;&gt;pre~x&lt;/script&gt; requires access to &lt;script type=&quot;math/tex&quot;&gt;x&lt;/script&gt; at &lt;script type=&quot;math/tex&quot;&gt;0 + 1 = 1&lt;/script&gt; prior timesteps. The essential power of type-and-coeffect
 systems is to reason about such composition of contextual capabilities, and this is handled with &lt;script type=&quot;math/tex&quot;&gt;\otimes&lt;/script&gt; operator,
 which in the dataflow coeffect scalar structure &lt;script type=&quot;math/tex&quot;&gt;\mathbf{Q_{df}}&lt;/script&gt;
 is the &lt;script type=&quot;math/tex&quot;&gt;+&lt;/script&gt; operator on natural numbers. In the &lt;em&gt;APP&lt;/em&gt; rule,
@@ -127,7 +127,7 @@ for all coeffects &lt;script type=&quot;math/tex&quot;&gt;\langle s_1, s_2, \ldo
 &lt;script type=&quot;math/tex&quot;&gt;t \otimes \langle s_1, s_2, \ldots, s_n \rangle =
   \langle t \otimes s_1, t \otimes s_2, \ldots, t \otimes s_n \rangle&lt;/script&gt;&lt;/p&gt;
 
-&lt;p&gt;Since the &lt;em&gt;APP&lt;/em&gt; rule concatenates disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by &lt;em&gt;contracting&lt;/em&gt; two variables in context and combining their associated contextual capabilities. This requires an application of the &lt;em&gt;CTXT&lt;/em&gt; typing rule, which allows us to prove a typing judgment with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt; using a typing derivation with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R&lt;/script&gt; that is obtained from a structural manipulation of &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt;. The right premise allows us to apply a structural manipulation rule of the form &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta&lt;/script&gt;; in particular, to contract two variables (and their associated capabilities) we must use the &lt;em&gt;CONTR&lt;/em&gt; rule.&lt;/p&gt;
+&lt;p&gt;Since the &lt;em&gt;APP&lt;/em&gt; rule concatenates disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by &lt;em&gt;contracting&lt;/em&gt; two variables in context and combining their associated contextual capabilities. This requires an application of the &lt;em&gt;CTXT&lt;/em&gt; typing rule, which allows us to prove a typing judgment with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt; using a typing derivation with context-and-coeffect &lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R&lt;/script&gt;, obtained from a structural manipulation of &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@R'&lt;/script&gt;. The right premise allows us to apply a structural manipulation rule of the form &lt;script type=&quot;math/tex&quot;&gt;\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta&lt;/script&gt;; in particular, to contract two variables (and their associated capabilities) we must use the &lt;em&gt;CONTR&lt;/em&gt; rule.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/contractionExample2.png&quot; alt=&quot;contractionExample&quot; /&gt;&lt;/p&gt;
 
@@ -248,8 +248,8 @@ to the scalars attached to their underlying arrows. In this way, programming in 
 type-and-coeffect system is kind of like composing arrows in a coKleisli category.&lt;/p&gt;
 
 &lt;p&gt;To provide some further intuition, in an algorithmic type-and-coeffect system, &lt;script type=&quot;math/tex&quot;&gt;R&lt;/script&gt; in the judgment
-&lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R \vdash e : \tau&lt;/script&gt; is an output position like &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;
-rather than an input position like &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt;. The contextual capabilities required to execute expression &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt; must be synthesized from the structure
+&lt;script type=&quot;math/tex&quot;&gt;\Gamma @ R \vdash e : \tau&lt;/script&gt; is an output position, much like &lt;script type=&quot;math/tex&quot;&gt;\tau&lt;/script&gt;;
+in constrast, &lt;script type=&quot;math/tex&quot;&gt;\Gamma&lt;/script&gt; is an input position. The contextual capabilities required to execute expression &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt; must be synthesized from the structure
 of &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt; rather than inherited from &lt;script type=&quot;math/tex&quot;&gt;e&lt;/script&gt;’s context.&lt;/p&gt;
 
 &lt;p&gt;We can interpret dataflow coeffects by letting &lt;script type=&quot;math/tex&quot;&gt;\mathbf C = \mathbf{Sets}&lt;/script&gt;, the category of sets and functions,
@@ -319,9 +319,9 @@ function &lt;script type=&quot;math/tex&quot;&gt;f : (A, \leq_A) \to (B, \leq_B)
 
 &lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{-}(A, \leq_A) = (A, \geq_A)&lt;/script&gt;
 
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{\sim}(A, \leq_A) = (A, \ast_A )&lt;/script&gt;
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{\sim}(A, \leq_A) = (A, \ast_A)&lt;/script&gt;
 
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{q}(f) = f&lt;/script&gt;
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;D_{q}(f) : D_{q}(A) \to D_{q}(B) = \text{the arrow with the same underlying function as f}&lt;/script&gt;
 
 &lt;p&gt;where&lt;/p&gt;
 &lt;ul&gt;

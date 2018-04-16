@@ -204,9 +204,9 @@ it to be discarded, i.e. whenever <script type="math/tex">\Gamma @ \langle \ldot
 <p>The conclusion concatenates disjoint typing contexts
 and coeffects from its function and argument premises. While the scalar in the left premise (<script type="math/tex">0</script>) matches its portion of the conclusion (the <script type="math/tex">0</script> in <script type="math/tex">\langle 0, 1 \rangle</script>),
 the scalar in the right premise (<script type="math/tex">0</script>) differs from <em>its</em> portion of the conclusion (the <script type="math/tex">1</script> in <script type="math/tex">\langle 0, 1 \rangle</script>). The right premise of <em>Figure 3</em> places the variable
-<script type="math/tex">x</script> in an empty context, where it denotes an stream capable of accessing 0 prior timesteps.
-In the left premise, <script type="math/tex">pre</script> is a function producing a stream capable of accessing 1 prior timestep of its argument.
-Hence, in the conclusion <script type="math/tex">pre~x</script> denotes a stream capable of accessing <script type="math/tex">0 + 1 = 1</script> prior timestep of the stream denoted by <script type="math/tex">x</script>. The essential power of type-and-coeffect
+<script type="math/tex">x</script> in an empty context, where it required to provide its value at the current timestep, and <script type="math/tex">0</script> prior timesteps (thus the scalar <script type="math/tex">0</script>).
+In the left premise, <script type="math/tex">pre</script> is a function requiring access to its argument at 1 prior timestep (thus the scalar <script type="math/tex">1</script>).
+Hence, the conclusion <script type="math/tex">pre~x</script> requires access to <script type="math/tex">x</script> at <script type="math/tex">0 + 1 = 1</script> prior timesteps. The essential power of type-and-coeffect
 systems is to reason about such composition of contextual capabilities, and this is handled with <script type="math/tex">\otimes</script> operator,
 which in the dataflow coeffect scalar structure <script type="math/tex">\mathbf{Q_{df}}</script>
 is the <script type="math/tex">+</script> operator on natural numbers. In the <em>APP</em> rule,
@@ -216,7 +216,7 @@ for all coeffects <script type="math/tex">\langle s_1, s_2, \ldots, s_n \rangle<
 <script type="math/tex">t \otimes \langle s_1, s_2, \ldots, s_n \rangle =
   \langle t \otimes s_1, t \otimes s_2, \ldots, t \otimes s_n \rangle</script></p>
 
-<p>Since the <em>APP</em> rule concatenates disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by <em>contracting</em> two variables in context and combining their associated contextual capabilities. This requires an application of the <em>CTXT</em> typing rule, which allows us to prove a typing judgment with context-and-coeffect <script type="math/tex">\Gamma'@R'</script> using a typing derivation with context-and-coeffect <script type="math/tex">\Gamma @ R</script> that is obtained from a structural manipulation of <script type="math/tex">\Gamma'@R'</script>. The right premise allows us to apply a structural manipulation rule of the form <script type="math/tex">\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta</script>; in particular, to contract two variables (and their associated capabilities) we must use the <em>CONTR</em> rule.</p>
+<p>Since the <em>APP</em> rule concatenates disjoint typing contexts and coeffects, how do we type terms in which a single variable has multiple occurrences? We accomplish this by <em>contracting</em> two variables in context and combining their associated contextual capabilities. This requires an application of the <em>CTXT</em> typing rule, which allows us to prove a typing judgment with context-and-coeffect <script type="math/tex">\Gamma'@R'</script> using a typing derivation with context-and-coeffect <script type="math/tex">\Gamma @ R</script>, obtained from a structural manipulation of <script type="math/tex">\Gamma'@R'</script>. The right premise allows us to apply a structural manipulation rule of the form <script type="math/tex">\Gamma'@ R' \rightsquigarrow \Gamma@R,\theta</script>; in particular, to contract two variables (and their associated capabilities) we must use the <em>CONTR</em> rule.</p>
 
 <p><img src="/assets/contractionExample2.png" alt="contractionExample" /></p>
 
@@ -337,8 +337,8 @@ to the scalars attached to their underlying arrows. In this way, programming in 
 type-and-coeffect system is kind of like composing arrows in a coKleisli category.</p>
 
 <p>To provide some further intuition, in an algorithmic type-and-coeffect system, <script type="math/tex">R</script> in the judgment
-<script type="math/tex">\Gamma @ R \vdash e : \tau</script> is an output position like <script type="math/tex">\tau</script>
-rather than an input position like <script type="math/tex">\Gamma</script>. The contextual capabilities required to execute expression <script type="math/tex">e</script> must be synthesized from the structure
+<script type="math/tex">\Gamma @ R \vdash e : \tau</script> is an output position, much like <script type="math/tex">\tau</script>;
+in constrast, <script type="math/tex">\Gamma</script> is an input position. The contextual capabilities required to execute expression <script type="math/tex">e</script> must be synthesized from the structure
 of <script type="math/tex">e</script> rather than inherited from <script type="math/tex">e</script>’s context.</p>
 
 <p>We can interpret dataflow coeffects by letting <script type="math/tex">\mathbf C = \mathbf{Sets}</script>, the category of sets and functions,
@@ -408,9 +408,9 @@ function <script type="math/tex">f : (A, \leq_A) \to (B, \leq_B)</script>, our i
 
 <script type="math/tex; mode=display">D_{-}(A, \leq_A) = (A, \geq_A)</script>
 
-<script type="math/tex; mode=display">D_{\sim}(A, \leq_A) = (A, \ast_A )</script>
+<script type="math/tex; mode=display">D_{\sim}(A, \leq_A) = (A, \ast_A)</script>
 
-<script type="math/tex; mode=display">D_{q}(f) = f</script>
+<script type="math/tex; mode=display">D_{q}(f) : D_{q}(A) \to D_{q}(B) = \text{the arrow with the same underlying function as f}</script>
 
 <p>where</p>
 <ul>
