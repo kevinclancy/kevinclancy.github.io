@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Posets</title>
+  <meta name="description" content="A partially ordered set (also called a poset) is a pair of a set and a on such that for all , the following properties are satisfied:">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="/order_theory/Poset.html">
+  <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Kevin Clancy&#39;s Blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Posets</h1>
+    <p class="post-meta">
+      <time datetime="2016-08-18T13:04:58-04:00" itemprop="datePublished">
+        
+        Aug 18, 2016
+      </time>
+      </p>
+  </header>
+
+
+  <div class="post-content" itemprop="articleBody">
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+			-->
+			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+		<p>A <strong>partially ordered set</strong> (also called a <strong>poset</strong>) is a pair <script type="math/tex">\langle P, \leq \rangle</script> of a set <script type="math/tex">P</script> and a <script type="math/tex">\leq</script> on <script type="math/tex">P</script> such that for all <script type="math/tex">p,q,r \in P</script>, the following properties are satisfied:</p>
+
+<ul>
+  <li>Reflexivity: <script type="math/tex">p \leq p</script></li>
+  <li>Transitivity: <script type="math/tex">p \leq q</script> and  <script type="math/tex">q \leq r</script> implies <script type="math/tex">p \leq r</script></li>
+  <li>Anti-symmetry: <script type="math/tex">p \leq q</script> and <script type="math/tex">q \leq p</script> implies <script type="math/tex">p = q</script></li>
+</ul>
+
+<p><script type="math/tex">P</script> is referred to as the poset’s underlying set and <script type="math/tex">\leq</script> is referred to as its order relation.</p>
+
+<h1 id="notations-and-fundamentals">Notations and fundamentals</h1>
+
+<h2 id="greater-than">Greater than</h2>
+
+<p>A greater than relation <script type="math/tex">\geq</script> can be derived as the transpose of a poset’s less than relation: <script type="math/tex">a \geq b</script> means that <script type="math/tex">b \leq a</script>.</p>
+
+<h2 id="incomparability">Incomparability</h2>
+
+<p>For poset elements <script type="math/tex">p</script> and <script type="math/tex">q</script>, if neither <script type="math/tex">p \leq q</script> nor <script type="math/tex">q \leq p</script> then we say that <script type="math/tex">p</script> and <script type="math/tex">q</script> are <em>incomparable</em>, and write <script type="math/tex">p \parallel q</script>.</p>
+
+<h2 id="strict-orders">Strict orders</h2>
+
+<p>From any poset <script type="math/tex">\langle P, \leq \rangle</script>, we can derive an underlying strict order <script type="math/tex">% <![CDATA[
+< %]]></script>. For <script type="math/tex">p, q \in P</script>, <script type="math/tex">% <![CDATA[
+p < q %]]></script> means that the following conditions are satisfied:</p>
+
+<ul>
+  <li>1.) <script type="math/tex">p \leq q</script></li>
+  <li>2.) <script type="math/tex">p \neq q</script></li>
+</ul>
+
+<h2 id="the-cover-relation">The cover relation</h2>
+
+<p>From any poset <script type="math/tex">\langle P, \leq \rangle</script>, we can derive an underlying <em>cover relation</em> <script type="math/tex">\prec</script>, defined such that for <script type="math/tex">p,q \in P</script>, <script type="math/tex">p \prec q</script> whenever the following two conditions are satisfied:</p>
+
+<ul>
+  <li>1.) <script type="math/tex">% <![CDATA[
+p < q %]]></script></li>
+  <li>2.) For all <script type="math/tex">r \in P</script>, <script type="math/tex">% <![CDATA[
+p \leq r < q %]]></script> implies <script type="math/tex">p = r</script></li>
+</ul>
+
+<p>Simply put, <script type="math/tex">p \prec q</script> means that <script type="math/tex">q</script> is the smallest element of <script type="math/tex">P</script> which is strictly greater than <script type="math/tex">p</script>.
+<script type="math/tex">p \prec q</script> is pronounced “<script type="math/tex">p</script> is covered by <script type="math/tex">q</script>”, or “<script type="math/tex">q</script> covers <script type="math/tex">p</script>”, and <script type="math/tex">q</script> is said to be a <em>cover</em> of <script type="math/tex">p</script>.</p>
+
+<h2 id="hasse-diagrams">Hasse diagrams</h2>
+
+<p>Let <script type="math/tex">\langle P, \leq \rangle</script> be the poset such that <script type="math/tex">P = \{ p, q, r \}</script> and <script type="math/tex">\leq = \{(p,p),(p,q)(p,r),(q,q),(q,r),(r,r) \}</script>. The order relation <script type="math/tex">\leq</script>, being binary, can be depicted as a directed graph, though the resulting image leaves something to be desired.</p>
+
+<p><img src="http://i.imgur.com/fOkTwXW.png" alt="Naive first attempt at representing P with a directed graph" /></p>
+
+<!---
+dot source:
+
+digraph G {
+  node [width = 0.1, height = 0.1]
+  rankdir = BT;
+  p -> q;
+  q -> r;
+  p -> p;
+  r -> r;
+  q -> q;
+  p -> r;
+}
+--->
+
+<p>Including an edge for every pair in <script type="math/tex">\leq</script> results in a rather noisy looking graph. In particular, as long as we are under assumption that the graph we are viewing depicts a poset, placing a reflexive edge on each node is tedious and redundant. Our first step toward cleaning up this graph is to remove all reflexive edges, instead leaving reflexivity as an implicit assumption. Likewise, we can leave those edges which are implied by transitivity — <script type="math/tex">(p,r)</script> is the only such edge in this poset — implicit. As a final step, we remove the arrow heads from our edges, leaving their directions implied by the y-coordinates of the nodes they connect: an edge between two nodes means that the poset element corresponding to the lower node is less than the poset element corresponding to the higher node. The simplified depiction of <script type="math/tex">\langle P, \leq \rangle</script> then follows.</p>
+
+<p><img src="http://i.imgur.com/W8erVrC.png" alt="Hasse diagram for P" /></p>
+
+<!---
+dot source:
+
+digraph G {
+  node [width = 0.1, height = 0.1];
+  edge [arrowhead = "none"];
+  rankdir = BT;
+  p -> q;
+  q -> r;
+}
+--->
+
+<p>Such a depiction is called a <em>Hasse diagram</em>; drawing a Hasse diagram is the standard method for visually depicting a poset. Now that we understand what Hasse diagrams are, we can provide a concise definition: a Hasse diagram is a graph-based visual depiction of a poset <script type="math/tex">\langle P, \leq \rangle</script>, where elements of <script type="math/tex">P</script> are represented as nodes, and for all <script type="math/tex">(p,q) \in P^2</script> such that <script type="math/tex">p \prec q</script>, an upward edge is drawn from <script type="math/tex">p</script> to <script type="math/tex">q</script>.</p>
+
+<p><script type="math/tex">p \leq q</script> requires that <script type="math/tex">p</script> must appear lower in a Hasse diagram than <script type="math/tex">q</script>. However, the converse is not true.  In the following Hasse diagram, <script type="math/tex">t \parallel r</script> even though <script type="math/tex">t</script> is positioned lower than <script type="math/tex">r</script>.</p>
+
+<p><img src="http://i.imgur.com/hmyUZv9.png" alt="t is lower than r but incomparable to r" /></p>
+
+<!---
+dot source:
+
+digraph G {
+  node [width = 0.1, height = 0.1];
+  edge [arrowhead = "none"];
+  rankdir = BT;
+  p -> t;
+  p -> r;
+  t -> q;
+  q -> s;
+  r -> s;
+}
+--->
+
+<h2 id="duality">Duality</h2>
+
+<p>Every poset <script type="math/tex">\langle P, \leq \rangle</script> has a corresponding <em>dual</em> poset <script type="math/tex">\langle P^{\partial}, \geq \rangle</script>, where <script type="math/tex">P^{\partial}</script> (pronounced “P op”) is a set whose elements are in correspondence with those of <script type="math/tex">P</script>, and <script type="math/tex">\geq</script> is the transpose of <script type="math/tex">\leq</script> discussed previously. The Hasse diagram of <script type="math/tex">P^{\partial}</script> is obtained by flipping the Hasse diagram of <script type="math/tex">P</script> upside down. Whenever <script type="math/tex">\phi</script> is a propsition about posets, we obtain <script type="math/tex">\phi</script>’s <em>dual proposition</em> <script type="math/tex">\phi^{\partial}</script> by replacing all occurrences of <script type="math/tex">\leq</script> with <script type="math/tex">\geq</script> and all occurrences of <script type="math/tex">\geq</script> with <script type="math/tex">\leq</script>.</p>
+
+<p>The existence of dual posets and dual propositions gives rise to the <em>duality principle</em>: if a proposition <script type="math/tex">\forall P. \phi</script>, quantified over all posets, is true then its dual <script type="math/tex">\forall P. \phi^{\partial}</script> is also true. The duality principle works because instantiating <script type="math/tex">\forall P. \phi</script> with a poset <script type="math/tex">P</script> is equivalent to instantiating <script type="math/tex">\forall P. \phi^{\partial}</script> with <script type="math/tex">P^{\partial}</script>. This is due to the fact that <script type="math/tex">a \leq b</script> in <script type="math/tex">P</script> iff <script type="math/tex">a \geq b</script> in <script type="math/tex">P^{\partial}</script>. Theorems involving posets often come with a free dual theorem thanks to the duality principle.</p>
+
+<!---
+%%%knows-requisite([category_theory]):
+Poset as category
+==============
+
+Any poset $\langle P, \leq \rangle$ can be viewed as a [category category] in which the objects are the elements of $P$, and for all $p,q \in P$, there is a unique morphism from $p$ to $q$ iff $p \leq q$. This category has closure under morphism composition due to the transitivity of $\leq$ and identity morphisms due to the reflexivity of $\leq$. Associativity of morphism composition stems from the uniqueness of arrows between any pair of objects. The functors between poset categories are [poset_monotone_map monotone maps].
+--->
+
+<h2 id="additional-material">Additional Material</h2>
+
+<p>For some additional examples of posets, see <a href="PosetExamples.html">examples</a>.
+To test your knowledge of posets, try these <a href="PosetExercises.html">exercises</a>.
+The most useful operators on elements of a poset are called the <a href="JoinAndMeet.html">join and meet</a>.
+We can relate the elements of one poset to another through the use of <a href="MonotoneFunction.html">monotone functions</a>.</p>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Kevin Clancy&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Kevin Clancy&#39;s Blog
+            
+            </li>
+            
+            <li><a href="mailto:kclanc@gmail.com">kclanc@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/kevinclancy"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">kevinclancy</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A blog about programming languages and computer science.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Kevin Clancy&#39;s Blog</title>
-  <meta name="description" content="A blog about programming languages and computer science.">
+  <title>Monotone function examples</title>
+  <meta name="description" content="Try these exercises and become a deity of monotonicity.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="/">
+  <link rel="canonical" href="/order_theory/MonotoneFunctionExercises.html">
   <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
   
   
@@ -67,56 +67,53 @@
 
     <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <div class="home">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-  <h1 class="page-heading">Posts</h1>
+
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Monotone function examples</h1>
+    <p class="post-meta">
+      <time datetime="2018-06-14T13:47:23-04:00" itemprop="datePublished">
+        
+        Jun 14, 2018
+      </time>
+      </p>
+  </header>
+
+
+  <div class="post-content" itemprop="articleBody">
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+			-->
+			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+		<p>Try these exercises and become a <em>deity</em> of monotonicity.</p>
+
+<h2 id="monotone-composition">Monotone composition</h2>
+
+<p>Let <script type="math/tex">P, Q</script>, and <script type="math/tex">R</script> be posets and let <script type="math/tex">f : P \to Q</script> and <script type="math/tex">g : Q \to R</script> be monotone
+functions. Prove that their composition <script type="math/tex">g \circ f</script> is a monotone function from <script type="math/tex">P</script> to <script type="math/tex">R</script>.</p>
+
+<h2 id="evil-twin">Evil twin</h2>
+
+<p>Let <script type="math/tex">P</script> and <script type="math/tex">Q</script> be posets. A function <script type="math/tex">f : P \to Q</script> is called <strong>antitone</strong> if it <em>reverses</em> order: that is, <script type="math/tex">f</script> is antitone whenever <script type="math/tex">p_1 \leq_P p_2</script> implies  <script type="math/tex">f(p_1) \geq_Q f(p_2)</script>. Prove that the composition of two antitone functions is monotone.</p>
+
+<h2 id="separate-monotonicity">Separate monotonicity</h2>
+
+<p>A two argument function <script type="math/tex">f : P \times A \to Q</script> is called  <em>separately monotone in the 1st argument</em> whenever <script type="math/tex">P</script> and <script type="math/tex">Q</script> are posets and for all <script type="math/tex">a \in A</script>, <script type="math/tex">p_1 \leq_P p_2</script> implies <script type="math/tex">f(a, p_1) \leq_Q f(a, p_2)</script>. Likewise a 2-argument function <script type="math/tex">f : A \times P \to Q</script> is called <em>separately monotone in the second argument</em> whenever <script type="math/tex">P</script> and <script type="math/tex">Q</script> are posets and for all <script type="math/tex">a \in A</script>, <script type="math/tex">p_1 \leq_P p_2</script> implies <script type="math/tex">f(p_1, a) \leq_Q f(p_2, a)</script>.</p>
+
+<p>Let <script type="math/tex">P, Q, R</script>, and <script type="math/tex">S</script> be posets, and let <script type="math/tex">f : P \times Q \to R</script> be a function that is partially monotone in both of its arguments. Furthermore, let <script type="math/tex">g_1 : S \to P</script> and <script type="math/tex">g_2 : S \to Q</script> be monotone functions.</p>
+
+<p>Prove that the function <script type="math/tex">h : S \to R</script> defined as <script type="math/tex">h(s) \doteq f(g_1(s), g_2(s))</script> is monotone.</p>
+
+<h2 id="brain-storm">Brain storm</h2>
+
+<p>List all of the commonly used two argument functions you can think of that are partially monotone in both arguments. Also, list all of the commonly used two argument functions you can think of that are partially monotone in one argument and partially antitone in the other.</p>
+
+  </div>
+
   
-  
-
-
-  <ul class="post-list">
-    
-      <li>
-        
-        <span class="post-meta">Jun 13, 2018</span>
-
-        <h2>
-          <a class="post-link" href="/2018/06/13/order-theory-tutorials.html">Order Theory for the Iridescent Astronaut</a>
-        </h2>
-      </li>
-    
-      <li>
-        
-        <span class="post-meta">Feb 16, 2018</span>
-
-        <h2>
-          <a class="post-link" href="/2018/02/16/monotonicity-through-coeffects.html">Monotonicity Through Coeffects</a>
-        </h2>
-      </li>
-    
-      <li>
-        
-        <span class="post-meta">Nov 9, 2017</span>
-
-        <h2>
-          <a class="post-link" href="/2017/11/09/monotonicity-through-types.html">Monotonicity Through Types</a>
-        </h2>
-      </li>
-    
-      <li>
-        
-        <span class="post-meta">Aug 18, 2016</span>
-
-        <h2>
-          <a class="post-link" href="/2016/08/18/a-class-system-for-typed-lua.html">A Class System for Typed Lua</a>
-        </h2>
-      </li>
-    
-  </ul>
-
-  <p class="rss-subscribe">subscribe <a href="/feed.xml">via RSS</a></p>
-
-</div>
+</article>
 
       </div>
     </main>

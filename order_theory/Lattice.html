@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Lattice</title>
+  <meta name="description" content="A lattice is a poset that is closed under binary joins and meets.">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="/order_theory/Lattice.html">
+  <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Kevin Clancy&#39;s Blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Lattice</h1>
+    <p class="post-meta">
+      <time datetime="2016-08-18T13:04:58-04:00" itemprop="datePublished">
+        
+        Aug 18, 2016
+      </time>
+      </p>
+  </header>
+
+
+  <div class="post-content" itemprop="articleBody">
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+			-->
+			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+		<p>A <strong>lattice</strong> is a <a href="Poset.html">poset</a> that is closed under binary <a href="JoinAndMeet.html">joins and meets</a>.</p>
+
+<p>Let <script type="math/tex">L</script> be a lattice. Then for all <script type="math/tex">p,q,r \in L</script> the following properties are necessarily satisfied.</p>
+
+<ul>
+  <li>Associativity of joins and meets: <script type="math/tex">(p \vee q) \vee r = p \vee (q \vee r)</script>, and <script type="math/tex">(p \wedge q) \wedge r = p \wedge (q \wedge r)</script></li>
+  <li>Commutativity of joins and meets: <script type="math/tex">p \vee q = q \vee p</script> and <script type="math/tex">p \wedge q = q \wedge p</script></li>
+  <li>Idempotency of joins and and meets: <script type="math/tex">p \vee p = p</script> and <script type="math/tex">p \wedge p = p</script></li>
+  <li>Absorption: <script type="math/tex">p \vee (p \wedge q) = p</script> and <script type="math/tex">p \wedge (p \vee q) = p</script></li>
+</ul>
+
+<details>
+ <summary>Proofs</summary>
+
+<div>
+    <p>Lemma 1: Let <script type="math/tex">P</script> be a poset, <script type="math/tex">S \subseteq P</script>, and <script type="math/tex">p \in P</script>. If both <script type="math/tex">\bigvee S</script> and <script type="math/tex">(\bigvee S) \vee p</script> exist then <script type="math/tex">\bigvee (S \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigvee S) \vee p = \bigvee (S \cup \{p\})</script>.</p>
+
+    <p>Proof: See the <em>Join fu</em> exercise in <a href="PosetExercises.html">poset exercises</a>.</p>
+
+    <h1 id="associativity">Associativity</h1>
+    <p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">p,q,r,s \in L</script> such that <script type="math/tex">s = p \vee (q \vee r)</script>. We apply the above lemma, along with commutativity and closure of lattices under binary joins, to get
+<script type="math/tex">p \vee (q \vee r) = (q \vee r) \vee p = (\bigvee \{q, r\}) \vee p = \bigvee (\{q, r\} \cup \{p\}) =</script>
+<script type="math/tex">\bigvee \{ q, r, p \} = \bigvee (\{p, q\} \cup \{r\}) = (\bigvee \{p, q\}) \vee r = (p \vee q) \vee r.</script></p>
+
+    <p>By duality, we also have the associativity of binary meets.</p>
+
+    <h1 id="commutativity">Commutativity</h1>
+
+    <p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">p,q \in L</script>. Then <script type="math/tex">p \vee q = \bigvee \{ p, q \} = q \vee p</script>. Binary joins are therefore commutative. By duality, binary meets are also commutative.</p>
+
+    <h1 id="idempotency">Idempotency</h1>
+
+    <p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">p \in L</script>. Then <script type="math/tex">p \vee p = \bigvee \{ p \} = p</script>. The property that for all <script type="math/tex">p \in L</script>, <script type="math/tex">p \vee p = p</script> is called <em>idempotency</em>. By duality, we also have the idempotency of meets: for all <script type="math/tex">p \in L</script>, <script type="math/tex">p \wedge p = p</script>.</p>
+
+    <h1 id="absorption">Absorption</h1>
+
+    <p>Since <script type="math/tex">p \wedge q</script> is the greatest <em>lower bound</em> of <script type="math/tex">\{p,q\}</script>, <script type="math/tex">p \wedge q \leq p</script>. Because <script type="math/tex">p \leq p</script> and <script type="math/tex">(p \wedge q) \leq p</script>, <script type="math/tex">p</script> is an upper bound of <script type="math/tex">\{p, p \wedge q\}</script>, and so <script type="math/tex">p \vee (p \wedge q) \leq p</script>. On the other hand, <script type="math/tex">p \vee (p \wedge q)</script> is the least <em>upper bound</em> of <script type="math/tex">\{p, p \wedge q\}</script>, and so <script type="math/tex">p \leq p \vee (p \wedge q)</script>. By anti-symmetry, <script type="math/tex">p = p \vee (p \wedge q)</script>.</p>
+  </div>
+</details>
+
+<h2 id="closure-under-finite-joins-and-meets">Closure under finite joins and meets</h2>
+
+<p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">S = \{ s_1, ..., s_n \}</script> be some finite subset of <script type="math/tex">L</script>. Then an inductive argument shows that <script type="math/tex">\bigvee S</script> exists.</p>
+
+<details>
+<summary>Proof</summary>
+<div>
+    <p>Here again, we will need Lemma 1, stated in the proofs of the four lattice properties.</p>
+
+    <p>Our proof proceeds by induction on the cardinality of <script type="math/tex">S</script>.</p>
+
+    <p>The base case is <script type="math/tex">\bigvee \{ s_1 \} = s_1 \in L</script>. For the inductive step, we suppose that <script type="math/tex">\bigvee \{s_1, ..., s_i \}</script> exists. Then, applying lemma 1, we have <script type="math/tex">\bigvee \{s_1, ..., s_{i+1} \} = \bigvee \{s_1, ..., s_i \} \vee s_{i+1}</script>. Applying our inductive hypothesis and closure under binary joins, we have <script type="math/tex">\bigvee \{s_1, ..., s_i \} \vee s_{i+1}</script> exists. Lattices are therefore closed under all <em>finite</em> joins, not just binary ones. Dually, lattices are closed under all finite meets.</p>
+  </div>
+</details>
+
+<h2 id="basic-positive-examples">Basic positive examples</h2>
+
+<p>Here are two Hasse diagrams of posets which are lattices.</p>
+
+<p><img src="http://i.imgur.com/OlQnU07.png" alt="A diamond shaped lattice" /></p>
+
+<!---
+
+dot source:
+
+digraph G {
+  node [width = 0.1, height = 0.1]
+  edge [arrowhead = "none"]
+  a [label = ""]
+  b [label = ""]
+  c [label = ""]
+  d [label = ""]
+
+  rankdir = BT;
+  a -> b
+  a -> c
+  b -> d
+  c -> d
+}
+
+--->
+
+<p><img src="http://i.imgur.com/L0x074n.png" alt="A cube shaped lattice" /></p>
+
+<!---
+
+dot source:
+
+digraph G {
+  node [width = 0.1, height = 0.1]
+  edge [arrowhead = "none"]
+  a [label = ""]
+  b [label = ""]
+  c [label = ""]
+  d [label = ""]
+  e [label = ""]
+  f [label = ""]
+  g [label = ""]
+  h [label = ""]
+
+  rankdir = BT;
+  a -> b
+  a -> c
+  a -> d
+  b -> e
+  b -> f
+  c -> e
+  c -> g
+  d -> f
+  d -> g
+  e -> h
+  f -> h
+  g -> h
+}
+
+--->
+
+<h2 id="basic-negative-examples">Basic negative examples</h2>
+
+<p>Here are two Hasse diagrams of posets which are <em>not</em> lattices.</p>
+
+<p><img src="http://i.imgur.com/DAeuYz0.png" alt="A simple non-lattice" /></p>
+
+<!---
+%%%comment:
+
+digraph G {
+  node [width = 0.1, height = 0.1]
+  edge [arrowhead = "none"]
+  a [label = ""]
+  b [label = ""]
+  c [label = ""]
+  d [label = ""]
+  e [label = ""]
+  f [label = ""]
+  g [label = ""]
+  h [label = ""]
+
+  rankdir = BT;
+  a -> b
+  a -> c
+  a -> d
+  b -> e
+  b -> f
+  c -> e
+  c -> g
+  d -> f
+  d -> g
+  e -> h
+  f -> h
+  g -> h
+}
+--->
+
+<p>In the above diagram, the two bottom elements have no common lower bounds. Therefore they have no meet, and so the depicted poset is not a lattice. However, it should be easy to verify that this poset is closed under binary joins.</p>
+
+<p><img src="http://i.imgur.com/5Vqk87u.png" alt="Another simple non-lattice" /></p>
+
+<!---
+
+dot source:
+
+digraph G {
+  node [width = 0.1, height = 0.1]
+  edge [arrowhead = "none"]
+  a [label = ""]
+  b [label = ""]
+  c [label = ""]
+  d [label = ""]
+
+  rankdir = BT;
+  a -> b
+  c -> d
+}
+
+--->
+
+<p>The Hasse diagram of this poset has two connected components. No element from the left component will have a meet or a join with any element from the right component. The depicted poset is therefore <em>not</em> a lattice.</p>
+
+<h2 id="the-connecting-lemma">The connecting lemma</h2>
+
+<p>The connecting lemma states that for any lattice <script type="math/tex">L</script> and <script type="math/tex">p,q \in L</script>, <script type="math/tex">p \vee q = p \Leftrightarrow q \leq p</script> and dually, <script type="math/tex">p \wedge q = p \Leftrightarrow q \geq p</script>. This simple but important lemma is so named because it establishes a connection between the lattice’s join operator and its underlying poset order.</p>
+
+<details>
+<summary>Proof</summary>
+<div>
+    <p>We prove <script type="math/tex">p \vee q = p \Leftrightarrow q \leq p</script>; the other part follows from duality. If <script type="math/tex">p \vee q = p</script>, then <script type="math/tex">p</script> is an upper bound of both <script type="math/tex">p</script> and <script type="math/tex">q</script>, and so <script type="math/tex">q \leq p</script>. Going the other direction, suppose <script type="math/tex">q \leq p</script>. Since <script type="math/tex">p</script> is and upper bound of itself by reflexivity, it then follows that <script type="math/tex">p</script> is an upper bound of <script type="math/tex">\{p, q\}</script>. There cannot be a lesser upper bound of <script type="math/tex">\{p, q\}</script> because it would not be an upper bound of <script type="math/tex">p</script>. Hence, <script type="math/tex">p \vee q = p</script>.</p>
+  </div>
+</details>
+
+<h2 id="lattices-as-algebraic-structures">Lattices as algebraic structures</h2>
+
+<p>It’s also possible to formulate lattices as algebraic structurs <script type="math/tex">\langle L, \vee, \wedge \rangle</script> satisfying the associativity, commutativity, idempotency, and absorption laws described above. A poset <script type="math/tex">\langle L, \leq \rangle</script> can then be defined such that for <script type="math/tex">p, q \in L</script>, <script type="math/tex">p \leq q</script> whenever <script type="math/tex">p \vee q = q</script>. It can be shown that this poset is closed under binary meets and joins, and that these meets and joins are equal to the corresponding meets and joins of the algebraic lattice.</p>
+
+<h2 id="additional-material">Additional material</h2>
+
+<p>For more examples of lattices, see <a href="LatticeExamples.html">examples</a>.
+For some exercises involving the concepts introduced on this page, see <a href="LatticeExercises.html">exercises</a>.
+The <a href="CompleteLattice.html">complete lattices</a> are a particularly important and elegant class of lattice.</p>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Kevin Clancy&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Kevin Clancy&#39;s Blog
+            
+            </li>
+            
+            <li><a href="mailto:kclanc@gmail.com">kclanc@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/kevinclancy"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">kevinclancy</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A blog about programming languages and computer science.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
