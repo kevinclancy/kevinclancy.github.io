@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Order Theory for the Iridescent Astronaut</title>
-  <meta name="description" content="Try following this link Posets">
+  <meta name="description" content="Q: Do we really need another order theory tutorial for astronauts? Aren&#39;t there enough already? A: As far as I know, there are no order theory tutorials for ...">
 
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="/2018/06/13/order-theory-tutorials.html">
@@ -87,8 +87,104 @@
 			-->
 			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-		<p>Try following this link
-<a href="/order_theory/Poset.html">Posets</a></p>
+		<details>
+<summary>Q: Do we really need another order theory tutorial for astronauts? Aren't there enough already?</summary>
+<div style="background-color:lightblue">
+    <p>A: As far as I know, there are no order theory tutorials for astronauts. The title <em>Order Theory for the Iridescent Astronaut</em>
+was only chosen to get your attention. If this tutorial isn’t for astronauts, who then is it for?</p>
+
+    <h1 id="programmers-and-computer-scientists">Programmers and computer scientists</h1>
+    <p>Order theory is useful for many forms of reasoning that are often relevant to the tasks programmers perform.
+Have you ever performed a topological sort? That’s an inherently order theoretic operation, but it’s just the tip of the iceberg.
+Order theory can also be used for reasoning about hierarchical relations (such as class hierarchies in OOP),
+algorithms which perform successive refinements of an approximation (such as the binary search),
+causality in distributed systems, and more.</p>
+
+    <h1 id="the-mathematically-inclined">The mathematically inclined</h1>
+    <p>The goal is to understand order on a deep level, and to do that we’re going to need to work
+through rigorous proofs. As a prerequisite, you will need familiarity with the following concepts</p>
+
+    <ul>
+      <li>Proof by contradiction</li>
+      <li>Proof by contrapositive</li>
+      <li>Proof by vacuity (i.e. when a claim is <em>vacuously true</em>)</li>
+      <li>How to prove two sets are equal</li>
+    </ul>
+
+    <p>If you don’t know what any of those things are, you may be feeling pretty depressed right now,
+but you should cheer up. Why? Because you can learn all of these things, starting now! There is a widespread societal problem where people believe they cannot learn anything beyond basic reading, writing, and arithmetic unless they are enrolled in a formal program, working
+toward an advanced degree. In fact, there is a fairly effective way to learn almost anything</p>
+
+    <ul>
+      <li>
+        <p>Step 1: Figure out what the most established and respected introductory textbooks are in the field of your choice. Find out which textbooks universities like Stanford and Princeton are using to teach their introductory courses. (They should be included in publicly visible course syllabi in the courses’ websites.)</p>
+      </li>
+      <li>
+        <p>Step 2: Choose a textbook, buy it from amazon, read through the chapters and do the exercises.</p>
+      </li>
+      <li>
+        <p>Step 3: For further info on topics covered in the book, follow the references in the back.</p>
+      </li>
+    </ul>
+
+    <p>To learn the basics of rigorous mathematics <em>in particular</em> (which includes contrapositive, vacuity, etc.), I recommend <a href="https://www.amazon.com/Mathematics-Discrete-Introduction-Edward-Scheinerman/dp/0534398987/ref=sr_1_2?ie=UTF8&amp;qid=1529345755&amp;sr=8-2&amp;keywords=mathematics+a+discrete+introduction&amp;dpID=51rPrT%252BgOvL&amp;preST=_SX218_BO1,204,203,200_QL40_&amp;dpSrc=srch">Mathematics: A Discrete Introduction</a> by Ed Scheinerman. I read this book in high school. It’s really quite friendly and approachable, and it will blow your mind. Either that, or you will find it confusing.</p>
+  </div>
+</details>
+
+<details>
+<summary>Q: I heard that the human psyche is a balance between <i>Order</i> and <i>Chaos</i>. Will this material help me defeat the <i>Dragon of Chaos</i>?</summary>
+<div style="background-color:lightblue">
+    <p>A: I don’t know about that, but I can tell you that this set of tutorials is highly structured. It is organized into several topics,
+as listed in the table of contents below. Each topic is divided into at most three subsections, described below</p>
+
+    <h1 id="introduction">Introduction</h1>
+
+    <p>The introduction section provides any definitions relevant to the topic,
+as well as diagrams depicting the mathematical objects involved,
+and also potentially proofs which are central to the topic.
+Proofs in an introduction section are typically hidden away in
+pop-out boxes. They have been hidden so that detailed proofs
+do not obscure the high-level eagle-eye view of the topic.
+However, this does not mean that you should not read them;
+in fact, it is important to read <em>all proofs</em> (if any) in each
+introduction section. At the end of each introduction section,
+several links have been placed, some to related topics and others<br />
+to the present topics <em>Examples</em> and <em>Exercises</em> sections.</p>
+
+    <h1 id="examples">Examples</h1>
+
+    <p>An examples section lists various ways that the present topic can applied,
+whether to other areas of mathematics, practical programming, or
+underwater basket weaving. Unlike introduction sections, examples are
+<em>optional</em>; some examples may reference areas of mathematics that you
+are not familiar with, and it is totally okay to skip these examples.</p>
+
+    <h1 id="exercises">Exercises</h1>
+
+    <p>Exercises, like examples, are optional. Sometimes the examples of
+a particular section build off of each other, so it’s probably best
+to solve them from top to bottom. The solutions to exercises are hidden
+away in pop-out boxes, obviously because you’re supposed to find the
+solution yourself before looking at the provided explanation.</p>
+
+  </div>
+</details>
+
+<h1 id="begin-learning">Begin learning</h1>
+
+<p>These tutorials are structured as a non-linear schema. Start reading <a href="/order_theory/Poset.html">here</a>
+and follow links as you see fit. Or, if you insist on linearity, use the table of contents below, traversing topics
+from top to bottom.</p>
+
+<h1 id="table-of-contents">Table of contents</h1>
+
+<ul>
+  <li><a href="/order_theory/Poset.html">Posets</a></li>
+  <li><a href="/order_theory/MonotoneFunction.html">Monotone Functions</a></li>
+  <li><a href="/order_theory/JoinAndMeet.html">Join and Meet</a></li>
+  <li><a href="/order_theory/Lattice.html">Lattices</a></li>
+  <li><a href="/order_theory/CompleteLattice.html">Complete Lattices</a></li>
+</ul>
 
   </div>
 

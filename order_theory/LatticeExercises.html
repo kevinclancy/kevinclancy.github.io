@@ -74,9 +74,9 @@
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Lattice exercises</h1>
     <p class="post-meta">
-      <time datetime="2018-06-14T15:14:04-04:00" itemprop="datePublished">
+      <time datetime="2018-06-18T17:10:18-04:00" itemprop="datePublished">
         
-        Jun 14, 2018
+        Jun 18, 2018
       </time>
       </p>
   </header>
@@ -95,7 +95,7 @@
 
 <details>
 <summary>Solution</summary>
-<div>
+<div style="background-color:lightblue">
 
     <p>The following counterexample shows that lattice meets do not necessarily distribute over joins.</p>
 
@@ -129,7 +129,7 @@ digraph G {
 
 <details>
 <summary>Solution</summary>
-<div>
+<div style="background-color:lightblue">
     <p>If <script type="math/tex">J</script> and <script type="math/tex">K</script> have a non-empty intersection, then there exists some lattice element <script type="math/tex">p</script> such that <script type="math/tex">p \in J</script> and <script type="math/tex">p \in K</script>. Since <script type="math/tex">\bigwedge J</script> is a lower bound of <script type="math/tex">J</script>, we have <script type="math/tex">\bigwedge J \leq p</script>. Since <script type="math/tex">\bigvee K</script> is an upper bound of <script type="math/tex">K</script>, we have <script type="math/tex">p \leq \bigvee K</script>. By transitivity, we have <script type="math/tex">\bigwedge J \leq p \leq \bigvee K</script>.</p>
   </div>
 </details>
@@ -141,7 +141,7 @@ digraph G {
 
 <details>
 <summary>Solution</summary>
-<div>
+<div style="background-color:lightblue">
     <p>Rephrasing the problem statement, we have that every element of <script type="math/tex">J</script> is a lower bound of <script type="math/tex">K</script> and that every element of <script type="math/tex">K</script> is an upper bound of <script type="math/tex">J</script>. It the follows that for <script type="math/tex">j \in J</script>, <script type="math/tex">j \leq \bigwedge K</script>. Hence, <script type="math/tex">\bigwedge K</script> is an upper bound of <script type="math/tex">J</script>, and therefore it is greater than or equal to the <em>least</em> upper bound of <script type="math/tex">J</script>: <script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
   </div>
 </details>
@@ -152,7 +152,7 @@ digraph G {
 
 <details>
 <summary>Solution</summary>
-<div>
+<div style="background-color:lightblue">
     <p>To get an intuitive feel for this theorem, it helps to first consider a small concrete instantiation. Consider the <script type="math/tex">3 \times 3</script> matrix depicted below, with elements <script type="math/tex">a,b,c,d,e,f,g,h</script>, and <script type="math/tex">i</script>. The inequality instantiates to <script type="math/tex">(a \wedge b \wedge c) \vee (d \wedge e \wedge f) \vee (g \wedge h \wedge i) \leq (a \vee d \vee g) \wedge (b \vee e \vee h) \wedge (c \vee f \vee i)</script>. Why would this inequality hold?</p>
 
     <script type="math/tex; mode=display">% <![CDATA[

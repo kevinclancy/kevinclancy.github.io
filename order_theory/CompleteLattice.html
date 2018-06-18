@@ -74,9 +74,9 @@
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Complete lattice</h1>
     <p class="post-meta">
-      <time datetime="2018-06-14T15:14:04-04:00" itemprop="datePublished">
+      <time datetime="2018-06-18T17:10:18-04:00" itemprop="datePublished">
         
-        Jun 14, 2018
+        Jun 18, 2018
       </time>
       </p>
   </header>
@@ -93,7 +93,7 @@
 
 <details>
 <summary>Proof</summary>
-<div>
+<div style="background-color:lightblue">
     <p>Suppose that <script type="math/tex">P</script> is a poset which is closed under arbitrary joins. Let <script type="math/tex">A \subseteq P</script>. Let <script type="math/tex">A^L</script> be the set of lower bounds of <script type="math/tex">A</script>, i.e. the set <script type="math/tex">\{ p \in P \mid \forall a \in A. p \leq a \}</script>. Since <script type="math/tex">P</script> is closed under joins, we have the existence of <script type="math/tex">\bigvee A^L</script> in <script type="math/tex">P</script>.  We will now show that <script type="math/tex">\bigvee A^L</script> is the meet of <script type="math/tex">A</script>.</p>
 
     <p>First, we show that <script type="math/tex">\bigvee A^L</script> is a lower bound of <script type="math/tex">A</script>. Let <script type="math/tex">a \in A</script>. By the definition of <script type="math/tex">A^L</script>, <script type="math/tex">a</script> is an upper bound of <script type="math/tex">A^L</script>. Because <script type="math/tex">\bigvee A^L</script> is less than or equal to any upper bound of <script type="math/tex">A^L</script>, we have <script type="math/tex">\bigvee A^L \leq a</script>. <script type="math/tex">\bigvee A^L</script> is therefore a lower bound of <script type="math/tex">A</script>.</p>
@@ -102,24 +102,24 @@
   </div>
 </details>
 
-<h1 id="complete-lattices-are-bounded">Complete lattices are bounded</h1>
+<h2 id="complete-lattices-are-bounded">Complete lattices are bounded</h2>
 
 <p>As a consequence of closure under arbitrary joins, a complete lattice <script type="math/tex">L</script> contains both <script type="math/tex">\bigvee \emptyset</script> and <script type="math/tex">\bigvee L</script>. The former is the least element of <script type="math/tex">L</script> satisfying a vacuous set of constraints; every element of <script type="math/tex">L</script> satisfies a vacuous set of constraints, so this is really the minimum element of <script type="math/tex">L</script>. The latter is an upper bound of all elements of <script type="math/tex">L</script>, and so it is a maximum. A lattice with both minimum and maximum elements is called bounded, and as this discussion has shown, all complete lattices are bounded.</p>
 
-<h1 id="basic-examples">Basic examples</h1>
+<h2 id="basic-examples">Basic examples</h2>
 
-<h2 id="finite-lattices">Finite Lattices</h2>
+<h1 id="finite-lattices">Finite Lattices</h1>
 
 <p>The collection of all subsets of a finite lattice coincides with its collection of finite subsets. A finite lattice, being a finite poset that is closed under finite joins, is then necessarily closed under arbitrary joins. All finite lattices are therefore complete lattices.</p>
 
-<h2 id="powersets">Powersets</h2>
+<h1 id="powersets">Powersets</h1>
 
 <p>For any set <script type="math/tex">X</script>, consider the poset <script type="math/tex">\langle \mathcal P(X), \subseteq \rangle</script> of <script type="math/tex">X</script>’s powerset ordered by inclusion.
 This poset is a complete lattice in which for all <script type="math/tex">Y \subset \mathcal P(X)</script>, <script type="math/tex">\bigvee Y = \bigcup Y</script>.</p>
 
 <p>To see that <script type="math/tex">\bigvee Y = \bigcup Y</script>, first note that because union contains all of its constituent sets, for all <script type="math/tex">A \in Y</script>, <script type="math/tex">A \subseteq \bigcup Y</script>. This makes <script type="math/tex">\bigcup Y</script> an upper bound of <script type="math/tex">Y</script>. Now suppose that <script type="math/tex">B \in \mathcal P(X)</script> is an upper bound of <script type="math/tex">Y</script>; i.e., for all <script type="math/tex">A \in Y</script>, <script type="math/tex">A \subseteq B</script>. Let <script type="math/tex">x \in \bigcup Y</script>. Then <script type="math/tex">x \in A</script> for some <script type="math/tex">A \in Y</script>. Since <script type="math/tex">A \subseteq B</script>, <script type="math/tex">x \in B</script>. Hence, <script type="math/tex">\bigcup Y \subseteq B</script>, and so <script type="math/tex">\bigcup Y</script> is the least upper bound of <script type="math/tex">Y</script>.</p>
 
-<h1 id="the-knaster-tarski-fixpoint-theorem">The Knaster-Tarski fixpoint theorem</h1>
+<h2 id="the-knaster-tarski-fixpoint-theorem">The Knaster-Tarski fixpoint theorem</h2>
 
 <p>Suppose that we have a poset <script type="math/tex">X</script> and a <a href="MonotoneFunction.html">monotone function</a> <script type="math/tex">F : X \to X</script>. An element <script type="math/tex">x \in X</script> is called <script type="math/tex">F</script><strong>-consistent</strong> if <script type="math/tex">x \leq F(x)</script> and is called <script type="math/tex">F</script><strong>-closed</strong> if <script type="math/tex">F(x) \leq x</script>. A fixpoint of <script type="math/tex">F</script> is then an element of <script type="math/tex">X</script> which is both <script type="math/tex">F</script>-consistent and <script type="math/tex">F</script>-closed.</p>
 
@@ -129,7 +129,7 @@ This poset is a complete lattice in which for all <script type="math/tex">Y \sub
 
 <details>
 <summary>Show solution</summary>
-<div>
+<div style="background-color:lightblue">
     <p>Let <script type="math/tex">L = \langle \mathbb R, \leq \rangle</script> and let <script type="math/tex">F</script> be the identity function <script type="math/tex">F(x) = x</script>. <script type="math/tex">x \leq y \implies F(x) = x \leq y = F(y)</script>, and so <script type="math/tex">F</script> is monotone. The fixpoints of <script type="math/tex">F</script> are all elements of <script type="math/tex">\mathbb R</script>. Because <script type="math/tex">\mathbb R</script> does not have a maximum or minimum element, neither <script type="math/tex">\mu F</script> nor <script type="math/tex">\nu F</script> exist.</p>
   </div>
 </details>
@@ -138,7 +138,7 @@ This poset is a complete lattice in which for all <script type="math/tex">Y \sub
 
 <details>
 <summary>Show solution</summary>
-<div>
+<div style="background-color:lightblue">
     <p>There are none. :p</p>
   </div>
 </details>
@@ -149,7 +149,7 @@ This poset is a complete lattice in which for all <script type="math/tex">Y \sub
 
 <details>
 <summary>Proof</summary>
-<div>
+<div style="background-color:lightblue">
     <p>We know that both <script type="math/tex">\bigwedge \{x \in L \mid F(x) \leq x\}</script> and <script type="math/tex">\bigvee \{x \in L \mid F(x) \leq x \}</script> exist due to the closure of complete lattices under meets and joins. We therefore only need to prove that <script type="math/tex">\bigwedge \{x \in L \mid F(x) \leq x\}</script> is a fixpoint of <script type="math/tex">F</script> that is less or equal to all other fixpoints of <script type="math/tex">F</script>. The rest follows from duality.</p>
 
     <p>Let <script type="math/tex">U = \{x \in L \mid F(x) \leq x\}</script> and <script type="math/tex">y = \bigwedge U</script>. We seek to show that <script type="math/tex">F(y) = y</script>. Let <script type="math/tex">V</script> be the set of fixpoints of <script type="math/tex">F</script>. Clearly, <script type="math/tex">V \subseteq U</script>. Because <script type="math/tex">y \leq u</script> for all <script type="math/tex">u \in U</script>, <script type="math/tex">y \leq v</script> for all <script type="math/tex">v \in V</script>. In other words, <script type="math/tex">y</script> is less than or equal to all fixpoints of <script type="math/tex">F</script>.</p>

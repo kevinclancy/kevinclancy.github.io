@@ -89,7 +89,7 @@
 
 		<p>Try these exercises to test your knowledge of joins and meets.</p>
 
-<h1 id="tangled-up">Tangled up</h1>
+<h2 id="tangled-up">Tangled up</h2>
 
 <p><img src="http://i.imgur.com/cYqkKm7.png" alt="a big crazy poset" /></p>
 
@@ -99,57 +99,69 @@
 
 <details>
  <summary>Show solution</summary>
-This join does *not* exist, because \(i\) and \(j\) are incomparable upper bounds of \( \{ c, b \} \), and no smaller upper bounds of \( \{ c, b \} \) exist.
+ <div style="background-color:lightblue">
+    <p>This join does <em>not</em> exist, because <script type="math/tex">i</script> and <script type="math/tex">j</script> are incomparable upper bounds of <script type="math/tex">\{ c, b \}</script>, and no smaller upper bounds of <script type="math/tex">\{ c, b \}</script> exist.</p>
+  </div>
 </details>
 
 <script type="math/tex; mode=display">g \vee e</script>
 
 <details>
  <summary>Show solution</summary>
- This join exists. \( g \vee e = j \).
+ <div style="background-color:lightblue">
+    <p>This join exists. <script type="math/tex">g \vee e = j</script>.</p>
+  </div>
 </details>
 
 <script type="math/tex; mode=display">j \wedge f</script>
 
 <details>
  <summary>Show solution</summary>
- This meet does *not* exist, because \( d \) and \( b \) are incomparable lower bounds of \( \{ j, f \} \), and no larger lower bounds of \( \{ j, f \} \) exist.
+ <div style="background-color:lightblue">
+    <p>This meet does <em>not</em> exist, because <script type="math/tex">d</script> and <script type="math/tex">b</script> are incomparable lower bounds of <script type="math/tex">\{ j, f \}</script>, and no larger lower bounds of <script type="math/tex">\{ j, f \}</script> exist.</p>
+  </div>
 </details>
 
 <script type="math/tex; mode=display">\bigvee \{a,b,c,d,e,f,g,h,i,j,k,l\}</script>
 
 <details>
  <summary>Show solution</summary>
+ <div style="background-color:lightblue">
  This join exists. It is \( l \).
+ </div>
 </details>
 
-<h1 id="join-fu">Join fu</h1>
+<h2 id="join-fu">Join fu</h2>
 
 <p>Let <script type="math/tex">P</script> be a poset, <script type="math/tex">S \subseteq P</script>, and <script type="math/tex">p \in P</script>. Prove that if both <script type="math/tex">\bigvee S</script> and <script type="math/tex">(\bigvee S) \vee p</script> exist then <script type="math/tex">\bigvee (S \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigvee S) \vee p = \bigvee (S \cup \{p\})</script>.</p>
 
 <details>
  <summary>Show solution</summary>
+ <div style="background-color:lightblue">
  For any \(X \subset P\), let \(X^U\) denote the set of upper bounds of \(X\). The above proposition follows from the fact that \(\{\bigvee S, p\}^U = (S \cup p)^U\), which is apparent from the following chain of bi-implications:
 
  \(q \in \{\bigvee S, p\}^U \iff \)
 
- for all \(s \in S, q \geq \bigvee S \geq s\), and \(q \geq p \iff\)
+ (for all \(s \in S, q \geq \bigvee S \geq s\) and \(q \geq p) \iff\)
 
  \(q \in (S \cup \{p\})^U\).
 
  If two subsets of a poset have the same set of upper bounds, then either they both lack a least upper bound, or both have the same least upper bound.
+ </div>
 </details>
 
-<h1 id="meet-fu">Meet fu</h1>
+<h2 id="meet-fu">Meet fu</h2>
 
 <p>Let <script type="math/tex">P</script> be a poset, <script type="math/tex">S \subseteq P</script>, and <script type="math/tex">p \in P</script>. Prove that if both <script type="math/tex">\bigwedge S</script> and <script type="math/tex">(\bigwedge S) \wedge p</script> exist then <script type="math/tex">\bigwedge (S \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigwedge S) \wedge p = \bigwedge(S \cup \{p\})</script>.</p>
 
 <details>
  <summary>Show solution</summary>
+ <div style="background-color:lightblue">
 Note that the proposition we are trying to prove here is the dual of the one stated in join fu. Thanks to the duality principle, this theorem therefore comes for free with our solution to join fu.
+</div>
 </details>
 
-<h1 id="quite-a-big-join">Quite a big join</h1>
+<h2 id="quite-a-big-join">Quite a big join</h2>
 
 <p>In the poset <script type="math/tex">\langle \mathbb N, \mid \rangle</script> discussed in <a href="PosetExamples.html">poset examples</a>, does <script type="math/tex">\bigvee \mathbb N</script> exist? If so, what is it?</p>
 
