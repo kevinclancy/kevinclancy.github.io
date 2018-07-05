@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Lattice</title>
-  <meta name="description" content="A lattice is a poset that is closed under binary joins and meets.">
+  <title>Join-semilattice</title>
+  <meta name="description" content="A join-semilattice is a poset that is closed under binary joins.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="/order_theory/Lattice.html">
+  <link rel="canonical" href="/order_theory/Semilattice.html">
   <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
   
   
@@ -72,7 +72,7 @@
 
 
   <header class="post-header">
-    <h1 class="post-title" itemprop="name headline">Lattice</h1>
+    <h1 class="post-title" itemprop="name headline">Join-semilattice</h1>
     <p class="post-meta">
       <time datetime="2016-08-18T13:04:58-04:00" itemprop="datePublished">
         
@@ -87,66 +87,63 @@
 			-->
 			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-		<p>A <strong>lattice</strong> is a <a href="Poset.html">poset</a> that is closed under binary <a href="JoinAndMeet.html">joins and meets</a>.</p>
+		<p>A <strong>join-semilattice</strong> is a <a href="Poset.html">poset</a> that is closed under binary <a href="JoinAndMeet.html">joins</a>.</p>
 
-<p>Let <script type="math/tex">L</script> be a lattice. Then for all <script type="math/tex">p,q,r \in L</script> the following properties are necessarily satisfied.</p>
+<p>Let <script type="math/tex">L</script> be a join-semilattice. Then for all <script type="math/tex">p,q,r \in L</script> the following properties are necessarily satisfied.</p>
 
 <ul>
-  <li>Associativity of joins and meets: <script type="math/tex">(p \vee q) \vee r = p \vee (q \vee r)</script>, and <script type="math/tex">(p \wedge q) \wedge r = p \wedge (q \wedge r)</script></li>
-  <li>Commutativity of joins and meets: <script type="math/tex">p \vee q = q \vee p</script> and <script type="math/tex">p \wedge q = q \wedge p</script></li>
-  <li>Idempotency of joins and and meets: <script type="math/tex">p \vee p = p</script> and <script type="math/tex">p \wedge p = p</script></li>
-  <li>Absorption: <script type="math/tex">p \vee (p \wedge q) = p</script> and <script type="math/tex">p \wedge (p \vee q) = p</script></li>
+  <li>Commutativity of join: <script type="math/tex">p \vee q = q \vee p</script></li>
+  <li>Associativity of join: <script type="math/tex">(p \vee q) \vee r = p \vee (q \vee r)</script></li>
+  <li>Idempotency of join: <script type="math/tex">p \vee p = p</script></li>
 </ul>
 
 <details>
  <summary>Proofs</summary>
 
 <div style="background-color:lightblue">
-    <p>Lemma 1: Let <script type="math/tex">P</script> be a poset, <script type="math/tex">S \subseteq P</script>, and <script type="math/tex">p \in P</script>. If both <script type="math/tex">\bigvee S</script> and <script type="math/tex">(\bigvee S) \vee p</script> exist then <script type="math/tex">\bigvee (S \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigvee S) \vee p = \bigvee (S \cup \{p\})</script>.</p>
+    <p>Lemma 1: Let <script type="math/tex">P</script> be a poset, <script type="math/tex">Q \subseteq P</script>, and <script type="math/tex">p \in P</script>. If both <script type="math/tex">\bigvee Q</script> and <script type="math/tex">(\bigvee Q) \vee p</script> exist then <script type="math/tex">\bigvee (Q \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigvee Q) \vee p = \bigvee (Q \cup \{p\})</script>.</p>
 
     <p>Proof: See the <em>Join fu</em> exercise in <a href="PosetExercises.html">poset exercises</a>.</p>
 
-    <h1 id="associativity">Associativity</h1>
-    <p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">p,q,r,s \in L</script> such that <script type="math/tex">s = p \vee (q \vee r)</script>. We apply the above lemma, along with commutativity and closure of lattices under binary joins, to get
-<script type="math/tex">p \vee (q \vee r) = (q \vee r) \vee p = (\bigvee \{q, r\}) \vee p = \bigvee (\{q, r\} \cup \{p\}) =</script>
-<script type="math/tex">\bigvee \{ q, r, p \} = \bigvee (\{p, q\} \cup \{r\}) = (\bigvee \{p, q\}) \vee r = (p \vee q) \vee r.</script></p>
-
-    <p>By duality, we also have the associativity of binary meets.</p>
+    <p>Note that a <a href="Lattice.html">lattice</a> is a specific kind of join-semilattice.</p>
 
     <h1 id="commutativity">Commutativity</h1>
 
-    <p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">p,q \in L</script>. Then <script type="math/tex">p \vee q = \bigvee \{ p, q \} = q \vee p</script>. Binary joins are therefore commutative. By duality, binary meets are also commutative.</p>
+    <p>Let <script type="math/tex">S</script> be a join-semilattice and <script type="math/tex">p,q \in S</script>. Then <script type="math/tex">p \vee q = \bigvee \{ p, q \} = q \vee p</script>. Binary joins are therefore commutative.</p>
+
+    <h1 id="associativity">Associativity</h1>
+    <p>Let <script type="math/tex">S</script> be a join-semilattice and <script type="math/tex">p,q,r,s \in S</script> such that <script type="math/tex">s = p \vee (q \vee r)</script>. We apply the above lemma, along with commutativity and closure of join-semilattices under binary joins, to get
+<script type="math/tex">p \vee (q \vee r) = (q \vee r) \vee p = (\bigvee \{q, r\}) \vee p = \bigvee (\{q, r\} \cup \{p\}) =</script>
+<script type="math/tex">\bigvee \{ q, r, p \} = \bigvee (\{p, q\} \cup \{r\}) = (\bigvee \{p, q\}) \vee r = (p \vee q) \vee r.</script></p>
 
     <h1 id="idempotency">Idempotency</h1>
 
-    <p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">p \in L</script>. Then <script type="math/tex">p \vee p = \bigvee \{ p \} = p</script>. The property that for all <script type="math/tex">p \in L</script>, <script type="math/tex">p \vee p = p</script> is called <em>idempotency</em>. By duality, we also have the idempotency of meets: for all <script type="math/tex">p \in L</script>, <script type="math/tex">p \wedge p = p</script>.</p>
-
-    <h1 id="absorption">Absorption</h1>
-
-    <p>Since <script type="math/tex">p \wedge q</script> is the greatest <em>lower bound</em> of <script type="math/tex">\{p,q\}</script>, <script type="math/tex">p \wedge q \leq p</script>. Because <script type="math/tex">p \leq p</script> and <script type="math/tex">(p \wedge q) \leq p</script>, <script type="math/tex">p</script> is an upper bound of <script type="math/tex">\{p, p \wedge q\}</script>, and so <script type="math/tex">p \vee (p \wedge q) \leq p</script>. On the other hand, <script type="math/tex">p \vee (p \wedge q)</script> is the least <em>upper bound</em> of <script type="math/tex">\{p, p \wedge q\}</script>, and so <script type="math/tex">p \leq p \vee (p \wedge q)</script>. By anti-symmetry, <script type="math/tex">p = p \vee (p \wedge q)</script>.</p>
+    <p>Let <script type="math/tex">S</script> be a join-semilattice and <script type="math/tex">p \in S</script>. Then <script type="math/tex">p \vee p = \bigvee \{ p \} = p</script>.</p>
   </div>
 </details>
 
-<h2 id="closure-under-non-empty-finite-joins-and-meets">Closure under non-empty finite joins and meets</h2>
+<h2 id="closure-under-non-empty-finite-joins">Closure under non-empty finite joins</h2>
 
-<p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">S = \{ s_1, ..., s_n \}</script> be some non-empty finite subset of <script type="math/tex">L</script>. Then an inductive argument shows that <script type="math/tex">\bigvee S</script> exists.</p>
+<p>Let <script type="math/tex">S</script> be a join-semilattice and <script type="math/tex">S' = \{ s_1, ..., s_n \}</script> be some finite subset of <script type="math/tex">S</script>. Then an inductive argument shows that <script type="math/tex">\bigvee S</script> exists.</p>
 
 <details>
 <summary>Proof</summary>
 <div style="background-color:lightblue">
     <p>Here again, we will need Lemma 1, stated in the proofs of the four lattice properties.</p>
 
-    <p>Our proof proceeds by induction on the cardinality of <script type="math/tex">S</script>.</p>
+    <p>Our proof proceeds by induction on the cardinality of <script type="math/tex">S'</script>.</p>
 
-    <p>The base case is <script type="math/tex">\bigvee \{ s_1 \} = s_1 \in L</script>. For the inductive step, we suppose that <script type="math/tex">\bigvee \{s_1, ..., s_i \}</script> exists. Then, applying lemma 1, we have <script type="math/tex">\bigvee \{s_1, ..., s_{i+1} \} = \bigvee \{s_1, ..., s_i \} \vee s_{i+1}</script>. Applying our inductive hypothesis and closure under binary joins, we have <script type="math/tex">\bigvee \{s_1, ..., s_i \} \vee s_{i+1}</script> exists. Lattices are therefore closed under all <em>non-empty finite</em> joins, not just binary ones. Dually, lattices are closed under all finite meets.</p>
+    <p>For the base case, we have <script type="math/tex">\bigvee \{ s_1 \} = s_1 \in S</script>. For the inductive step, we suppose that <script type="math/tex">\bigvee \{s_1, ..., s_i \}</script> exists. By closure under binary joins, we have the existence of <script type="math/tex">\bigvee \{s_1, ..., s_i \} \vee s_{i+1}</script>. Applying lemma 1 gives the
+existence of $\bigvee { s_1, …, s_{i+1} }$, namely <script type="math/tex">\bigvee \{ s_1, ..., s_{i+1} \} = \bigvee \{s_1, ..., s_i \} \vee s_{i+1}</script>.
+Join-semilattices are therefore closed under all <em>non-empty finite</em> joins, not just binary ones.</p>
   </div>
 </details>
 
 <h2 id="basic-positive-examples">Basic positive examples</h2>
 
-<p>Here are two Hasse diagrams of posets which are lattices.</p>
+<p>Here are two Hasse diagrams of posets which are join-semilattices.</p>
 
-<p><img src="http://i.imgur.com/OlQnU07.png" alt="A diamond shaped lattice" /></p>
+<p><img src="http://i.imgur.com/OlQnU07.png" alt="A triangle shaped join-semilattice" /></p>
 
 <!---
 
@@ -169,7 +166,7 @@ digraph G {
 
 --->
 
-<p><img src="http://i.imgur.com/L0x074n.png" alt="A cube shaped lattice" /></p>
+<p><img src="http://i.imgur.com/L0x074n.png" alt="A cube shaped join-semilattice" /></p>
 
 <!---
 
@@ -208,7 +205,7 @@ digraph G {
 
 <p>Here are two Hasse diagrams of posets which are <em>not</em> lattices.</p>
 
-<p><img src="http://i.imgur.com/DAeuYz0.png" alt="A simple non-lattice" /></p>
+<p><img src="http://i.imgur.com/DAeuYz0.png" alt="A simple non-join-semilattice" /></p>
 
 <!---
 %%%comment:
@@ -243,7 +240,7 @@ digraph G {
 
 <p>In the above diagram, the two bottom elements have no common lower bounds. Therefore they have no meet, and so the depicted poset is not a lattice. However, it should be easy to verify that this poset is closed under binary joins.</p>
 
-<p><img src="http://i.imgur.com/5Vqk87u.png" alt="Another simple non-lattice" /></p>
+<p><img src="http://i.imgur.com/5Vqk87u.png" alt="Another simple non-join-semilattice" /></p>
 
 <!---
 
@@ -264,11 +261,12 @@ digraph G {
 
 --->
 
-<p>The Hasse diagram of this poset has two connected components. No element from the left component will have a meet or a join with any element from the right component. The depicted poset is therefore <em>not</em> a lattice.</p>
+<p>The Hasse diagram of this poset has two connected components. No element from the left component will have a join with any element from the right component. The depicted poset is therefore <em>not</em> a join-semilattice.</p>
 
 <h2 id="the-connecting-lemma">The connecting lemma</h2>
 
-<p>The connecting lemma states that for any lattice <script type="math/tex">L</script> and <script type="math/tex">p,q \in L</script>, <script type="math/tex">p \vee q = p \Leftrightarrow q \leq p</script> and dually, <script type="math/tex">p \wedge q = p \Leftrightarrow q \geq p</script>. This simple but important lemma is so named because it establishes a connection between the lattice’s join operator and its underlying poset order.</p>
+<p>The connecting lemma states that for any join-semilattice <script type="math/tex">S</script> and <script type="math/tex">p,q \in S</script>, <script type="math/tex">p \vee q = p \Leftrightarrow q \leq p</script>.
+This simple but important lemma is so named because it establishes a connection between the join-semilattice’s join operator and its underlying poset order.</p>
 
 <details>
 <summary>Proof</summary>
@@ -277,15 +275,17 @@ digraph G {
   </div>
 </details>
 
-<h2 id="lattices-as-algebraic-structures">Lattices as algebraic structures</h2>
+<h2 id="join-semilattices-as-algebraic-structures">Join-semilattices as algebraic structures</h2>
 
-<p>It’s also possible to formulate lattices as algebraic structurs <script type="math/tex">\langle L, \vee, \wedge \rangle</script> satisfying the associativity, commutativity, idempotency, and absorption laws described above. A poset <script type="math/tex">\langle L, \leq \rangle</script> can then be defined such that for <script type="math/tex">p, q \in L</script>, <script type="math/tex">p \leq q</script> whenever <script type="math/tex">p \vee q = q</script>. It can be shown that this poset is closed under binary meets and joins, and that these meets and joins are equal to the corresponding meets and joins of the algebraic lattice.</p>
+<p>It’s also possible to formulate join-semilattices as algebraic structures <script type="math/tex">\langle L, \vee \rangle</script> satisfying the associativity, commutativity, and idempotency laws described above. A poset <script type="math/tex">\langle L, \leq \rangle</script> can then be defined such that for <script type="math/tex">p, q \in L</script>, <script type="math/tex">p \leq q</script> whenever <script type="math/tex">p \vee q = q</script>. It can be shown that this poset is closed under binary joins, and that these joins are equal to the corresponding joins of the algebraic join-semilattice.</p>
 
-<h2 id="additional-material">Additional material</h2>
+<h2 id="bounded-join-semilattices">Bounded join-semilattices</h2>
 
-<p>For more examples of lattices, see <a href="LatticeExamples.html">examples</a>.
-For some exercises involving the concepts introduced on this page, see <a href="LatticeExercises.html">exercises</a>.
-The <a href="CompleteLattice.html">complete lattices</a> are a particularly important and elegant class of lattice.</p>
+<p>A join-semilattice <script type="math/tex">S</script> is said to be <strong>bounded</strong> if there exists a <script type="math/tex">\bot \in S</script> such
+that for all <script type="math/tex">s \in S</script> we have <script type="math/tex">\bot \leq s</script>. Such an element is called the <strong>bottom</strong>
+or <strong>minimum</strong> element of <script type="math/tex">S</script>. Therefore, while join-semilattices in general are closed only under
+non-empty finite joins, <em>bounded join-semilattices</em> are closed under all finite joins,
+<em>including empty ones</em>.</p>
 
   </div>
 
