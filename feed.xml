@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-09-04T20:11:45-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages, computer science, and more.</subtitle><entry><title type="html">Order Theory for the Iridescent Astronaut</title><link href="/2018/06/13/order-theory-tutorials.html" rel="alternate" type="text/html" title="Order Theory for the Iridescent Astronaut" /><published>2018-06-13T17:36:46-04:00</published><updated>2018-06-13T17:36:46-04:00</updated><id>/2018/06/13/order-theory-tutorials</id><content type="html" xml:base="/2018/06/13/order-theory-tutorials.html">&lt;h1 id=&quot;q-and-a&quot;&gt;Q and A&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-09-07T11:41:45-04:00</updated><id>/</id><title type="html">Kevin Clancy’s Blog</title><subtitle>A blog about programming languages, computer science, and more.</subtitle><entry><title type="html">Order Theory for the Iridescent Astronaut</title><link href="/2018/06/13/order-theory-tutorials.html" rel="alternate" type="text/html" title="Order Theory for the Iridescent Astronaut" /><published>2018-06-13T17:36:46-04:00</published><updated>2018-06-13T17:36:46-04:00</updated><id>/2018/06/13/order-theory-tutorials</id><content type="html" xml:base="/2018/06/13/order-theory-tutorials.html">&lt;h1 id=&quot;q-and-a&quot;&gt;Q and A&lt;/h1&gt;
 
 &lt;details&gt;
 &lt;summary&gt;Q: Do we really need another order theory tutorial for astronauts? Aren't there enough already?&lt;/summary&gt;
@@ -42,45 +42,6 @@ toward an advanced degree. In fact, there is a fairly effective way to learn alm
 
     &lt;p&gt;To learn the basics of rigorous mathematics &lt;em&gt;in particular&lt;/em&gt; (which includes contrapositive, vacuity, etc.), I recommend &lt;a href=&quot;https://www.amazon.com/Mathematics-Discrete-Introduction-Edward-Scheinerman/dp/0534398987/ref=sr_1_2?ie=UTF8&amp;amp;qid=1529345755&amp;amp;sr=8-2&amp;amp;keywords=mathematics+a+discrete+introduction&amp;amp;dpID=51rPrT%252BgOvL&amp;amp;preST=_SX218_BO1,204,203,200_QL40_&amp;amp;dpSrc=srch&quot;&gt;Mathematics: A Discrete Introduction&lt;/a&gt; by Ed Scheinerman. I read this book in high school. It’s really quite a gentle and
 approachable, but this sort of thing does not click with everyone.&lt;/p&gt;
-  &lt;/div&gt;
-&lt;/details&gt;
-
-&lt;details&gt;
-&lt;summary&gt;Q: I heard that the human psyche is a balance between &lt;i&gt;Order&lt;/i&gt; and &lt;i&gt;Chaos&lt;/i&gt;. Will this material help me defeat the &lt;i&gt;Dragon of Chaos&lt;/i&gt;?&lt;/summary&gt;
-&lt;div style=&quot;background-color:lightblue&quot;&gt;
-    &lt;p&gt;A: I don’t know about that, but I can tell you that this set of tutorials is highly structured. It is organized into several topics,
-as listed in the table of contents below. Each topic is divided into at most three subsections, described below&lt;/p&gt;
-
-    &lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;/h1&gt;
-
-    &lt;p&gt;The introduction section provides any definitions relevant to the topic,
-as well as diagrams depicting the mathematical objects involved,
-and also potentially proofs which are central to the topic.
-Proofs in an introduction section are typically hidden away in
-pop-out boxes. They have been hidden so that detailed proofs
-do not obscure the high-level eagle-eye view of the topic.
-However, this does not mean that you should not read them;
-in fact, it is important to read &lt;em&gt;all proofs&lt;/em&gt; (if any) in each
-introduction section. At the end of each introduction section,
-several links have been placed, some to related topics and others&lt;br /&gt;
-to the present topics &lt;em&gt;Examples&lt;/em&gt; and &lt;em&gt;Exercises&lt;/em&gt; sections.&lt;/p&gt;
-
-    &lt;h1 id=&quot;examples&quot;&gt;Examples&lt;/h1&gt;
-
-    &lt;p&gt;An examples section lists various ways that the present topic can applied,
-whether to other areas of mathematics, practical programming, or
-underwater basket weaving. Unlike introduction sections, examples are
-&lt;em&gt;optional&lt;/em&gt;; some examples may reference areas of mathematics that you
-are not familiar with, and it is totally okay to skip these examples.&lt;/p&gt;
-
-    &lt;h1 id=&quot;exercises&quot;&gt;Exercises&lt;/h1&gt;
-
-    &lt;p&gt;Exercises, like examples, are optional. Sometimes the examples of
-a particular section build off of each other, so it’s probably best
-to solve them from top to bottom. The solutions to exercises are hidden
-away in pop-out boxes, obviously because you’re supposed to find the
-solution yourself before looking at the provided explanation.&lt;/p&gt;
-
   &lt;/div&gt;
 &lt;/details&gt;
 
