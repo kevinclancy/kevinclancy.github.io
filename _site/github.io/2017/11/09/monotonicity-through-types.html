@@ -69,7 +69,7 @@
       <div class="wrapper">
         <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-
+	
 
   <header class="post-header">
     <h1 class="post-title" itemprop="name headline">Monotonicity Through Types</h1>
@@ -83,11 +83,8 @@
 
 
   <div class="post-content" itemprop="articleBody">
-      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-			-->
-			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-		<p>A partially ordered set is a set <script type="math/tex">P</script> endowed with a binary relation <script type="math/tex">\leq</script> on <script type="math/tex">P</script> such that for all <script type="math/tex">p, q, r \in P</script> we have:</p>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <p>A partially ordered set is a set <script type="math/tex">P</script> endowed with a binary relation <script type="math/tex">\leq</script> on <script type="math/tex">P</script> such that for all <script type="math/tex">p, q, r \in P</script> we have:</p>
 
 <p>1.) <script type="math/tex">p \leq p</script> (reflexivity)</p>
 
@@ -102,7 +99,7 @@
 <p>Lately, I’ve been designing such a type system, for an extension of the simply typed lambda calculus. Since the programmer only cares about the monotonicity of a select group of functions, a special syntax construct, the <em>sfun abstraction</em>, serves as a signal to the type checker: unlike the simply typed world outside of the sfun abstraction, the body of the sfun abstraction is type checked using a special type system, which I call the lifted type system, in which monotonicity is tracked.</p>
 
 <p>Reasoning about pointwise orderings on function spaces seems a bit heavy-weight and hasn’t been necessary for any of my use cases. An sfun is therefore first order; that is, both its return type and all of its argument types must be data types rather than function types. We would like to be able to prove that a multi-argument function is monotone <em>separately</em> in each of its
-arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script type="math/tex">p_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>.</p>
+arguments; that is, for $i \in 1..n$, if <script type="math/tex">p\_i \leq p_i'</script> then <script type="math/tex">f(p_1, \ldots, p_i, \ldots, p_n) \leq f(p_1, \ldots p_i', \ldots p_n)</script>, etc.</p>
 
 <p>The monotonicity of an sfun is typically derived from the monotonicity of the primitives used to implement it, which are also sfuns. Here are some example sfun primitives, addition and subtraction on integers:</p>
 
@@ -110,7 +107,7 @@ arguments; that is, for <script type="math/tex">i \in 1..n</script>, if <script 
 
 <p>2.) minus : <script type="math/tex">(x : Int, y : Int) \Rightarrow Int[\uparrow x, \downarrow y]</script></p>
 
-<p>An <em>sfun type</em>, written with <script type="math/tex">\Rightarrow</script> rather than <script type="math/tex">\rightarrow</script>, names its formal arguments and also <em>qualifies</em> each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, the qualifier <script type="math/tex">\uparrow</script> is associated with arguments that are separately monotone and <script type="math/tex">\downarrow</script> is associated with arguments that are separately antitone. The second argument of a binary function <script type="math/tex">f</script> is separately antitone if <script type="math/tex">p_2 \leq p_2'</script> implies <script type="math/tex">f(p_1, p_2) \geq f(p_1, p_2')</script>.</p>
+<p>An <em>sfun type</em>, written with <script type="math/tex">\Rightarrow</script> rather than <script type="math/tex">\rightarrow</script>, names its formal arguments and also <em>qualifies</em> each one. A qualifier is an argument-specific constraint on the behavior of the function. In the above types, <script type="math/tex">\uparrow</script> is associated with arguments that are separately monotone and <script type="math/tex">\downarrow</script> is associated with arguments that are separately antitone. The second argument of a binary function <script type="math/tex">f</script> is separately antitone if <script type="math/tex">p_2 \leq p_2'</script> implies <script type="math/tex">f(p_1, p_2) \geq f(p_1, p_2')</script>.</p>
 
 <p>Terms outside of sfun abstractions are typed using a <em>global</em> typing relation,
 which, aside from an sfun abstraction typing rule, is not different from the
@@ -124,7 +121,7 @@ typing relations we are familiar with. A global typing judgment has the followin
 
 <p>Here the <em>global type environment</em> <script type="math/tex">\Gamma</script> contains all of the variables bound outside of the sfun, the <em>ambient type environment</em> <script type="math/tex">\Omega</script> contains the list of the sfun’s formal arguments, and the
 <em>lifted type environment</em> <script type="math/tex">\Phi</script> contains those variables in <script type="math/tex">t</script>’s context which are bound inside the sfun. Before getting into the significance of lifted typing judgments, let’s look
-at a specific application of the global typing rule for sfun abstractions, which uses a single lifted premise.</p>
+at a specific instance of the global typing rule for sfun abstractions, which uses a single lifted premise.</p>
 
 <script type="math/tex; mode=display">\frac{\Gamma;x:Int;x:Int[=~x] \vdash plus(x,x) : Int[\uparrow~x]}
        {\Gamma \vdash \tilde{\lambda} x : Int. plus(x,x) : ( x : Int ) \Rightarrow Int[\uparrow~x]}</script>
@@ -133,7 +130,7 @@ at a specific application of the global typing rule for sfun abstractions, which
 have guessed, <script type="math/tex">\tilde{\lambda}</script> is used rather that <script type="math/tex">\lambda</script> to distinguish this as an
 sfun abstraction rather than a standard one. Examine the ambient and lifted type environments
 used in the premise. Perhaps surprisingly, the abstraction’s bound variable <script type="math/tex">x</script> is entered into both environments. When variables occur in types, they are considered references to formal arguments
-rather than actual arguments; that is, an occurrence of <script type="math/tex">x</script> in a type (for example <script type="math/tex">Int[\uparrow x]</script>) does not refer to some integer, but instead a “slot” named <script type="math/tex">x</script> which expects to receive some integer from an external source.
+rather than actual arguments; that is, an occurrence of <script type="math/tex">x</script> in a type (for example <script type="math/tex">Int[\uparrow x]</script>) does not refer to some integer, but instead a “slot” named <script type="math/tex">x</script> which expects to receive some integer.
 Inside the scope of the sfun abstraction, we would like the ability to refer to the abstraction’s formal argument <script type="math/tex">x</script>, and therefore we add <script type="math/tex">x : Int</script> to the ambient environment.
 We would also like to include occurrences of <script type="math/tex">x</script> as terms in the body of the abstraction; for these, we add the entry <script type="math/tex">x : Int[=~x]</script> into the lifted type environment, to be used as a
 placeholder for the actual argument supplied to the formal argument <script type="math/tex">x</script>. Because references to formal arguments occur only in types, and references to actual arguments occur only in terms,
@@ -159,7 +156,7 @@ The type <script type="math/tex">Int[=~x]</script> happens to be a singleton typ
 <p>The sfun application <script type="math/tex">plus(x,x)</script> is viewed as a function composition,
 where the outputs of the functions represented by the two occurrences of <script type="math/tex">x</script>
 are forwarded into the left and right arguments of the sfun <script type="math/tex">plus</script>. The domain
-of this composite function matches the domain <script type="math/tex">x:Int</script> of the enclosing sfun, which it inherits from
+of this function matches the domain <script type="math/tex">x:Int</script> of the enclosing sfun, which it inherits from
 the two occurrences of <script type="math/tex">x</script>. Since <script type="math/tex">plus</script> returns an <script type="math/tex">Int</script>, so does the
 composite function. The premise of the above typing rule application tells
 us that <script type="math/tex">plus(x,x)</script> has type <script type="math/tex">Int[\uparrow~x]</script>, but this premise must
@@ -168,7 +165,7 @@ be derived. How do we go about proving that the composite function
 
 <p>First, pretend that the two occurrences of <script type="math/tex">x</script> reference different formal arguments
 <script type="math/tex">x_1</script> and <script type="math/tex">x_2</script>. Holding the left formal argument fixed gives a single-argument
-function <script type="math/tex">plus(-,x_2)</script>, which the type signature of <script type="math/tex">plus</script> tells us must
+function <script type="math/tex">plus(--,x_2)</script>, which the type signature of <script type="math/tex">plus</script> tells us must
 be monotone.
 <script type="math/tex">x_1</script>, representing the identity function on integers, is clearly monotone,
 since for all integers <script type="math/tex">z_1, z_2</script> with <script type="math/tex">z_1 \leq z_2</script>, we have
@@ -217,7 +214,7 @@ Consider the ambient environment <script type="math/tex">\Omega = x:Int</script>
 <p><img src="/assets/DiagramArrows.png" alt="Refinement diagram" /></p>
 
 <p>The red arrows indicate that projection from <script type="math/tex">Int[?~x]</script> into the refinement
-<script type="math/tex">Int</script> plays a special role. Still curios? See <a href="https://infoscience.epfl.ch/record/231867/files/monotonicity-types.pdf">this paper</a> for motivating examples, a full formalization, and a soundness proof.</p>
+<script type="math/tex">Int</script> plays a special role. Still curios? See <a href="https://infoscience.epfl.ch/record/231867/files/monotonicity-types.pdf">this paper</a> for motivating examples, a full formalization, and a soundness proof,</p>
 
   </div>
 
@@ -258,117 +255,11 @@ Consider the ambient environment <script type="math/tex">\Omega = x:Int</script>
           
 
           
-          <li>
-            <a href="https://bitbucket.com/kevinclancy"><span class="icon icon--bitbucket"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   viewBox="0 0 16 16"
-   version="1.1"
-   id="svg3929"
-   sodipodi:docname="Bitbucket-blue2.svg"
-   width="16"
-   height="16"
-   inkscape:version="0.92.3 (3ce5693, 2018-03-11)">
-  <metadata
-     id="metadata3933">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title>Bitbucket-blue</dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="928"
-     inkscape:window-height="1028"
-     id="namedview3931"
-     showgrid="false"
-     inkscape:zoom="1.28"
-     inkscape:cx="98.515916"
-     inkscape:cy="-102.62937"
-     inkscape:window-x="65"
-     inkscape:window-y="24"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="Layer_2" />
-  <defs
-     id="defs3899">
-    <style
-       id="style3892">.cls-1{fill:#253858;}.cls-2{fill:none;}.cls-3{fill:#2684ff;}.cls-4{fill:url(#New_Gradient_Swatch_1);}</style>
-    <linearGradient
-       id="New_Gradient_Swatch_1"
-       x1="64.010002"
-       y1="30.27"
-       x2="32.990002"
-       y2="54.48"
-       gradientUnits="userSpaceOnUse">
-      <stop
-         offset="0.18"
-         stop-color="#0052cc"
-         id="stop3894" />
-      <stop
-         offset="1"
-         stop-color="#2684ff"
-         id="stop3896" />
-    </linearGradient>
-  </defs>
-  <title
-     id="title3901">Bitbucket-blue</title>
-  <g
-     id="Layer_2"
-     data-name="Layer 2"
-     style="display:inline"
-     transform="translate(0.02579294,-46.390167)">
-    <g
-       id="g3950"
-       transform="matrix(0.21006281,0,0,0.2295925,1.1966912,47.147363)">
-      <polygon
-         class="cls-2"
-         points="40.9,25.12 21.23,25.12 24.7,43.51 37.75,43.51 "
-         id="polygon3921"
-         style="fill:none" />
-      <path
-         class="cls-3"
-         d="M 2,6.26 A 2,2 0 0 0 0,8.58 l 8.49,51.54 a 2.72,2.72 0 0 0 2.66,2.27 h 40.73 a 2,2 0 0 0 2,-1.68 L 62.37,8.59 a 2,2 0 0 0 -2,-2.32 z m 35.75,37.25 h -13 L 21.23,25.12 H 40.9 Z"
-         id="path3923"
-         inkscape:connector-curvature="0"
-         style="fill:#2684ff" />
-      <path
-         class="cls-4"
-         d="M 59.67,25.12 H 40.9 l -3.15,18.39 h -13 L 9.4,61.73 a 2.71,2.71 0 0 0 1.75,0.66 h 40.74 a 2,2 0 0 0 2,-1.68 z"
-         id="path3925"
-         inkscape:connector-curvature="0"
-         style="fill:url(#New_Gradient_Swatch_1)" />
-    </g>
-  </g>
-</svg>
-</span><span class="username">kevinclancy</span></a>
-
-          </li>
-          
-
-          
         </ul>
       </div>
 
       <div class="footer-col footer-col-3">
-        <p>A blog about programming languages, computer science, and more.</p>
+        <p>A blog about programming languages and computer science.</p>
       </div>
     </div>
 
