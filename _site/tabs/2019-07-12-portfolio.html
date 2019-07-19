@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Portfolio</title>
+  <meta name="description" content="A blog about programming languages, computer science, and more.">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="/tabs/2019-07-12-portfolio.html">
+  <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Kevin Clancy&#39;s Blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+            <a class="page-link" href="/tabs/2019-07-12-portfolio.html">Portfolio</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Portfolio</h1>
+    <p class="post-meta">
+      <time datetime="2019-07-12T15:51:02-04:00" itemprop="datePublished">
+        
+        Jul 12, 2019
+      </time>
+      </p>
+  </header>
+
+
+  <div class="post-content" itemprop="articleBody">
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+			-->
+			<script type="text/javascript" src="http://localhost:8000/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+		<h2 id="lambda_mc-monotone-computing-on-incomplete-information"><script type="math/tex">\lambda_{MC}</script>: Monotone computing on incomplete information</h2>
+
+<p><script type="math/tex">\lambda_{MC}</script> is a project that I developed during the latter two
+years of my ill-fated PhD program.<br />
+I am not knowledgeable on the topic of distributed systems.
+Nonetheless, <script type="math/tex">\lambda_{MC}</script> seeks to solve a distributed
+systems problem that was presented to me by my collaborators. It
+can be described as follows:</p>
+
+<p>A process running in a distributed system often needs to compute on values that are
+approximate: some of their information is stored locally and some of it elsewhere in the system.
+When coordination to obtain a value’s full information it isn’t feasible or performant,
+we may choose to apply a function to an approximate argument. But how do we know if such
+applications are “correct” or “safe”?</p>
+
+<p>If the function we wish to apply is <a href="/order_theory/MonotoneFunction.html">monotone</a>, then
+applying it to an approximate input is guaranteed to produce an approximate output. <a href="http://db.cs.berkeley.edu/papers/UCB-lattice-tr.pdf">Logic and Lattices for Distributed Computing</a> presents a language called
+<script type="math/tex">Bloom^L</script>, in which certain functions are annotated
+as monotone, allowing the programmer to apply them to approximate
+shared data without the need for coordination, which
+Conway et al. view as a costly bottleneck. However, <script type="math/tex">Bloom^L</script>
+has no means to determine whether or not the
+annotations are correct! In contrast, <script type="math/tex">\lambda_{MC}</script> provides an expressive collection of monotone primitives and
+a monotonicity-aware type system, allowing the programmer to implement <script type="math/tex">Bloom^L</script>’s examples without the need
+for trusted user annotations. Here is an example <script type="math/tex">\lambda_{MC}</script> program:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>types
+  // a set of non-negative integers
+  NatSet = Nat |&gt; Prop;
+in
+
+let mSum =
+
+  fun (x : NatSet) @(+ x)
+    let extract to Nat with n v acc = x
+    in (plus n acc)
+    end
+  end
+
+in
+  // Output: 6
+  (mSum { 1 -&gt; known, 2 -&gt; known, 3 -&gt; known : NatSet })
+end
+</code></pre></div></div>
+
+<p>All types in <script type="math/tex">\lambda_{MC}</script> are endowed with information orderings. The primitive type <script type="math/tex">Nat</script> is
+the set of natural numbers, with the standard “less than or equal to” ordering <script type="math/tex">0 \leq 1 \leq 2 \leq \cdots</script>
+<script type="math/tex">Prop</script> is the two element type containing the values <script type="math/tex">unknown</script> and <script type="math/tex">known</script>, ordered such that
+<script type="math/tex">unknown \leq known</script>.</p>
+
+<p><script type="math/tex">NatSet</script> is the type of finite sets of natural numbers, ordered by set inclusion. These sets are not sets as we would typically think of them,
+because they are <em>incomplete</em>: a set value { 1, 2, 3 } indicates a set
+which contains <em>at least</em> the elements 1, 2, and 3, and potentially additional elements as well.
+We therefore write the set { 1, 2, 3 } using the more cumbersome notation <script type="math/tex">\{ 1 \mapsto known, 2 \mapsto known, 3 \mapsto known : NatSet \}</script>.
+All other elements are not stored in our data representation of the set, and they implicitly map to unknown.</p>
+
+<p>The <script type="math/tex">mSum</script> function takes a <script type="math/tex">NatSet</script> as its input and produces the sum of the <script type="math/tex">NatSet</script>’s
+elements as output. The expression <script type="math/tex">@(+~x)</script> is a <em>coeffect ascription</em>, which statically asserts
+that the <script type="math/tex">mSum</script> function is monotone.</p>
+
+<p>The body of the <script type="math/tex">mSum</script> function uses an extract expression, which binds three variables n, v, and acc in
+its body <script type="math/tex">(plus~n~acc)</script>. It computes the following sequence of intermediate values mi,
+substituting each element for n and the previous iteration <script type="math/tex">m_{i-1}</script> for acc in <script type="math/tex">(plus~n~acc)</script>.</p>
+
+<p><script type="math/tex">m0 = 0</script> (here 0 is chosen because it is the smallest natural number)
+<script type="math/tex">m1 = max(m0, (plus~1~m0)) = max(0,1) = 1</script>
+<script type="math/tex">m2 = max(m1, (plus~2~m1)) = max(1,3) = 3</script>
+<script type="math/tex">m3 = max(m2, (plus~3~m2)) = max(3,6) = 6</script></p>
+
+<p>At this point all elements of the set have been exhausted, and so we return 6.</p>
+
+<p>This may seem like a convoluted and inefficient way to sum a set of natural numbers.
+However, it is implemented using a general elimination form <em>extract</em> which is carefully
+designed transform its input set <script type="math/tex">x</script> monotonically. Importantly, the type
+system ensures that <script type="math/tex">acc</script> influences the body <script type="math/tex">(plus~n~acc)</script> of the extract form monotonically.
+Changing <script type="math/tex">(plus~n~acc)</script> to <script type="math/tex">(minus~n~acc)</script> generates the type error “Expected monotone usage of acc but found antitone”,
+and for good reason:
+then we would have</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{array}{l}
+(\mathit{mSum}~\{ 1 \mapsto known, 2 \mapsto known : NatSet \}) \\
+= 1 \\
+< 2 \\
+= (\mathit{mSum}~\{ 2 \mapsto known : NatSet \})
+\end{array} %]]></script>
+
+<p>even though <script type="math/tex">\{ 2 \} \subseteq \{ 1, 2 \}</script>, making mSum non-monotone!</p>
+
+<p>Why prove this function monotone at all? Recall that a <script type="math/tex">NatSet</script> value is an incomplete view of a set. When we sum its elements, we are potentially only summing
+a proper subset of the exact set’s elements. The monotonicity of <script type="math/tex">mSum</script> therefore tells us that when applied to an incomplete input set <script type="math/tex">x</script>, <script type="math/tex">mSum</script> produces a
+lower bound on the sum of the elements of the exact set that we are approximating (some superset of <script type="math/tex">x</script>).
+A typchecker and interpreter for <script type="math/tex">\lambda_{MC}</script> can be found <a href="http://github.com/kevinclancy/monotonicity-coeffects">here</a>. I’ve included a more detailed explanation below.</p>
+
+<details>
+<summary>Show details</summary>
+<div style="background-color:beige">
+
+    <h1 id="motivation">Motivation</h1>
+
+    <p>Inconveniently, a process running in a distributed system has a
+<em>local view</em> of the system: Information relevant to its
+execution may be contained in some other process’s address space.
+While inter-process coordination can ensure that a process acts only on globally
+up-to-date information, distributed systems researchers have identified
+such coordination as a bottleneck. However, they’ve also proposed a strategy to
+mitigate this bottleneck: Allow processes to compute upon <em>incomplete</em> information.
+In the latter half of my ill-fated time as a PhD student, I developed a type
+system to determine if computations on incomplete information are sound.</p>
+
+    <p>Here is a toy example demonstrating this approach.
+Imagine developing a system to manage advertisements in a mobile game.
+A client advertiser may purchase a contract to display their
+advertisement some natural number <script type="math/tex">k</script> times. Since this mobile game may be played without
+internet connectivity, a counter tracking the number of times this advertisement
+has been viewed is replicated across the players’ mobile devices.</p>
+
+    <p>The ad counter is represented as a dictionary which maps each player identifier <script type="math/tex">p</script>
+to a natural-valued lower bound on the number of times that player <script type="math/tex">p</script>
+has viewed the ad.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Alice: { Alice -&gt; 1, Bob -&gt; 0 }  
+Bob:   { Alice -&gt; 0, Bob -&gt; 2 }
+</code></pre></div>    </div>
+
+    <p>Here player Alice has viewed the advertisement once, Bob has viewed it twice,
+and no coordination has been performed between the two players. A replicated
+counter can be thought of as an information repository or knowledge state, e.g.,
+Alice “knows” that she has viewed the advertisement at least once and
+that Bob has viewed it at least 0 times. No process in the system has perfect
+knowledge, which is obtained from taking the pointwise maximum of all
+counter replicas in the system:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Perfect (global) truth: { Alice -&gt; 1, Bob -&gt; 2 }
+</code></pre></div>    </div>
+
+    <p>Nonetheless, when the game starts Alice must decide whether or not to show
+this particular advertisement on the basis of her local view.
+To do so, she stores the summation <script type="math/tex">n = 1 + 0</script> over the lower
+bounds stored in her dictionary and then computes the quantity <script type="math/tex">n >= k</script>.
+If this quantity is true, Alice knows that the contract has been fulfilled, and that some other ad should be shown if at all possible. Otherwise, displaying this advertisement may be a reasonable option. Even though
+Alice’s dictionary contained <em>incomplete information</em>, the computation was still sound; this is because its output is <em>monotone</em> as a function of its input, and its input is monotone as a function of time (i.e., an ad cannot be “unseen”, and so the counter’s entries cannot be decremented).</p>
+
+    <p>Many useful computations are non-monotone. For example, taking the
+average of a dictionary’s entries is a non-monotone function;
+it would not be safe to compute a dictionary’s average value
+from one of its local views. Thus I was motivated to develop a type system for distinguishing between monotone and non-monotone computations.</p>
+
+    <h1 id="a-digression-on-effects">A digression on effects</h1>
+
+    <p>Arguably, in a function type <script type="math/tex">A \to B</script>, the domain <script type="math/tex">A</script> can
+be considered a cause and the codomain <script type="math/tex">B</script> can be considered an effect.
+But when programmers and computer scientists speak of effects, they
+clearly are not talking about codomains. So just what the heck <em>are</em> they
+talking about?</p>
+
+    <p>They are talking about <em>side effects</em>. A <em>side effect</em> that portion of the an effect that is threaded implicitly through a computation. To understand what I mean by this, let’s look at a concrete example.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>match (300 / x) with
+| Val y →
+  match (lookup myArray y) with
+  | Val z → z
+  | Error → Error
+| Error → Error
+</code></pre></div>    </div>
+
+    <p>This program divides <script type="math/tex">300</script> by some integer <script type="math/tex">x</script> and then uses the result
+to index into an array. There are two points at which the program may throw an error. First, the division operation may throw a division-by-zero error. Second, the array lookup may throw an index-out-of-range exception.
+This yields two levels of indentation to check each error. But forcing
+the user to handle each error seems like a distraction, because
+typically we want to handle all errors in the same manner: by halting the program. The code should describe the computation that is expected to happen
+rather than unexpected errors; that is, the programmer should instead write the following code:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let y = (3 / x) in
+lookup myArray y
+</code></pre></div>    </div>
+
+    <p>In the above snippet, errors are treated as an implicit side-effect.
+Achieving such a simplification in a declarative mathematical setting is an interesting trick, first discovered by <a href="link">Moggi</a>.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type T ’A = Val of ’A | Error
+</code></pre></div>    </div>
+
+    <p>The above definition of the type constructor <script type="math/tex">T</script> maps a type
+parameter <script type="math/tex">A</script> to the variant type <script type="math/tex">Val~of~A \mid Error</script>.
+That is, a value of type <script type="math/tex">TA</script> is either a value of type <script type="math/tex">A</script> or <script type="math/tex">Error</script>.
+Now, an error-prone computation has the type <script type="math/tex">A \to TB</script>.
+For example, the division operator has type <script type="math/tex">Int \times Int \to T~Int</script>,
+meaning that it maps a pair of integers to either an integer or an error.</p>
+
+    <p>We’re left with the problem that a computation of type
+<script type="math/tex">A \to TB</script> does not seem to compose with a computation of type
+<script type="math/tex">B \to TC</script>, because the codomain of the former does not match the
+domain of the latter. Two properties of <script type="math/tex">T</script> enable a solution.</p>
+
+    <p>First, <script type="math/tex">T</script> is <em>functorial</em>, which entails among other things that given a function <script type="math/tex">f : A \to B</script>, we can produce a function <script type="math/tex">Tf : TA \to TB</script>.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>functorT f x = match x with Val a → Val (f a) | Error → Error
+</code></pre></div>    </div>
+
+    <p>Second, for each type <script type="math/tex">A</script>, we have a <em>multiplication</em> transformation
+of type <script type="math/tex">\mu_A : TTA \to TA</script>.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mu x =
+  match x with
+  | Val (Val y) → Val y
+  | Val (Error) → Error
+  | Error → Error
+</code></pre></div>    </div>
+
+    <p>With these two components, we can combine effectful computations
+<script type="math/tex">f : A \to TB</script> and <script type="math/tex">g : B \to TC</script> into the composite
+<script type="math/tex">A \overset{f}{\to} TB \overset{Tg}{\to} TTC \overset{\mu_C}{\to} TC</script>.</p>
+
+    <h1 id="monotonicity-coeffects">Monotonicity coeffects</h1>
+
+    <p>In the above section, we’ve seen how it can be useful implicitly thread
+a side effect through a computation. It can also be useful to implicitly thread a <em>side cause</em> through a computation. Here is a rough analogy. Imagine that you are painting a bird house. This process has two
+inputs: a can of paint and an unpainted birdhouse. It has one output:
+a painted birdhouse.
+However, painting the birdhouse does not fully consume the can of paint;
+the actual amount of paint used can be considered a <em>coeffect</em> or a <em>side cause</em>. Though we did not begin the painting knowing exactly
+how much paint was used, the task of painting the birdhouse nonetheless revealed the exact amount. Below, we introduce coeffects and show how
+they can be used to prove program functions monotone.</p>
+
+    <p>To reason about the monotonicity of programs, we first interpret
+each type <script type="math/tex">A</script> as a <a href="/order_theory/Poset.html">poset</a>
+<script type="math/tex">[ \! [ A ] \!]</script>.</p>
+
+    <p>The posets of primitive types such as <script type="math/tex">\mathbb N</script> are built-in:</p>
+
+    <p>The posets of composite types such as <script type="math/tex">A \times B</script>
+(the type of pairs whose first component belongs to <script type="math/tex">A</script> and whose second
+  component belongs to <script type="math/tex">B</script>) are constructed
+inductively:</p>
+
+    <script type="math/tex; mode=display">[ \! [ A \times B ] \! ] \doteq (\{ (a,b) \mid a \in [ \! [ A ] \! ], b \in [ \! [ B ] \! ] \}, \leq_{[ \! [ A \times B ] \! ]})</script>
+
+    <script type="math/tex; mode=display">(a,b) \leq_{[ \! [ A \times B ] \! ]}  (a',b')
+ ~\dot{\Leftrightarrow}~ (a \leq_{[ \! [ A ] \! ]} a' \wedge b \leq_{[ \! [ B ] \! ]} b')</script>
+
+    <p>A typical typing judgment has the form <script type="math/tex">\Gamma \vdash e : A</script>, where:</p>
+
+    <ul>
+      <li><script type="math/tex">e</script> is a program expression</li>
+      <li><script type="math/tex">\Gamma</script> is a mapping from the free variables of <script type="math/tex">e</script> to their types, called a “typing context”</li>
+      <li><script type="math/tex">A</script> is the type of the expression <script type="math/tex">e</script></li>
+    </ul>
+
+    <p>A typing context has the form <script type="math/tex">x_1 : A_1, x_2 : A_2, \ldots, x_n : A_n</script>,
+meaning that variable <script type="math/tex">x_1</script> has type <script type="math/tex">A_1</script>, <script type="math/tex">x_2</script> has type <script type="math/tex">A_2</script>, etc. The typing context <script type="math/tex">\Gamma</script> and program expression
+<script type="math/tex">e</script> are provided as inputs to the type checking algorithm, while
+the result type <script type="math/tex">A</script> is produced as an output.
+A typing context <script type="math/tex">\Gamma \doteq x_1 : A_1, x_2 : A_2, \ldots, x_n : A_n</script> is interpreted
+as the product of the interpretations of its types: <script type="math/tex">[ \! [ \Gamma ] \! ] \doteq
+[ \! [ A_1 ] \! ] \times [ \! [ A_2 ] \! ] \times \cdots \times [ \! [ A_n ] \! ]</script>. A typing judgment <script type="math/tex">\Gamma \vdash e : A</script> is interpreted as a function <script type="math/tex">f</script> of type <script type="math/tex">[ \! [ \Gamma ] \! ] \to [ \! [ A ] \!]</script>.</p>
+
+    <p>Since our types and typing context denotes posets, we can
+interpret <script type="math/tex">f</script> more specifically as a <em>monotone</em> function.
+Suppose that for <script type="math/tex">(v_1, v_2, \ldots, v_n) \in [ \! [ \Gamma ] \!]</script> we would like to compute <script type="math/tex">f(v_1, v_2, \ldots, v_n)</script>. However, there
+is a problem: we do not have access to <script type="math/tex">(v_1, v_2, \ldots, v_n)</script>.
+Instead, we have a <em>local view</em> of our desired input, i.e., some <script type="math/tex">(v_1', v_2', \ldots, v_n') \in [ \! [ \Gamma ] \! ]</script> such
+that <script type="math/tex">(v_1', v_2', \ldots, v_n') \leq_{[ \! [ \Gamma ] \! ]}
+(v_1, v_2, \ldots, v_n)</script>. Since <script type="math/tex">f</script> is monotone, we have
+<script type="math/tex">f(v_1', v_2', \ldots, v_n') \leq_{[ \! [ A ] \! ]} f(v_1, v_2, \ldots, v_n)</script>. Approximate inputs allow us to obtain an approximation of the result that we would have obtained if we
+had access to exact inputs.</p>
+
+    <p>We can only derive an approximate output from approximate inputs
+if our program is monotone separately as a function of each of its
+free variables, i.e., for each argument position <script type="math/tex">f(\cdots,x,\cdots)</script>
+we have <script type="math/tex">v' \leq v</script> implies <script type="math/tex">f(\cdots, v', \cdots) \leq f(\cdots, v, \cdots)</script>. However, most useful computations are not monotone.
+If a computation depends non-monotonically on some parameter, receiving an exact input in that parameter is sufficient to ensure
+that we produce a lower bound on our desired exact output.
+For example, consider this typing judgment.</p>
+
+    <script type="math/tex; mode=display">x:\mathbb N, y : \mathbb N \vdash x~\dot{-}~y : \mathbb N</script>
+
+    <p>Here <script type="math/tex">\dot{-}</script> is truncated subtraction, which is like standard subtraction but rounds results which would be negative up to 0.
+This computation depends monotonically on <script type="math/tex">x</script> and non-monotonically
+on <script type="math/tex">y</script>; the purpose of monotonicity coeffects is to synthesize this fact automatically from the expression <script type="math/tex">x~\dot{-}~y</script>.
+A monotonicity type-and-coeffect judgment has the following form.</p>
+
+    <script type="math/tex; mode=display">\Gamma @ R \vdash e : A</script>
+
+    <p>We’ve extended the standard typing judgment with an additional
+component <script type="math/tex">R</script>, called the <em>coeffect</em>. It is a vector
+whose length matches that of <script type="math/tex">\Gamma</script>, and which
+contains one <em>coeffect scalar</em> (either <script type="math/tex">+</script> for monotone
+  or <script type="math/tex">?</script> for arbitrary) corresponding to each variable in <script type="math/tex">\Gamma</script>.
+Our subtraction example becomes:</p>
+
+    <script type="math/tex; mode=display">x:\mathbb N, y : \mathbb N @ \langle +, ! \rangle \vdash x~\dot{-}~y : \mathbb N</script>
+
+    <p>The coeffect of this <em>type-and-coeffect</em> judgment communicates that in order to produce a lower bound on our desired output, we require a lower bound on the argument supplied for <script type="math/tex">x</script> and the exact value
+of the argument supplied for <script type="math/tex">y</script>. We previously noted that while
+<script type="math/tex">\Gamma</script> and <script type="math/tex">e</script> are inputs of our type checking algorithm,
+<script type="math/tex">A</script> is an output. <script type="math/tex">R</script>, like <script type="math/tex">A</script>, is an output of the type checking algorithm.</p>
+
+    <p>We modeled effectful functions from <script type="math/tex">A</script> to <script type="math/tex">B</script> using a functorial type operator <script type="math/tex">T</script>,
+as functions of type <script type="math/tex">A \to TB</script>. Coeffects are in some sense the opposite,
+where <em>coeffectful functions</em> (functions which implicitly pull in resources from context)
+are modeled using a functorial transformation <script type="math/tex">D</script>, as functions (in our case monotone functions)
+of type <script type="math/tex">DA \to B</script>. Monotonicity coeffects are <em>graded</em>, meaning that we modify our functions’ domains
+using a family of scalar-indexed functorial transformations <script type="math/tex">D_s</script> rather than just a single transformation
+<script type="math/tex">D</script>. The functorial transformations on posets <script type="math/tex">D_s</script>, for <script type="math/tex">s \in \{ +, ! \}</script>, are defined as follows</p>
+
+    <ul>
+      <li>The transformation <script type="math/tex">D_+</script> produces its argument as output, i.e. it is the identity function.</li>
+      <li>The transformation <script type="math/tex">D_!</script> produces an output that is equal to its argument except with all non-reflexive edges removed.</li>
+    </ul>
+
+    <p>We provide depictions of <script type="math/tex">D_+</script> and <script type="math/tex">D_!</script> below,
+in which reflexive edges are implicitly assumed on all elements,
+and an upward edge from node <script type="math/tex">v</script> to node <script type="math/tex">w</script> means that <script type="math/tex">v \leq w</script>.</p>
+
+    <p><img src="/assets/portfolioCoeffectFunctors.png" alt="PosetFunctors" /></p>
+
+    <p>The meaning of <script type="math/tex">D_+</script> is quite clear; since <script type="math/tex">D_+ A \to B = A \to B</script>,
+<script type="math/tex">D_+ A \to B</script> simply represents the set of monotone functions from
+<script type="math/tex">A</script> to <script type="math/tex">B</script>.</p>
+
+    <p><script type="math/tex">D_!</script> is slightly more subtle. A poset with only reflexive edges is called <em>discrete</em>.<br />
+<script type="math/tex">D_!</script> can therefore be though of as the discretifying transformation.
+If <script type="math/tex">P</script> and <script type="math/tex">Q</script> are posets, and if <script type="math/tex">P</script> is discrete, then consider the meaning
+of the statement “The function <script type="math/tex">f : P \to Q</script>” is monotone. This is in fact a
+vacuous statement. It guarantees that <script type="math/tex">f</script> preserves reflexive edges. However,
+<em>all</em> functions preserve reflexive edges; when we apply <script type="math/tex">f</script> to two reflexively
+related (equal) elements, of course the resulting outputs will be comparable, because
+they will be exactly the same. <script type="math/tex">D_! A \to B</script> is thus the set of <em>arbitrary</em>
+functions from <script type="math/tex">A</script> to <script type="math/tex">B</script>. Though <script type="math/tex">D_! A \to B</script> includes both
+monotone and non-monotone functions from <script type="math/tex">A</script> to <script type="math/tex">B</script>, we can use it as a
+coarse overapproximation of the set of non-monotone functions from <script type="math/tex">A</script> to <script type="math/tex">B</script>.</p>
+
+    <p>A typing judgment <script type="math/tex">x_1 : A_1, \ldots, x_n : A_n @ \langle s_1, \ldots, s_n \rangle \vdash e : B</script>
+is then interpreted as a monotone function of type
+<script type="math/tex">D_{s_1} [ \! [ A_1 ] \! ] \times \cdots \times D_{s_n} [ \! [ A_n ] \! ] \to [ \! [ B ] \! ]</script>.
+For example, the typing judgment <script type="math/tex">x:\mathbb N, y : \mathbb N @ \langle +, ! \rangle \vdash x~\dot{-}~y : \mathbb N</script>
+is then interpreted as a monotone function of type
+<script type="math/tex">D_+ [ \! [ \mathbb N ] \! ] \times D_{!} [ \! [ \mathbb N ] \! ] \to [ \! [ \mathbb N ] \! ]</script>.</p>
+
+    <p>To compose two coeffectful functions we have a family of <em>graded comultiplication</em>
+functions <script type="math/tex">\delta_{s,t,A} : D_{s \otimes t} A \to D_{s} D_{t} A</script>,
+where <script type="math/tex">\otimes</script> is a binary scalar composition operator defined as follows
+(with left operand along the left side and right operand along the top):</p>
+
+    <p><img src="/assets/scalarMultiplication.png" alt="ScalarMultiplication" /></p>
+
+    <p>Ours is a degenerate coeffect system in which
+for all posets <script type="math/tex">A</script> and all scalars <script type="math/tex">s</script> and <script type="math/tex">t</script> we have <script type="math/tex">D_{s \otimes t} A = D_s D_t A</script>.
+Thus we define <script type="math/tex">\delta_{s,t,A} \doteq \lambda x. x</script>, the identity function
+on <script type="math/tex">D_{s \otimes t} A</script>.</p>
+
+    <p>With graded comultiplication, we can compose coeffectful functions: from<br />
+<script type="math/tex">f : D_{s} A \to B</script> and <script type="math/tex">g : D_{t} B \to C</script> we obtain the composite:</p>
+
+    <script type="math/tex; mode=display">D_{s \otimes t} A \overset{\delta_{t,s,A}}{\to} D_t D_s A \overset{D_t f}{\to} D_t B \overset{g}{\to} C</script>
+
+  </div>
+</details>
+
+<h2 id="typed-lua-class-system">Typed Lua Class System</h2>
+
+<p>(For a full description of this project, see
+<a href="/2016/08/18/a-class-system-for-typed-lua.html">A Class System for Typed Lua</a></p>
+
+<p>order_theory/Poset.html
+In the Summer of 2016, I participated in the Google Summer of Code, working
+with LabLua as a mentorship organization, under the guidance of Prof. Fabio
+Mascherenas. My task was to develop a class system for Typed Lua, an optionally
+typed variant of Lua.</p>
+
+<p>I had previously developed my own typed class system for Lua (see below),
+but Typed Lua’s existing type system and Fabio’s goal for the class system
+distinguished this project from my previous work in some interesting ways:</p>
+
+<h1 id="structural-vs-nominal-typing">Structural vs. Nominal Typing</h1>
+
+<p>Structural subtyping is sometimes called “duck typing” by programmers,
+a term inspired by the phrase “If it walks like a duck and quacks
+like a duck, it’s a duck”. In a nutshell, if a function expects an
+argument belonging to class A, but the programmer applies it to
+an object of class B, the application will be permitted so long as every
+public method and field of A is also a public method of field of class B.</p>
+
+<p>Structural subtyping can be convenient, but also error prone, for if we had two
+classes Stack and Queue with Push and Pop methods, structural subtyping
+would allow us to use the two classes interchangeably. Unfortunately,
+this doesn’t account for the distinction between the two sets of equational
+laws that each class imposes on its instances: stacks are LIFO containers,
+whereas queues are FIFO containers.</p>
+
+<p>Nominal subtyping is familiar to most programmers from languages such as
+Java: we are not allowed to use objects of class B where objects of
+class A are expected unless class B explicitly inherits from class B.
+With nominal typing the implementor of class B is responsible for ensuring
+that it does not violate A’s equational laws.</p>
+
+<h1 id="f-bounded-polymorphism">F-Bounded Polymorphism</h1>
+
+<p>Fabio initially wanted to use structural subtyping for the Typed Lua class
+system. However, we also wanted generics (i.e. type parameters)
+with comparable functionality to popular OOP langauges such as Java.
+Such class systems have an interesting feature known as F-Bounded polymorphism.
+F-Bounded polymorphism is an extension of bounded polymorphism, which allows
+us to place constraints on the types which may be
+used to instantiate a generic function:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Printable
+  method print () =&gt; ()
+end
+
+local function PrintAll&lt; A &lt;: Printable &gt;(l : List&lt;A&gt;)
+  for v in elements(l) do
+    v:print()
+  end
+end  
+</code></pre></div></div>
+
+<p>In the above function PrintAll, the type parameter A can only be
+instantiated with classes that implement the Printable interface.
+F-Bounded polymorphism allows the bound of the type parameter
+to refer to the parameter itself:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>interface Ordered&lt;T&gt;
+  method lessThanEq : (T) =&gt; (boolean)
+end
+
+local function comparable&lt; T &lt;: Ordered&lt;T&gt; &gt;(x : T, y : T) : boolean
+  return (x:lessThanEq(y) or y:lessThanEq(x))
+end
+</code></pre></div></div>
+
+<p>State-of-the-art nominal type systems with F-Bounded polymorphism
+are more expressive than their structural counterparts,
+and for this reason we ultimately decided to use nominal
+class types.</p>
+
+<p>Even with nominal subtyping, F-Bounded polymoprhism and its interaction with other features
+can be quite tricky to get correct.
+For example, Java’s implementation has fundamental flaws:
+<a href="http://www.cis.upenn.edu/~bcpierce/papers/variance.pdf">Kennedy and Pierce</a>
+reduced the problem of deciding Java’s subtyping relation to the Post Correspondence
+Problem, an famously undecidable problem from the theory of computation.
+We decided to use <a href="http://www.cs.cornell.edu/~blg59/resources/doc/effing-bound-polymorphism.pdf">Greenman et al.’s</a>
+approach, which requires the programmer to distinguish between interfaces that
+define <em>materials</em> (describing actual runtime objects) and interfaces which
+define <em>shapes</em> (interfaces used solely as type parameter bounds).</p>
+
+<h2 id="game-kitchen-a-lua-ide-and-optional-type-systems-before-optional-type-systems-were-cool">Game Kitchen: A Lua IDE and optional type systems before optional type systems were cool</h2>
+
+<p>Back in 2010, I worked as a programmer at a video game company called Budcat Creations. I was tasked with creating an editor for the Lua scripting language.
+At one point, I was asked to add some primitive static type checking to the editor. I said that I had no idea how type checking worked, but they told
+me to do it regardless. To learn about type systems, I started reading the book <em>Types and Programming Languages</em> by Benjamin Pierce.</p>
+
+<p>Soon after that, I quit Budcat to attend the University of Iowa as an undergrad. During my time as an undergrad, I kept reading <em>Types and Programming Languages</em>. To
+apply some of the ideas that I was reading about in a practical setting, I started programming a Lua IDE as a side project, targeting the game programming
+framework LOVE. It was originally called <em>LOVE Studio</em>, but I renamed it to the more Google friendly <em>Game Kitchen</em>.</p>
+
+<p>Game Kitchen has a built-in optional type checker for Lua, in which type annotations are provided through comment embedded type syntax.
+I thought that embedding type syntax in comments rather than replacing Lua’s existing syntax would make the type checker easier
+to adopt in an industrial setting. Adopting the type system could be considered a cautious, conservative choice: because type-annotated code is still
+compiled by the standard lua compiler, anyone unhappy with the type checker could simply stop using it.</p>
+
+<iframe width="420" height="315" src="https://www.youtube.com/watch?v=Ls3Z3xyKTC8&amp;feature=youtu.be" frameborder="0" allowfullscreen=""></iframe>
+
+<details>
+<summary>More details</summary>
+<div style="background-color:beige">
+
+    <p>From developing Game Kitchen, I learned about some about important issues that arise in static typing. Here are a couple of examples:</p>
+
+    <h1 id="bidirectional-type-checking">Bidirectional type checking</h1>
+
+    <p>Lua is often used as a data description language. With type annotations, we can provide <em>schemas</em> for data description.</p>
+
+    <p>Type definitions:</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Theme = {
+  normal : Image,
+  active : Image,
+  activePressed : Image,
+  pressed : Image
+}
+
+GUIButton = {
+  theme : Theme,
+  -- the left x-coordinate of the button
+  x : number,
+  -- the top y-coordinate of the button
+  y : number,
+  -- the width of the button (using the images' width as default)
+  w : ?number,
+  -- the height of the button (using the images' width as default)
+  h : ?number
+}
+</code></pre></div>    </div>
+
+    <p>Data definition:</p>
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>--@var(GUIButton)
+local myButton = {
+  theme = {
+    normal = simpleButtonNormal,
+    active = simpleButtonActive,
+    activePressed = simpleButtonActivePressed,
+    pressed = "simpleButtonPressed"
+  }
+  ...
+}
+</code></pre></div>    </div>
+
+    <p>In the above data definition, the <em>pressed</em> field has a type error: it is assigned to a string when it should be assigned to an Image
+according to the definition of the Theme type.
+A naive course of action would be to insert a red squiggly under the entire definition of <em>myButton</em>, since it does not conform to
+its ascribed type GUIButton. However, with bidirectional type checking we can do better: We can provide an explanation of <em>why</em>
+myButton does not conform to the GUIButton type, giving the red squiggly a more precise placement beneath
+the definition of the <em>pressed</em> field.</p>
+
+    <p>Bidirectional type checking has two modes: check and synthesize. Under
+check mode, type checking is performed with respect to an expected type. The type annotation GUIButton tells us that
+the definition of myButton should be checked with respect to the expected type GUIButton. To do this, we check
+that it has field theme, x, y, w, and h, which conform to types Theme, number, number, ?number, and ?number, respectively.
+We start by checking theme; the definition of myButton does have a field called theme, so we recurse into
+the definition of theme with the expected type set to Theme. Theme defines a field called pressed of type Image, and because
+theme defines an image field, we recurse into its definition, expecting find the type Image. However, we find the type “string”
+instead. Bidirectional type checking has allowed us to pinpoint the source of the type error rather than naively placing it
+at the location of the type ascription. How useful!</p>
+
+    <h1 id="equirecursive-subtyping">Equirecursive subtyping</h1>
+
+    <p>If <script type="math/tex">A</script> and <script type="math/tex">B</script> are types, write <script type="math/tex">A \times B</script> for the product type formed from A and B.
+How can we decide if <script type="math/tex">A1 \times B1</script> is a subtype of <script type="math/tex">A2 \times B2</script>?
+This holds whenever A1 is a subtype of A2 and B1 is a subtype of B2. Right?
+Well, yes. But that isn’t always easy to determine when recursive types are involved.
+Define <script type="math/tex">T = A1 \times T</script> and <script type="math/tex">S = A2 \times S</script>. Then, applying the aforementioned approach,
+<script type="math/tex">T</script> is a subtype of <script type="math/tex">S</script> whenever <script type="math/tex">A1</script> is a subtype of <script type="math/tex">A2</script> and… <script type="math/tex">T</script> is a subtype of <script type="math/tex">S</script>?
+This is not a tenable subtyping algorithm because it reduces a subtyping query
+into a larger subtyping query containing the original.</p>
+
+    <p>Recursive subtyping queries are generally more tricky than the above example:
+we could define <script type="math/tex">T = A1 \times T</script> and <script type="math/tex">S = A1 \times (A1 \times S)</script>. But devising an algorithm to
+determine this is non-trivial. In Game Kitchen, I adopted the approach
+described in chapter 21 of “Types and Programming Langauges”.</p>
+
+  </div>
+</details>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Kevin Clancy&#39;s Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Kevin Clancy&#39;s Blog
+            
+            </li>
+            
+            <li><a href="mailto:kclanc@gmail.com">kclanc@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/kevinclancy"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">kevinclancy</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://bitbucket.com/kevinclancy"><span class="icon icon--bitbucket"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 16 16"
+   version="1.1"
+   id="svg3929"
+   sodipodi:docname="Bitbucket-blue2.svg"
+   width="16"
+   height="16"
+   inkscape:version="0.92.3 (3ce5693, 2018-03-11)">
+  <metadata
+     id="metadata3933">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Bitbucket-blue</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="928"
+     inkscape:window-height="1028"
+     id="namedview3931"
+     showgrid="false"
+     inkscape:zoom="1.28"
+     inkscape:cx="98.515916"
+     inkscape:cy="-102.62937"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_2" />
+  <defs
+     id="defs3899">
+    <style
+       id="style3892">.cls-1{fill:#253858;}.cls-2{fill:none;}.cls-3{fill:#2684ff;}.cls-4{fill:url(#New_Gradient_Swatch_1);}</style>
+    <linearGradient
+       id="New_Gradient_Swatch_1"
+       x1="64.010002"
+       y1="30.27"
+       x2="32.990002"
+       y2="54.48"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0.18"
+         stop-color="#0052cc"
+         id="stop3894" />
+      <stop
+         offset="1"
+         stop-color="#2684ff"
+         id="stop3896" />
+    </linearGradient>
+  </defs>
+  <title
+     id="title3901">Bitbucket-blue</title>
+  <g
+     id="Layer_2"
+     data-name="Layer 2"
+     style="display:inline"
+     transform="translate(0.02579294,-46.390167)">
+    <g
+       id="g3950"
+       transform="matrix(0.21006281,0,0,0.2295925,1.1966912,47.147363)">
+      <polygon
+         class="cls-2"
+         points="40.9,25.12 21.23,25.12 24.7,43.51 37.75,43.51 "
+         id="polygon3921"
+         style="fill:none" />
+      <path
+         class="cls-3"
+         d="M 2,6.26 A 2,2 0 0 0 0,8.58 l 8.49,51.54 a 2.72,2.72 0 0 0 2.66,2.27 h 40.73 a 2,2 0 0 0 2,-1.68 L 62.37,8.59 a 2,2 0 0 0 -2,-2.32 z m 35.75,37.25 h -13 L 21.23,25.12 H 40.9 Z"
+         id="path3923"
+         inkscape:connector-curvature="0"
+         style="fill:#2684ff" />
+      <path
+         class="cls-4"
+         d="M 59.67,25.12 H 40.9 l -3.15,18.39 h -13 L 9.4,61.73 a 2.71,2.71 0 0 0 1.75,0.66 h 40.74 a 2,2 0 0 0 2,-1.68 z"
+         id="path3925"
+         inkscape:connector-curvature="0"
+         style="fill:url(#New_Gradient_Swatch_1)" />
+    </g>
+  </g>
+</svg>
+</span><span class="username">kevinclancy</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A blog about programming languages, computer science, and more.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>
