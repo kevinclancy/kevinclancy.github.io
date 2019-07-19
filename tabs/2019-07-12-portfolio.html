@@ -105,7 +105,7 @@ applications are “correct” or “safe”?</p>
 <p>If the function we wish to apply is <a href="/order_theory/MonotoneFunction.html">monotone</a>, then
 applying it to an approximate input is guaranteed to produce an approximate output. <a href="http://db.cs.berkeley.edu/papers/UCB-lattice-tr.pdf">Logic and Lattices for Distributed Computing</a> presents a language called
 <script type="math/tex">Bloom^L</script>, in which certain functions are annotated
-as monotone, allowing the programmer to apply them to approximate
+as monotone. This allows the programmer to apply them to approximate
 shared data without the need for coordination, which
 Conway et al. view as a costly bottleneck. However, <script type="math/tex">Bloom^L</script>
 has no means to determine whether or not the
