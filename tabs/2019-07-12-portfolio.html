@@ -85,12 +85,12 @@
   <div class="post-content" itemprop="articleBody">
       <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 			-->
-			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+			<script type="text/javascript" src="http://localhost:8000/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
 		<h2 id="lambda_mc-monotone-computing-on-incomplete-information"><script type="math/tex">\lambda_{MC}</script>: Monotone computing on incomplete information</h2>
 
 <p><script type="math/tex">\lambda_{MC}</script> is a project that I developed during the latter two
-years of my ill-fated PhD program.<br />
+years of my PhD program (which I mastered out of).<br />
 I am not knowledgeable on the topic of distributed systems.
 Nonetheless, <script type="math/tex">\lambda_{MC}</script> seeks to solve a distributed
 systems problem that was presented to me by my collaborators. It
@@ -141,20 +141,23 @@ the set of natural numbers, with the standard “less than or equal to” orderi
 because they are <em>incomplete</em>: a set value { 1, 2, 3 } indicates a set
 which contains <em>at least</em> the elements 1, 2, and 3, and potentially additional elements as well.
 We therefore write the set { 1, 2, 3 } using the more cumbersome notation <script type="math/tex">\{ 1 \mapsto known, 2 \mapsto known, 3 \mapsto known : NatSet \}</script>.
-All other elements are not stored in our data representation of the set, and they implicitly map to unknown.</p>
+All other elements are not stored in our data representation of the set, and they implicitly map to <script type="math/tex">unknown</script>.</p>
 
 <p>The <script type="math/tex">mSum</script> function takes a <script type="math/tex">NatSet</script> as its input and produces the sum of the <script type="math/tex">NatSet</script>’s
 elements as output. The expression <script type="math/tex">@(+~x)</script> is a <em>coeffect ascription</em>, which statically asserts
 that the <script type="math/tex">mSum</script> function is monotone.</p>
 
-<p>The body of the <script type="math/tex">mSum</script> function uses an extract expression, which binds three variables n, v, and acc in
-its body <script type="math/tex">(plus~n~acc)</script>. It computes the following sequence of intermediate values mi,
-substituting each element for n and the previous iteration <script type="math/tex">m_{i-1}</script> for acc in <script type="math/tex">(plus~n~acc)</script>.</p>
+<p>The body of the <script type="math/tex">mSum</script> function uses an extract expression, which binds three variables <script type="math/tex">n</script>, <script type="math/tex">v</script>, and <script type="math/tex">acc</script> in
+its body <script type="math/tex">(plus~n~acc)</script>. It computes the following sequence of intermediate values <script type="math/tex">m_i</script>,
+substituting each element for n and the previous iteration <script type="math/tex">m_{i-1}</script> for <script type="math/tex">acc</script> in <script type="math/tex">(plus~n~acc)</script>.</p>
 
-<p><script type="math/tex">m0 = 0</script> (here 0 is chosen because it is the smallest natural number)
-<script type="math/tex">m1 = max(m0, (plus~1~m0)) = max(0,1) = 1</script>
-<script type="math/tex">m2 = max(m1, (plus~2~m1)) = max(1,3) = 3</script>
-<script type="math/tex">m3 = max(m2, (plus~3~m2)) = max(3,6) = 6</script></p>
+<p><script type="math/tex">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~m_0 = 0</script> (here 0 is chosen because it is the smallest natural number)</p>
+
+<script type="math/tex; mode=display">m_1 = max(m0, (plus~1~m_0)) = max(0,1) = 1</script>
+
+<script type="math/tex; mode=display">m_2 = max(m1, (plus~2~m_1)) = max(1,3) = 3</script>
+
+<script type="math/tex; mode=display">m_3 = max(m2, (plus~3~m_2)) = max(3,6) = 6</script>
 
 <p>At this point all elements of the set have been exhausted, and so we return 6.</p>
 
@@ -179,7 +182,7 @@ then we would have</p>
 <p>Why prove this function monotone at all? Recall that a <script type="math/tex">NatSet</script> value is an incomplete view of a set. When we sum its elements, we are potentially only summing
 a proper subset of the exact set’s elements. The monotonicity of <script type="math/tex">mSum</script> therefore tells us that when applied to an incomplete input set <script type="math/tex">x</script>, <script type="math/tex">mSum</script> produces a
 lower bound on the sum of the elements of the exact set that we are approximating (some superset of <script type="math/tex">x</script>).
-A typchecker and interpreter for <script type="math/tex">\lambda_{MC}</script> can be found <a href="http://github.com/kevinclancy/monotonicity-coeffects">here</a>. I’ve included a more detailed explanation below.</p>
+A typchecker and interpreter for <script type="math/tex">\lambda_{MC}</script> can be found <a href="http://github.com/kevinclancy/monotonicity-coeffects">here</a>. I’ve included an optional,  more detailed explanation below.</p>
 
 <details>
 <summary>Show details</summary>
@@ -479,7 +482,7 @@ whereas queues are FIFO containers.</p>
 
 <p>Nominal subtyping is familiar to most programmers from languages such as
 Java: we are not allowed to use objects of class B where objects of
-class A are expected unless class B explicitly inherits from class B.
+class A are expected unless class B explicitly inherits from class A.
 With nominal typing the implementor of class B is responsible for ensuring
 that it does not violate A’s equational laws.</p>
 
@@ -489,7 +492,7 @@ that it does not violate A’s equational laws.</p>
 system. However, we also wanted generics (i.e. type parameters)
 with comparable functionality to popular OOP langauges such as Java.
 Such class systems have an interesting feature known as F-Bounded polymorphism.
-F-Bounded polymorphism is an extension of bounded polymorphism, which allows
+F-Bounded polymorphism is an extension of bounded polymorphism. Bounded polymorphism allows
 us to place constraints on the types which may be
 used to instantiate a generic function:</p>
 
@@ -505,7 +508,7 @@ end
 </code></pre></div></div>
 
 <p>In the above function PrintAll, the type parameter A can only be
-instantiated with classes that implement the Printable interface.
+instantiated with classes that implement the Printable interface (Printable is called the <em>bound</em>).
 F-Bounded polymorphism allows the bound of the type parameter
 to refer to the parameter itself:</p>
 
@@ -541,8 +544,8 @@ At one point, I was asked to add some primitive static type checking to the edit
 me to do it regardless. To learn about type systems, I started reading the book <em>Types and Programming Languages</em> by Benjamin Pierce.</p>
 
 <p>Soon after that, I quit Budcat to attend the University of Iowa as an undergrad. During my time as an undergrad, I kept reading <em>Types and Programming Languages</em>. To
-apply some of the ideas that I was reading about in a practical setting, I started programming a Lua IDE as a side project, targeting the game programming
-framework LOVE. It was originally called <em>LOVE Studio</em>, but I renamed it to the more Google friendly <em>Game Kitchen</em>.</p>
+apply some of the ideas that I was reading about in a practical setting, I started programming a Lua IDE called Game Kitchen as a side project, targeting the game programming
+framework LOVE.</p>
 
 <p>Game Kitchen has a built-in optional type checker for Lua, in which type annotations are provided through comment embedded type syntax.
 I thought that embedding type syntax in comments rather than replacing Lua’s existing syntax would make the type checker easier
@@ -552,7 +555,7 @@ compiled by the standard lua compiler, anyone unhappy with the type checker coul
 <iframe width="420" height="315" src="https://www.youtube.com/embed/Ls3Z3xyKTC8" frameborder="0" allowfullscreen=""></iframe>
 
 <details>
-<summary>More details</summary>
+<summary>A text-based alternative to the above video.</summary>
 <div style="background-color:beige">
 
     <p>From developing Game Kitchen, I learned about some about important issues that arise in static typing. Here are a couple of examples:</p>
@@ -630,6 +633,19 @@ described in chapter 21 of “Types and Programming Langauges”.</p>
 
   </div>
 </details>
+
+<h2 id="raytracing-in-one-weekend">Raytracing in One Weekend</h2>
+
+<p>This is a fairly small project; I’m including it here simply to show
+that I have been brushing up on C++ and 3D math recently. This August,
+I worked through Peter Shirley’s tutorial “Ray Tracing in One Weekend”.
+All of the code is provided in the tutorial (though there are some
+minor mathetical errors that require spotting). For my own implementation,
+I translated Shirley’s code into C++17.</p>
+
+<p><img src="/assets/RayTraced.png" alt="A raytraced scene" /></p>
+
+<p>My implementation can be found on <a href="http://github.com/kevinclancy/ray-tracing-in-one-weekend">github</a>.</p>
 
   </div>
 
