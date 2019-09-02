@@ -181,7 +181,10 @@ then we would have</p>
 <p>Why prove this function monotone at all? Recall that a <script type="math/tex">NatSet</script> value is an incomplete view of a set. When we sum its elements, we are potentially only summing
 a proper subset of the exact set’s elements. The monotonicity of <script type="math/tex">mSum</script> therefore tells us that when applied to an incomplete input set <script type="math/tex">x</script>, <script type="math/tex">mSum</script> produces a
 lower bound on the sum of the elements of the exact set that we are approximating (some superset of <script type="math/tex">x</script>).
-A typchecker and interpreter for <script type="math/tex">\lambda_{MC}</script> can be found <a href="http://github.com/kevinclancy/monotonicity-coeffects">here</a>. I’ve included an optional,  more detailed explanation below.</p>
+A typchecker and interpreter for <script type="math/tex">\lambda_{MC}</script> can be found <a href="http://github.com/kevinclancy/monotonicity-coeffects">here</a>.
+I also formalized the type system, and implemented an
+embedding into Agda here <a href="http://github.com/kevinclancy/mclambda">here</a>.
+I’ve included an optional,  more detailed explanation below.</p>
 
 <details>
 <summary>Show details</summary>
