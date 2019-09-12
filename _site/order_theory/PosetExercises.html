@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Lattice exercises</title>
-  <meta name="description" content="Try these exercises to test your knowledge of lattices.">
+  <title>Poset Exercises</title>
+  <meta name="description" content="Try these exercises to test your poset knowledge.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="/order_theory/LatticeExercises.html">
+  <link rel="canonical" href="/order_theory/PosetExercises.html">
   <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
   
   
@@ -72,11 +72,11 @@
 
 
   <header class="post-header">
-    <h1 class="post-title" itemprop="name headline">Lattice exercises</h1>
+    <h1 class="post-title" itemprop="name headline">Poset Exercises</h1>
     <p class="post-meta">
-      <time datetime="2019-09-11T20:22:25-04:00" itemprop="datePublished">
+      <time datetime="2016-08-18T13:04:58-04:00" itemprop="datePublished">
         
-        Sep 11, 2019
+        Aug 18, 2016
       </time>
       </p>
   </header>
@@ -87,85 +87,89 @@
 			-->
 			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-		<p>Try these exercises to test your knowledge of lattices.</p>
+		<p>Try these exercises to test your poset knowledge.</p>
 
-<h2 id="distributivity">Distributivity</h2>
+<h1 id="corporate-ladder">Corporate Ladder</h1>
 
-<p>Does the lattice meet operator distribute over joins? In other words, for all lattices <script type="math/tex">L</script> and all <script type="math/tex">p, q, r \in L</script>, is it necessarily true that <script type="math/tex">p \wedge (q \vee r) = (p \wedge q) \vee (p \wedge r)</script>? Prove your answer.</p>
+<p>Imagine a company with five distinct roles: CEO, marketing manager, marketer, IT manager, and IT worker. At this company, if the CEO gives an order, everyone else must follow it. If an order comes from an IT manager, only IT workers are obligated to follow it. Similarly, if an order comes from a marketing manager, only marketers are obligated to follow it. Nobody is obligated to follow orders from marketers or IT workers.</p>
+
+<p>Do the workers at this company form a poset under the “obligated to follow orders from” relation?</p>
 
 <details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+ While not technically a poset due to its lack of reflexivity, it is pretty close. It is actually a strict ordering, whose underlying partial order could be obtained by making the reasonable assumption that each worker will follow her own orders.
+ </div>
+</details>
 
-    <p>The following counterexample shows that lattice meets do not necessarily distribute over joins.</p>
+<h1 id="bag-inclusion">Bag Inclusion</h1>
 
-    <p><img src="http://i.imgur.com/SKJirZx.png" alt="A non-distributive lattice called as M3" /></p>
+<p>Let <script type="math/tex">X</script> be a set, then we use <script type="math/tex">\mathcal{M}(X)</script> to denote the set of all bags (a.k.a. multisets) containing elements of <script type="math/tex">X</script>. Let <script type="math/tex">A \in \mathcal{M}(X)</script>. The multiplicity function of <script type="math/tex">A</script>, <script type="math/tex">1_A : X \rightarrow \mathbb N</script> maps each element of <script type="math/tex">X</script> to the number of times that element occurs in <script type="math/tex">A</script>. We can use multiplicity functions to define a inclusion relation <script type="math/tex">\subseteq</script> for bags. For <script type="math/tex">A, B \in \mathcal M(X)</script>, we write <script type="math/tex">A \subseteq B</script> whenever for all <script type="math/tex">x \in X</script>, <script type="math/tex">1_A(x) \leq 1_B(x)</script>.</p>
 
-    <!---
+<p>Does <script type="math/tex">\mathcal{M}(X)</script> form a poset under the bag inclusion relation <script type="math/tex">\subseteq</script>? If so, prove it. Otherwise, show that it does not satisfy one of the three poset properties.</p>
+
+<h1 id="duality">Duality</h1>
+
+<p>Give the dual of the following proposition.</p>
+
+<p>For all posets <script type="math/tex">P</script> and all <script type="math/tex">p, q \in P</script>, <script type="math/tex">q \prec p</script> implies that <script type="math/tex">\{ r \in P \mid r \leq p \}</script> is a superset of <script type="math/tex">\{ r \in P \mid r \leq q\}</script>.</p>
+
+<details>
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+ For all posets \(P\) and all \(p, q \in P\), \(q \succ p\) implies that \( \{ r \in P~|~r \geq p \} \) is a superset of
+ \( \{ r \in P~|~r \geq q\} \) (where \(q \succ p\) means \(p \prec q\)).
+ </div>
+</details>
+
+<h1 id="hasse-diagrams">Hasse diagrams</h1>
+
+<p>Let <script type="math/tex">X = \{ x, y, z \}</script>. Draw a Hasse diagram for the poset <script type="math/tex">\langle \mathcal P(X), \subseteq \rangle</script> of the power set of <script type="math/tex">X</script> ordered by inclusion.</p>
+
+<details>
+ <summary>Show solution</summary>
+ <img src="http://i.imgur.com/WG3OLFc.png" alt="A Hasse diagram of the power set of X, ordered by inclusion" />
+<!---
 dot source:
 
 digraph G {
   node [width = 0.1, height = 0.1]
   edge [arrowhead = "none"]
+  e [label = "{}"]
+  x [label = "{x}"]
+  y [label = "{y}"]
+  z [label = "{z}"]
+  xy [label = "{x,y}"]
+  xz [label = "{x,z}"]
+  yz [label = "{y,z}"]
+  xyz [label = "{x,y,z}"]
 
   rankdir = BT;
-  t -> p
-  t -> q
-  t -> r
-  p -> s
-  q -> s
-  r -> s
+  e -> x
+  e -> y
+  e -> z
+  x -> xy
+  x -> xz
+  y -> xy
+  y -> yz
+  z -> xz
+  z -> yz
+  xy -> xyz
+  xz -> xyz
+  yz -> xyz
 }
 --->
-
-    <p>In the above lattice, <script type="math/tex">p \wedge (q \vee r) = p \neq t = (p \wedge q) \vee (p \wedge r)</script>.</p>
-
-  </div>
 </details>
 
-<h2 id="common-elements">Common elements</h2>
+<h1 id="hasse-diagrams-encore">Hasse diagrams (encore)</h1>
 
-<p>Let <script type="math/tex">L</script> be a lattice, and let <script type="math/tex">J</script> and <script type="math/tex">K</script> be two finite subsets of <script type="math/tex">L</script> with a non-empty intersection. Prove that <script type="math/tex">\bigwedge J \leq \bigvee K</script>.</p>
-
-<details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>If <script type="math/tex">J</script> and <script type="math/tex">K</script> have a non-empty intersection, then there exists some lattice element <script type="math/tex">p</script> such that <script type="math/tex">p \in J</script> and <script type="math/tex">p \in K</script>. Since <script type="math/tex">\bigwedge J</script> is a lower bound of <script type="math/tex">J</script>, we have <script type="math/tex">\bigwedge J \leq p</script>. Since <script type="math/tex">\bigvee K</script> is an upper bound of <script type="math/tex">K</script>, we have <script type="math/tex">p \leq \bigvee K</script>. By transitivity, we have <script type="math/tex">\bigwedge J \leq p \leq \bigvee K</script>.</p>
-  </div>
-</details>
-
-<h2 id="another-inequality">Another inequality</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice, and let <script type="math/tex">J</script> and <script type="math/tex">K</script> be two finite subsets of <script type="math/tex">L</script> such that for all <script type="math/tex">j \in J</script> and <script type="math/tex">k \in K</script>, <script type="math/tex">j \leq k</script>. Prove that
-<script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
+<p>Is it possible to draw a Hasse diagram for any poset?</p>
 
 <details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>Rephrasing the problem statement, we have that every element of <script type="math/tex">J</script> is a lower bound of <script type="math/tex">K</script> and that every element of <script type="math/tex">K</script> is an upper bound of <script type="math/tex">J</script>. It the follows that for <script type="math/tex">j \in J</script>, <script type="math/tex">j \leq \bigwedge K</script>. Hence, <script type="math/tex">\bigwedge K</script> is an upper bound of <script type="math/tex">J</script>, and therefore it is greater than or equal to the <em>least</em> upper bound of <script type="math/tex">J</script>: <script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
-  </div>
-</details>
-
-<h2 id="the-minimax-theorem">The minimax theorem</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">A</script> an <script type="math/tex">m \times n</script> matrix of elements of <script type="math/tex">L</script>. Prove the following inequality: <script type="math/tex">\bigvee_{i=1}^m \bigwedge_{j=1}^n A_{ij} \leq \bigwedge_{j=1}^n \bigvee_{i=1}^m A_{ij}</script>.</p>
-
-<details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>To get an intuitive feel for this theorem, it helps to first consider a small concrete instantiation. Consider the <script type="math/tex">3 \times 3</script> matrix depicted below, with elements <script type="math/tex">a,b,c,d,e,f,g,h</script>, and <script type="math/tex">i</script>. The inequality instantiates to <script type="math/tex">(a \wedge b \wedge c) \vee (d \wedge e \wedge f) \vee (g \wedge h \wedge i) \leq (a \vee d \vee g) \wedge (b \vee e \vee h) \wedge (c \vee f \vee i)</script>. Why would this inequality hold?</p>
-
-    <script type="math/tex; mode=display">% <![CDATA[
-\left[ \begin{array}{ccc}
-a & b & c \\
-d & e & f \\
-g & h & i \\
-\end{array} \right] %]]></script>
-
-    <p>Notice that each parenthesized expression on the left hand side of the inequality shares an element with each parenthesized expression on the right hand side of the inequality.This is true because the parenthesized expressions on the left hand side correspond to rows and the parenthesized expressions on the right hand side correspond to columns; each row of a matrix shares an element with each of its columns. The theorem proven in the <em>Common elements</em> exercise above then tells us that each parenthesized expression on the left hand side is less than or equal to each parenthesized expression on the right hand side.</p>
-
-    <p>Let <script type="math/tex">J = \{ a \wedge b \wedge c, d \wedge e \wedge f, g \wedge h \wedge i \}</script> and <script type="math/tex">K = \{ a \vee d \vee g, b \vee e \vee h, c \vee f \vee i \}</script>. Then the hypothesis for the theorem proven in the <em>Another inequality</em> exercise holds, giving us <script type="math/tex">\bigvee J \leq \bigwedge K</script>, which is exactly what we wanted to prove. Extending this approach to the general case is straightforward.</p>
-  </div>
+  <summary>Show solution</summary>
+  <div style="background-color:lightblue">
+Note that our description of Hasse diagrams made use of the covers relation \(\prec\). The covers relation, however, is not adequate to describe the structure of many posets. Consider the poset \(\langle \mathbb R, \leq \rangle\) of the real numbers ordered by the standard comparison \( \leq \). We have \(0 &lt; 1\), but how would we convey that with a Hasse diagram? The problem is that \(0\) has no covers, even though it is not a maximal element in \( \mathbb R \). In fact, for any \( x \in \mathbb R \) such that \( x &gt; 0 \), we can find a \( y \in  \mathbb R \) such that \(0 &lt; y &lt; x\). This "infinite density" of \(\mathbb R\) makes it impossible to depict using a Hasse diagram.
+</div>
 </details>
 
   </div>

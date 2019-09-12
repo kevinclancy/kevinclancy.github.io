@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Lattice exercises</title>
-  <meta name="description" content="Try these exercises to test your knowledge of lattices.">
+  <title>Kevin Clancy&#39;s Blog</title>
+  <meta name="description" content="A blog about programming languages, computer science, and more.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="/order_theory/LatticeExercises.html">
+  <link rel="canonical" href="/">
   <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
   
   
@@ -67,111 +67,26 @@
 
     <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+        <div class="home">
+<h2 class="post-list-heading">Posts</h2>
+    <ul class="post-list"><li><span class="post-meta">Jun 13, 2018</span>
+        <h3>
+          <a class="post-link" href="/2018/06/13/order-theory-tutorials.html">
+            Order Theory Tutorials
+          </a>
+        </h3></li><li><span class="post-meta">Feb 16, 2018</span>
+        <h3>
+          <a class="post-link" href="/2018/02/16/monotonicity-through-coeffects.html">
+            Monotonicity Through Coeffects
+          </a>
+        </h3></li><li><span class="post-meta">Aug 18, 2016</span>
+        <h3>
+          <a class="post-link" href="/2016/08/18/a-class-system-for-typed-lua.html">
+            A Class System for Typed Lua
+          </a>
+        </h3></li></ul>
 
-
-
-  <header class="post-header">
-    <h1 class="post-title" itemprop="name headline">Lattice exercises</h1>
-    <p class="post-meta">
-      <time datetime="2019-09-11T20:22:25-04:00" itemprop="datePublished">
-        
-        Sep 11, 2019
-      </time>
-      </p>
-  </header>
-
-
-  <div class="post-content" itemprop="articleBody">
-      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-			-->
-			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-		<p>Try these exercises to test your knowledge of lattices.</p>
-
-<h2 id="distributivity">Distributivity</h2>
-
-<p>Does the lattice meet operator distribute over joins? In other words, for all lattices <script type="math/tex">L</script> and all <script type="math/tex">p, q, r \in L</script>, is it necessarily true that <script type="math/tex">p \wedge (q \vee r) = (p \wedge q) \vee (p \wedge r)</script>? Prove your answer.</p>
-
-<details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-
-    <p>The following counterexample shows that lattice meets do not necessarily distribute over joins.</p>
-
-    <p><img src="http://i.imgur.com/SKJirZx.png" alt="A non-distributive lattice called as M3" /></p>
-
-    <!---
-dot source:
-
-digraph G {
-  node [width = 0.1, height = 0.1]
-  edge [arrowhead = "none"]
-
-  rankdir = BT;
-  t -> p
-  t -> q
-  t -> r
-  p -> s
-  q -> s
-  r -> s
-}
---->
-
-    <p>In the above lattice, <script type="math/tex">p \wedge (q \vee r) = p \neq t = (p \wedge q) \vee (p \wedge r)</script>.</p>
-
-  </div>
-</details>
-
-<h2 id="common-elements">Common elements</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice, and let <script type="math/tex">J</script> and <script type="math/tex">K</script> be two finite subsets of <script type="math/tex">L</script> with a non-empty intersection. Prove that <script type="math/tex">\bigwedge J \leq \bigvee K</script>.</p>
-
-<details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>If <script type="math/tex">J</script> and <script type="math/tex">K</script> have a non-empty intersection, then there exists some lattice element <script type="math/tex">p</script> such that <script type="math/tex">p \in J</script> and <script type="math/tex">p \in K</script>. Since <script type="math/tex">\bigwedge J</script> is a lower bound of <script type="math/tex">J</script>, we have <script type="math/tex">\bigwedge J \leq p</script>. Since <script type="math/tex">\bigvee K</script> is an upper bound of <script type="math/tex">K</script>, we have <script type="math/tex">p \leq \bigvee K</script>. By transitivity, we have <script type="math/tex">\bigwedge J \leq p \leq \bigvee K</script>.</p>
-  </div>
-</details>
-
-<h2 id="another-inequality">Another inequality</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice, and let <script type="math/tex">J</script> and <script type="math/tex">K</script> be two finite subsets of <script type="math/tex">L</script> such that for all <script type="math/tex">j \in J</script> and <script type="math/tex">k \in K</script>, <script type="math/tex">j \leq k</script>. Prove that
-<script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
-
-<details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>Rephrasing the problem statement, we have that every element of <script type="math/tex">J</script> is a lower bound of <script type="math/tex">K</script> and that every element of <script type="math/tex">K</script> is an upper bound of <script type="math/tex">J</script>. It the follows that for <script type="math/tex">j \in J</script>, <script type="math/tex">j \leq \bigwedge K</script>. Hence, <script type="math/tex">\bigwedge K</script> is an upper bound of <script type="math/tex">J</script>, and therefore it is greater than or equal to the <em>least</em> upper bound of <script type="math/tex">J</script>: <script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
-  </div>
-</details>
-
-<h2 id="the-minimax-theorem">The minimax theorem</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">A</script> an <script type="math/tex">m \times n</script> matrix of elements of <script type="math/tex">L</script>. Prove the following inequality: <script type="math/tex">\bigvee_{i=1}^m \bigwedge_{j=1}^n A_{ij} \leq \bigwedge_{j=1}^n \bigvee_{i=1}^m A_{ij}</script>.</p>
-
-<details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>To get an intuitive feel for this theorem, it helps to first consider a small concrete instantiation. Consider the <script type="math/tex">3 \times 3</script> matrix depicted below, with elements <script type="math/tex">a,b,c,d,e,f,g,h</script>, and <script type="math/tex">i</script>. The inequality instantiates to <script type="math/tex">(a \wedge b \wedge c) \vee (d \wedge e \wedge f) \vee (g \wedge h \wedge i) \leq (a \vee d \vee g) \wedge (b \vee e \vee h) \wedge (c \vee f \vee i)</script>. Why would this inequality hold?</p>
-
-    <script type="math/tex; mode=display">% <![CDATA[
-\left[ \begin{array}{ccc}
-a & b & c \\
-d & e & f \\
-g & h & i \\
-\end{array} \right] %]]></script>
-
-    <p>Notice that each parenthesized expression on the left hand side of the inequality shares an element with each parenthesized expression on the right hand side of the inequality.This is true because the parenthesized expressions on the left hand side correspond to rows and the parenthesized expressions on the right hand side correspond to columns; each row of a matrix shares an element with each of its columns. The theorem proven in the <em>Common elements</em> exercise above then tells us that each parenthesized expression on the left hand side is less than or equal to each parenthesized expression on the right hand side.</p>
-
-    <p>Let <script type="math/tex">J = \{ a \wedge b \wedge c, d \wedge e \wedge f, g \wedge h \wedge i \}</script> and <script type="math/tex">K = \{ a \vee d \vee g, b \vee e \vee h, c \vee f \vee i \}</script>. Then the hypothesis for the theorem proven in the <em>Another inequality</em> exercise holds, giving us <script type="math/tex">\bigvee J \leq \bigwedge K</script>, which is exactly what we wanted to prove. Extending this approach to the general case is straightforward.</p>
-  </div>
-</details>
-
-  </div>
-
-  
-</article>
+    <p class="rss-subscribe">subscribe <a href="/feed.xml">via RSS</a></p></div>
 
       </div>
     </main>

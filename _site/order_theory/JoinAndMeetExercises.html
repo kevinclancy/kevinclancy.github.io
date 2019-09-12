@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Lattice exercises</title>
-  <meta name="description" content="Try these exercises to test your knowledge of lattices.">
+  <title>Join and meet exercises</title>
+  <meta name="description" content="Try these exercises to test your knowledge of joins and meets.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="/order_theory/LatticeExercises.html">
+  <link rel="canonical" href="/order_theory/JoinAndMeetExercises.html">
   <link rel="alternate" type="application/rss+xml" title="Kevin Clancy&#39;s Blog" href="/feed.xml">
   
   
@@ -72,11 +72,11 @@
 
 
   <header class="post-header">
-    <h1 class="post-title" itemprop="name headline">Lattice exercises</h1>
+    <h1 class="post-title" itemprop="name headline">Join and meet exercises</h1>
     <p class="post-meta">
-      <time datetime="2019-09-11T20:22:25-04:00" itemprop="datePublished">
+      <time datetime="2016-08-18T13:04:58-04:00" itemprop="datePublished">
         
-        Sep 11, 2019
+        Aug 18, 2016
       </time>
       </p>
   </header>
@@ -87,86 +87,83 @@
 			-->
 			<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-		<p>Try these exercises to test your knowledge of lattices.</p>
+		<p>Try these exercises to test your knowledge of joins and meets.</p>
 
-<h2 id="distributivity">Distributivity</h2>
+<h2 id="tangled-up">Tangled up</h2>
 
-<p>Does the lattice meet operator distribute over joins? In other words, for all lattices <script type="math/tex">L</script> and all <script type="math/tex">p, q, r \in L</script>, is it necessarily true that <script type="math/tex">p \wedge (q \vee r) = (p \wedge q) \vee (p \wedge r)</script>? Prove your answer.</p>
+<p><img src="http://i.imgur.com/cYqkKm7.png" alt="a big crazy poset" /></p>
+
+<p>Determine whether or not the following joins and meets exist in the poset depicted by the above Hasse diagram.</p>
+
+<script type="math/tex; mode=display">c \vee b</script>
 
 <details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-
-    <p>The following counterexample shows that lattice meets do not necessarily distribute over joins.</p>
-
-    <p><img src="http://i.imgur.com/SKJirZx.png" alt="A non-distributive lattice called as M3" /></p>
-
-    <!---
-dot source:
-
-digraph G {
-  node [width = 0.1, height = 0.1]
-  edge [arrowhead = "none"]
-
-  rankdir = BT;
-  t -> p
-  t -> q
-  t -> r
-  p -> s
-  q -> s
-  r -> s
-}
---->
-
-    <p>In the above lattice, <script type="math/tex">p \wedge (q \vee r) = p \neq t = (p \wedge q) \vee (p \wedge r)</script>.</p>
-
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+    <p>This join does <em>not</em> exist, because <script type="math/tex">i</script> and <script type="math/tex">j</script> are incomparable upper bounds of <script type="math/tex">\{ c, b \}</script>, and no smaller upper bounds of <script type="math/tex">\{ c, b \}</script> exist.</p>
   </div>
 </details>
 
-<h2 id="common-elements">Common elements</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice, and let <script type="math/tex">J</script> and <script type="math/tex">K</script> be two finite subsets of <script type="math/tex">L</script> with a non-empty intersection. Prove that <script type="math/tex">\bigwedge J \leq \bigvee K</script>.</p>
+<script type="math/tex; mode=display">g \vee e</script>
 
 <details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>If <script type="math/tex">J</script> and <script type="math/tex">K</script> have a non-empty intersection, then there exists some lattice element <script type="math/tex">p</script> such that <script type="math/tex">p \in J</script> and <script type="math/tex">p \in K</script>. Since <script type="math/tex">\bigwedge J</script> is a lower bound of <script type="math/tex">J</script>, we have <script type="math/tex">\bigwedge J \leq p</script>. Since <script type="math/tex">\bigvee K</script> is an upper bound of <script type="math/tex">K</script>, we have <script type="math/tex">p \leq \bigvee K</script>. By transitivity, we have <script type="math/tex">\bigwedge J \leq p \leq \bigvee K</script>.</p>
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+    <p>This join exists. <script type="math/tex">g \vee e = j</script>.</p>
   </div>
 </details>
 
-<h2 id="another-inequality">Another inequality</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice, and let <script type="math/tex">J</script> and <script type="math/tex">K</script> be two finite subsets of <script type="math/tex">L</script> such that for all <script type="math/tex">j \in J</script> and <script type="math/tex">k \in K</script>, <script type="math/tex">j \leq k</script>. Prove that
-<script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
+<script type="math/tex; mode=display">j \wedge f</script>
 
 <details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>Rephrasing the problem statement, we have that every element of <script type="math/tex">J</script> is a lower bound of <script type="math/tex">K</script> and that every element of <script type="math/tex">K</script> is an upper bound of <script type="math/tex">J</script>. It the follows that for <script type="math/tex">j \in J</script>, <script type="math/tex">j \leq \bigwedge K</script>. Hence, <script type="math/tex">\bigwedge K</script> is an upper bound of <script type="math/tex">J</script>, and therefore it is greater than or equal to the <em>least</em> upper bound of <script type="math/tex">J</script>: <script type="math/tex">\bigvee J \leq \bigwedge K</script>.</p>
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+    <p>This meet does <em>not</em> exist, because <script type="math/tex">d</script> and <script type="math/tex">b</script> are incomparable lower bounds of <script type="math/tex">\{ j, f \}</script>, and no larger lower bounds of <script type="math/tex">\{ j, f \}</script> exist.</p>
   </div>
 </details>
 
-<h2 id="the-minimax-theorem">The minimax theorem</h2>
-
-<p>Let <script type="math/tex">L</script> be a lattice and <script type="math/tex">A</script> an <script type="math/tex">m \times n</script> matrix of elements of <script type="math/tex">L</script>. Prove the following inequality: <script type="math/tex">\bigvee_{i=1}^m \bigwedge_{j=1}^n A_{ij} \leq \bigwedge_{j=1}^n \bigvee_{i=1}^m A_{ij}</script>.</p>
+<script type="math/tex; mode=display">\bigvee \{a,b,c,d,e,f,g,h,i,j,k,l\}</script>
 
 <details>
-<summary>Solution</summary>
-<div style="background-color:lightblue">
-    <p>To get an intuitive feel for this theorem, it helps to first consider a small concrete instantiation. Consider the <script type="math/tex">3 \times 3</script> matrix depicted below, with elements <script type="math/tex">a,b,c,d,e,f,g,h</script>, and <script type="math/tex">i</script>. The inequality instantiates to <script type="math/tex">(a \wedge b \wedge c) \vee (d \wedge e \wedge f) \vee (g \wedge h \wedge i) \leq (a \vee d \vee g) \wedge (b \vee e \vee h) \wedge (c \vee f \vee i)</script>. Why would this inequality hold?</p>
-
-    <script type="math/tex; mode=display">% <![CDATA[
-\left[ \begin{array}{ccc}
-a & b & c \\
-d & e & f \\
-g & h & i \\
-\end{array} \right] %]]></script>
-
-    <p>Notice that each parenthesized expression on the left hand side of the inequality shares an element with each parenthesized expression on the right hand side of the inequality.This is true because the parenthesized expressions on the left hand side correspond to rows and the parenthesized expressions on the right hand side correspond to columns; each row of a matrix shares an element with each of its columns. The theorem proven in the <em>Common elements</em> exercise above then tells us that each parenthesized expression on the left hand side is less than or equal to each parenthesized expression on the right hand side.</p>
-
-    <p>Let <script type="math/tex">J = \{ a \wedge b \wedge c, d \wedge e \wedge f, g \wedge h \wedge i \}</script> and <script type="math/tex">K = \{ a \vee d \vee g, b \vee e \vee h, c \vee f \vee i \}</script>. Then the hypothesis for the theorem proven in the <em>Another inequality</em> exercise holds, giving us <script type="math/tex">\bigvee J \leq \bigwedge K</script>, which is exactly what we wanted to prove. Extending this approach to the general case is straightforward.</p>
-  </div>
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+ This join exists. It is \( l \).
+ </div>
 </details>
+
+<h2 id="join-fu">Join fu</h2>
+
+<p>Let <script type="math/tex">P</script> be a poset, <script type="math/tex">S \subseteq P</script>, and <script type="math/tex">p \in P</script>. Prove that if both <script type="math/tex">\bigvee S</script> and <script type="math/tex">(\bigvee S) \vee p</script> exist then <script type="math/tex">\bigvee (S \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigvee S) \vee p = \bigvee (S \cup \{p\})</script>.</p>
+
+<details>
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+ For any \(X \subset P\), let \(X^U\) denote the set of upper bounds of \(X\). The above proposition follows from the fact that \(\{\bigvee S, p\}^U = (S \cup p)^U\), which is apparent from the following chain of bi-implications:
+
+ \(q \in \{\bigvee S, p\}^U \iff \)
+
+ (for all \(s \in S, q \geq \bigvee S \geq s\) and \(q \geq p) \iff\)
+
+ \(q \in (S \cup \{p\})^U\).
+
+ If two subsets of a poset have the same set of upper bounds, then either they both lack a least upper bound, or both have the same least upper bound.
+ </div>
+</details>
+
+<h2 id="meet-fu">Meet fu</h2>
+
+<p>Let <script type="math/tex">P</script> be a poset, <script type="math/tex">S \subseteq P</script>, and <script type="math/tex">p \in P</script>. Prove that if both <script type="math/tex">\bigwedge S</script> and <script type="math/tex">(\bigwedge S) \wedge p</script> exist then <script type="math/tex">\bigwedge (S \cup \{p\})</script> exists as well, and <script type="math/tex">(\bigwedge S) \wedge p = \bigwedge(S \cup \{p\})</script>.</p>
+
+<details>
+ <summary>Show solution</summary>
+ <div style="background-color:lightblue">
+Note that the proposition we are trying to prove here is the dual of the one stated in join fu. Thanks to the duality principle, this theorem therefore comes for free with our solution to join fu.
+</div>
+</details>
+
+<h2 id="quite-a-big-join">Quite a big join</h2>
+
+<p>In the poset <script type="math/tex">\langle \mathbb N, \mid \rangle</script> discussed in <a href="PosetExamples.html">poset examples</a>, does <script type="math/tex">\bigvee \mathbb N</script> exist? If so, what is it?</p>
 
   </div>
 
