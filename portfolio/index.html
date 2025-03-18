@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Kevin Clancy" />
+
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper">
+
+    <H1>Kevin Clancy - Software Engineer</H1>
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon fas fa-bars fa-lg"></span>
+        </label>
+
+        <div class="drawer-container">
+          <div class="drawer">
+ <a class="nav-item" href="/portfolio/">Kevin Clancy - Software Engineer</a>
+          </div>
+        </div>
+
+      </nav>
+  </div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post">
+
+  <div class="post-content">
+    <h1 id="recent-work-experience">Recent Work Experience</h1>
+
+<h2 id="certik">CertiK</h2>
+
+<p>At CertiK, I used Python to develop an abstract interpretation tool on top of the <a href="https://github.com/crytic/slither">Slither</a> static analyzer for Solidity code. This tool performed both points-to and integer range analyses. The former was used as a basis for taint tracking and many other ad-hoc bug detection tools. The latter was used for detecting integer overflows, division by zero, and unsafe casts. After a year at CertiK, I was promoted to Senior Software Engineer.</p>
+
+<h2 id="amazon">Amazon</h2>
+
+<p>At Amazon, I developed the CDK project (i.e. infrastructure deployment definition) for an internal web application for tracking releases of Amazon brand devices such as Kindles. I also performed a migration of the device database from an older internal database system to DynamoDB. Additionally, I performed maintenance on the business logic that decides when to show Amazon Prime advertisements to customers. After a year at Amazon, I was recruited by CertiK.</p>
+
+<h1 id="personal-projects">Personal Projects</h1>
+
+<p>I’m almost always working on programming projects to improve my software engineering abilities. These are rarely ever get finished. Here are a few example projects, chose mainly for recency.</p>
+
+<h2 id="game-kitchen---lua-ide-and-type-checker">Game Kitchen - Lua IDE and Type Checker</h2>
+
+<p>Types are the most powerful tool I know of for making software more maintainable. When attending the University of Iowa, I read the book Types and Programming Languages by Benjamin Pierce. I applied the knowledge I gained about type systems by designing and implementing an optional type system for Lua. I also created a Lua debugger and an IDE called <a href="https://bitbucket.org/kevinclancy/game-kitchen/src">Game Kitchen</a>, targeted at the Lua game programming framework Love2D. Game Kitchen was written in F#, C#, C++, and Lua.</p>
+
+<p>This is an extremely old project. But I’ve included it because it’s one of the more ambitious projects I’ve worked on, and my software engineering sensibilities haven’t changed much since then. I still believe that functional programming and design-by-contract are important techniques that lead to readable, maintainable software.</p>
+
+<p>The following video is a bit tedious. I don’t recommend watching the whole thing, but you can watch a random point in the video for a couple of minutes to see Game Kitchen in action.</p>
+
+<iframe width="420" height="315" src="http://www.youtube.com/embed/Ls3Z3xyKTC8" frameborder="0" allowfullscreen=""></iframe>
+
+<h2 id="schema-types---nosql-database-schema-language">Schema Types - NoSQL Database Schema Language</h2>
+
+<p>Before working at Amazon, I worked at a company called Epic Systems, which develops health records software for hospitals. Epic’s software is based on the MUMPS database system. Unlike SQL the MUMPS databse system provides no formal language for specifying database schemas. Therefore, at Epic schemas are either conveyed informally in a company manual or internal wiki, or never defined at all. A formal schema language allows us to automatically generate validation routines, and prevents common errors such as “coherence” errors where a single value may be interpreted in multiple ways.</p>
+
+<p><a href="https://github.com/kevinclancy/SchemaTypes">Schema Types</a> is a wonky, experimental attempt to create a schema system for MUMPS, using type syntax to defined the structure of MUMPS databases.</p>
+
+<h2 id="toy-compilers">Toy Compilers</h2>
+
+<p>After getting laid off from CertiK in October 2023, I took the opportunity to fill in some gaps in my knowledge of the foundations of computer science. I’ve long been interested in the theoretical side of programming languages, i.e. lambda calculi type systems. However, until recently, I didn’t know much about compilers. To rectify this, I’ve been reading some compilers books.</p>
+
+<h4 id="the-essence-of-compilation-by-jeremy-siek"><em>The Essence of Compilation</em> by Jeremy Siek</h4>
+
+<p>I went through the first 6 chapters, <a href="https://github.com/kevinclancy/EssentialsOfCompilation">implementing a Lisp-to-x86 compiler</a> in Racket, which includes:</p>
+<ul>
+  <li>Imperative variables</li>
+  <li>Loops</li>
+  <li>Dataflow based liveness analysis</li>
+  <li>Register allocation</li>
+  <li>Dynamically-allocated Tuples</li>
+  <li>A Two-Space Copying Garbage Collector</li>
+</ul>
+
+<p>The garbage collector runtime was provided by the book.</p>
+
+<h4 id="compiler-design-virtual-machines-by-reinhard-wilhelm-and-helmut-seidl"><em>Compiler Design: Virtual Machines</em> by Reinhard Wilhelm and Helmut Seidl</h4>
+
+<p>Having already implemented the <a href="https://github.com/kevinclancy/VirtualMachineCompiler">virtual machine for a C-like language</a> described in Chapter 2, I implemented the <a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">virtual machine for an OCaml-like language</a> described in Chapter 3. This includes both call-by-need and call-by-value versions (in different branches) with the following features</p>
+<ul>
+  <li>Higher-order functions</li>
+  <li>Curried Application</li>
+  <li>Mutable reference cells</li>
+  <li>Closures</li>
+  <li>Mutually recursive functions</li>
+  <li>Tuples</li>
+  <li>Algebraic datatypes &amp; match expressions (with ‘when’ clauses but no pattern matching)</li>
+</ul>
+
+<p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management for now, but I’d like to implement my own runtime in the future.</p>
+
+<h2 id="ocaml-projects">OCaml Projects</h2>
+
+<h4 id="the-loop-server">“The loop” server</h4>
+
+<p><a href="https://github.com/kevinclancy/theloop-backend">The loop server</a> is a process that responds to http requests by reading to and writing from a PostgreSQL database. Its behavior is partially documented in its <a href="https://github.com/kevinclancy/theloop-backend/blob/main/test/test_theloop.ml">integration test</a>, though this test needs to be extended with more detail. I was considering making “facebook groups” style website using this as the backend, but then decided to abandon it.</p>
+
+<h2 id="rust-projects">Rust Projects</h2>
+
+<p>I love languages that feature sum types, because they make it easy to enforce invariants using static type checking, allowing me to make invalid states unrepresentable. Unfortunately, such languages have traditionally suffered from tooling and performance issues. I recently read through the official Rust book, discovering a language which has sum types, great tooling, and great performance.</p>
+
+<h4 id="ray-tracing-in-one-weekend">Ray Tracing in One Weekend</h4>
+
+<p>After reading the Rust book, I wanted to undertake a simple project that would give me a feel for writing my own Rust programs. I decided to implement the project described by Steve Hollasch’s free online book “Ray Tracing in One Weekend”. I didn’t quite complete the book, getting only through chapter 7. This was a great opportunity for me to brush up on my linear algebra and 3D math skills.</p>
+
+<p><a href="https://github.com/kevinclancy/raytracing-rust">Here is the code</a></p>
+
+<p><img src="/assets/images/raytracer.png" alt="Image" /></p>
+
+<h1 id="links">Links</h1>
+
+<p><a href="https://www.linkedin.com/in/kevin-clancy-740b13189/">Linkedin</a></p>
+
+<p><a href="github.com/kevinclancy">Github</a></p>
+
+  </div>
+
+</article>
+
+      </div>
+    </main>
+
+
+  </body>
+
+</html>
