@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
-  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Kevin Clancy" />
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Kevin Clancy" />
 
 </head>
 <body><header class="site-header">
@@ -92,9 +92,10 @@
   <li>Mutually recursive functions</li>
   <li>Tuples</li>
   <li>Algebraic datatypes &amp; match expressions (with ‘when’ clauses but no pattern matching)</li>
+  <li>Tail call elimination</li>
 </ul>
 
-<p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management for now, but I’d like to implement my own runtime in the future.</p>
+<p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management.</p>
 
 <h2 id="ocaml-projects">OCaml Projects</h2>
 
@@ -113,6 +114,10 @@
 <p><a href="https://github.com/kevinclancy/raytracing-rust">Here is the code</a></p>
 
 <p><img src="/assets/images/raytracer.png" alt="Image" /></p>
+
+<h4 id="virtual-machine-for-ocaml-style-language">Virtual Machine for OCaml-style language</h4>
+
+<p>I’ve also created a <a href="https://github.com/kevinclancy/MaMaCompiler">Rust implementation</a> of the virtual machine described above. This was a great opportunity to learn about low-level aspects of virtual machine implementation, which are not covered in Wilhelm and Seidl’s book. In particular, I wrote my own memory management and a two-space copying garbage collector for this implementation.</p>
 
 <h1 id="links">Links</h1>
 
