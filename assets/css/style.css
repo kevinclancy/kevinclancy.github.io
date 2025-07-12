@@ -553,7 +553,6 @@ table td {
  * Site footer
  */
 .site-footer {
-  border-top: 1px solid #e8e8e8;
   padding: 30px 0;
 }
 
@@ -664,6 +663,12 @@ table td {
   padding-bottom: 18px;
   text-align: center;
   border-bottom: 1px solid #e8e8e8;
+}
+
+.post-header-classic {
+  margin-bottom: 30px;
+  padding-bottom: 18px;
+  text-align: left;
 }
 
 .post-meta .bullet-divider {
