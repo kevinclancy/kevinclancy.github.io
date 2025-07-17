@@ -41,15 +41,15 @@
 
 <h2 id="amazon">Amazon</h2>
 
-<p>At Amazon, I developed the CDK project (i.e. infrastructure deployment definition) for an internal web application for tracking releases of Amazon brand devices such as Kindles. I also performed a migration of the device database from an older internal database system to DynamoDB. Additionally, I performed maintenance on the business logic that decides when to show Amazon Prime advertisements to customers. After a year at Amazon, I was recruited by CertiK.</p>
+<p>At Amazon, I developed a CDK project (i.e. infrastructure deployment definition) for an internal web application for tracking releases of Amazon brand devices such as Kindles. I also performed a migration of the device database from an older Amazon-internal database system to DynamoDB. Additionally, I performed maintenance on the business logic that decides when to show Amazon Prime advertisements to customers. After a year at Amazon, I was recruited by CertiK.</p>
 
 <h1 id="personal-projects">Personal Projects</h1>
 
-<p>I’m almost always working on programming projects to improve my software engineering abilities. These are rarely ever get finished. Here are a few example projects, chosen mainly for recency.</p>
+<p>I’m almost always working on programming projects to improve my software engineering abilities. These rarely ever get finished. Here are a few example projects, chosen mainly for recency.</p>
 
 <h2 id="game-kitchen---lua-ide-and-type-checker">Game Kitchen - Lua IDE and Type Checker</h2>
 
-<p>Types are the most powerful tool I know of for making software more maintainable. When attending the University of Iowa, I read the book Types and Programming Languages by Benjamin Pierce. I applied the knowledge I gained about type systems by designing and implementing an optional type system for Lua. I also created a Lua debugger and an IDE called <a href="https://bitbucket.org/kevinclancy/game-kitchen/src">Game Kitchen</a>, targeted at the Lua game programming framework Love2D. Game Kitchen was written in F#, C#, C++, and Lua.</p>
+<p>Types are the most powerful tool I know of for making software more maintainable. When attending the University of Iowa, I read the book <em>Types and Programming Languages</em> by Benjamin Pierce. I applied the knowledge I gained about type systems by designing and implementing an optional type system for Lua. I also created a Lua debugger and an IDE called <a href="https://bitbucket.org/kevinclancy/game-kitchen/src">Game Kitchen</a>, targeted at the Lua game programming framework Love2D. Game Kitchen was written in F#, C#, C++, and Lua.</p>
 
 <p>This is an extremely old project. But I’ve included it because it’s one of the more ambitious projects I’ve worked on, and my software engineering sensibilities haven’t changed much since then. I still believe that functional programming and design-by-contract are important techniques that lead to readable, maintainable software.</p>
 
@@ -59,9 +59,9 @@
 
 <h2 id="schema-types---nosql-database-schema-language">Schema Types - NoSQL Database Schema Language</h2>
 
-<p>Before working at Amazon, I worked at a company called Epic Systems, which develops health records software for hospitals. Epic’s software is based on the MUMPS database system. Unlike SQL the MUMPS databse system provides no formal language for specifying database schemas. Therefore, at Epic schemas are either conveyed informally in a company manual or internal wiki, or never defined at all. A formal schema language allows us to automatically generate validation routines, and it prevents common errors such as “coherence” errors where a single value may be interpreted in multiple ways.</p>
+<p>Before working at Amazon, I worked at a company called Epic Systems, which develops health record software for hospitals. Epic’s software is based on the <a href="https://en.wikipedia.org/wiki/MUMPS">MUMPS</a> database system. Unlike SQL the MUMPS databse system provides no formal language for specifying database schemas. Therefore, at Epic, schemas are either conveyed informally in a company manual or internal wiki, or they are never defined at all. A formal schema language allows us to automatically generate validation routines, and it prevents common errors such as <em>coherence</em> errors where a single value may be interpreted in multiple ways.</p>
 
-<p><a href="https://github.com/kevinclancy/SchemaTypes">Schema Types</a> is an experimental schema system for MUMPS, using type syntax to define the structure of MUMPS databases.</p>
+<p><a href="https://github.com/kevinclancy/SchemaTypes">Schema Types</a> is an experimental schema system for MUMPS, using type syntax to define the structure of MUMPS databases. It expresses the logical layer of the database using a language similar to the calculus of constructions. It expresses the physical layer using something akin to a standard type system, but which references the logical layer using indexed types. I used F# to create a prototype type-checker and test generation tool for Schema Types.</p>
 
 <h2 id="toy-compilers">Toy Compilers</h2>
 
