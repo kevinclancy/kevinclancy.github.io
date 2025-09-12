@@ -34,7 +34,13 @@
         <article class="post">
 
   <div class="post-content">
-    <h1 id="recent-work-experience">Recent Work Experience</h1>
+    <h1 id="summary">Summary</h1>
+
+<p>I’m a software engineer looking for opportunities in web development, program analysis, and compiler development.</p>
+
+<p>My favorite languages are F#, OCaml, and Rust. I also have experience in C++, Java, Typescript, and Python. I believe in using static type checking, writing demanding functions with strong precondition and postconditions, and using sum datatypes to make illegal states unrepresentable.</p>
+
+<h1 id="recent-work-experience">Recent Work Experience</h1>
 
 <h2 id="certik">CertiK</h2>
 
@@ -48,7 +54,23 @@
 
 <p>I’m almost always working on programming projects to improve my software engineering abilities. These rarely ever get finished. Here are a few example projects, chosen mainly for recency.</p>
 
-<h2 id="game-kitchen---lua-ide-and-type-checker">Game Kitchen - Lua IDE and Type Checker</h2>
+<h2 id="web-devlopment">Web Devlopment</h2>
+
+<h3 id="brokenjawnet-message-board">Brokenjaw.net message board</h3>
+
+<p>I recently created an online message board for discussing jaw fractures, called <a href="https://brokenjaw.net">BrokenJaw.net</a>. This site uses the Rust-based <a href="https://loco.rs/docs/getting-started/tour/">Loco</a> backend framework and the SQLite database system. Its frontend is written in Typescript and uses the React framework. I studied up on HTML, CSS, and React while developing this site, though the AI generated frontend code doesn’t keep a clean separation of logical HTML layout and visual CSS styling, opting instead for inline styling.</p>
+
+<p>This website, while currently functional, is a work in progress. I plan to continue refining it over the coming months.</p>
+
+<p>This is the first project that I’ve created using AI-assisted programming tools. In fact, much of the code was written using Claude Code. On one hand, Claude Code has an almost super-human ability to synthesize large, complex software contexts. On the other hand, it struggles with unpopular concepts that I believe should be widely known; for example, it typically neglects to use discriminated unions to make illegal states unrepresentable (even after I’ve instructed it to do so in my <a href="https://github.com/kevinclancy/kboard/blob/main/CLAUDE.md">CLAUDE.md file</a>). Claude Code is a powerful tool that I will continue to use for personal projects in the future.</p>
+
+<h3 id="the-loop-server">“The loop” server</h3>
+
+<p><a href="https://github.com/kevinclancy/theloop-backend">The loop server</a> is a process that responds to http requests by reading to and writing from a PostgreSQL database. Its behavior is partially documented in its <a href="https://github.com/kevinclancy/theloop-backend/blob/main/test/test_theloop.ml">integration test</a>, though this test needs to be extended with more detail. I was considering making Facebook Groups style website using this as the backend, but then decided to abandon it.</p>
+
+<h2 id="languages-and-compilers">Languages and Compilers</h2>
+
+<h3 id="game-kitchen---lua-ide-and-type-checker">Game Kitchen - Lua IDE and Type Checker</h3>
 
 <p>Types are the most powerful tool I know of for making software more maintainable. When attending the University of Iowa, I read the book <em>Types and Programming Languages</em> by Benjamin Pierce. I applied the knowledge I gained about type systems by designing and implementing an optional type system for Lua. I also created a Lua debugger and an IDE called <a href="https://bitbucket.org/kevinclancy/game-kitchen/src">Game Kitchen</a>, targeted at the Lua game programming framework Love2D. Game Kitchen was written in F#, C#, C++, and Lua.</p>
 
@@ -58,15 +80,7 @@
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/Ls3Z3xyKTC8" frameborder="0" allowfullscreen=""></iframe>
 
-<h2 id="schema-types---nosql-database-schema-language">Schema Types - NoSQL Database Schema Language</h2>
-
-<p>Before working at Amazon, I worked at a company called Epic Systems, which develops health record software for hospitals. Epic’s software is based on the <a href="https://en.wikipedia.org/wiki/MUMPS">MUMPS</a> database system. Unlike SQL, the MUMPS databse system provides no formal language for specifying database schemas. Therefore, at Epic, schemas are either conveyed informally in a company manual or internal wiki, or they are never defined at all. A formal schema language allows us to automatically generate validation routines, and it prevents common errors such as <em>coherence</em> errors where a single value may be interpreted in multiple ways.</p>
-
-<p><a href="https://github.com/kevinclancy/SchemaTypes">Schema Types</a> is an experimental schema system for MUMPS, using type syntax to define the structure of MUMPS databases. It expresses the logical layer of the database using a language similar to the calculus of constructions. It expresses the physical layer using something akin to a standard type system, but which references the logical layer using indexed types. I used F# to create a prototype type-checker and test generation tool for Schema Types.</p>
-
-<h2 id="toy-compilers">Toy Compilers</h2>
-
-<p>After getting laid off from CertiK in October 2023, I took the opportunity to fill in some gaps in my knowledge of the foundations of computer science. I’ve long been interested in the theoretical side of programming languages, i.e. lambda calculi and type systems. However, until recently, I didn’t know much about compilers. To rectify this, I’ve been reading some compilers books.</p>
+<h3 id="toy-compilers-and-vms">Toy Compilers and VMs</h3>
 
 <h4 id="the-essence-of-compilation-by-jeremy-siek"><em>The Essence of Compilation</em> by Jeremy Siek</h4>
 
@@ -80,11 +94,11 @@
   <li>A Two-Space Copying Garbage Collector</li>
 </ul>
 
-<p>The garbage collector runtime was provided by the book.</p>
+<p>The garbage collector runtime was provided by the book. (Though I created a similar garbage collector from scratch in the ``Rust-based Maurer Machine’’ project.)</p>
 
 <h4 id="compiler-design-virtual-machines-by-reinhard-wilhelm-and-helmut-seidl"><em>Compiler Design: Virtual Machines</em> by Reinhard Wilhelm and Helmut Seidl</h4>
 
-<p>Having already implemented the <a href="https://github.com/kevinclancy/VirtualMachineCompiler">virtual machine for a C-like language</a> described in Chapter 2, I implemented the <a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">virtual machine for an OCaml-like language</a> described in Chapter 3. This includes both call-by-need and call-by-value versions (in different branches) with the following features</p>
+<p>Having already implemented the <a href="https://github.com/kevinclancy/VirtualMachineCompiler">virtual machine for a C-like language</a> described in Chapter 2, I implemented the ``Maurer Machine’’ <a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">virtual machine for an OCaml-like language</a> described in Chapter 3. This includes both call-by-need and call-by-value versions (in different branches) with the following features</p>
 <ul>
   <li>Higher-order functions</li>
   <li>Curried Application</li>
@@ -96,17 +110,19 @@
   <li>Tail call elimination</li>
 </ul>
 
-<p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management. But see the “Virtual Machine for OCaml-style language” section below, where I implemented my own memory management and garbage collection for another implementation of this VM using Rust instead of F#.</p>
+<p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management.</p>
 
-<h2 id="ocaml-projects">OCaml Projects</h2>
+<h4 id="rust-based-maurer-machine">Rust-based Maurer Machine</h4>
 
-<h4 id="the-loop-server">“The loop” server</h4>
+<p>I’ve also created a <a href="https://github.com/kevinclancy/MaMaRust">Rust implementation</a> of the virtual machine described above. This was a great opportunity to learn about low-level aspects of virtual machine implementation, which are not covered in Wilhelm and Seidl’s book. In particular, I wrote my own memory management and a two-space copying garbage collector.</p>
 
-<p><a href="https://github.com/kevinclancy/theloop-backend">The loop server</a> is a process that responds to http requests by reading to and writing from a PostgreSQL database. Its behavior is partially documented in its <a href="https://github.com/kevinclancy/theloop-backend/blob/main/test/test_theloop.ml">integration test</a>, though this test needs to be extended with more detail. I was considering making Facebook Groups style website using this as the backend, but then decided to abandon it.</p>
+<h3 id="schema-types---nosql-database-schema-language">Schema Types - NoSQL Database Schema Language</h3>
 
-<h2 id="rust-projects">Rust Projects</h2>
+<p>Before working at Amazon, I worked at a company called Epic Systems, which develops health record software for hospitals. Epic’s software is based on the <a href="https://en.wikipedia.org/wiki/MUMPS">MUMPS</a> database system. Unlike SQL, the MUMPS databse system provides no formal language for specifying database schemas. Therefore, at Epic, schemas are either conveyed informally in a company manual or internal wiki, or they are never defined at all. A formal schema language allows us to automatically generate validation routines, and it prevents common errors such as <em>coherence</em> errors where a single value may be interpreted in multiple ways.</p>
 
-<p>I love languages that feature sum types, because they make it easy to enforce invariants using static type checking, allowing me to make invalid states unrepresentable. Unfortunately, such languages have traditionally suffered from tooling and performance issues. I recently read through the official Rust book, discovering a language which has sum types, great tooling, and great performance. Even more exciting is Rust’s borrow checker, which makes resource management both safe and efficient.</p>
+<p><a href="https://github.com/kevinclancy/SchemaTypes">Schema Types</a> is an experimental schema system for MUMPS, using type syntax to define the structure of MUMPS databases. It expresses the logical layer of the database using a language similar to the calculus of constructions. It expresses the physical layer using something akin to a standard type system, but which references the logical layer using indexed types. I used F# to create a prototype type-checker and test generation tool for Schema Types.</p>
+
+<h2 id="miscellaneous-projects">Miscellaneous Projects</h2>
 
 <h4 id="ray-tracing-in-one-weekend">Ray Tracing in One Weekend</h4>
 
@@ -115,10 +131,6 @@
 <p><a href="https://github.com/kevinclancy/raytracing-rust">Here is the code</a></p>
 
 <p><img src="/assets/images/raytracer.png" alt="Image" /></p>
-
-<h4 id="virtual-machine-for-ocaml-style-language">Virtual Machine for OCaml-style language</h4>
-
-<p>I’ve also created a <a href="https://github.com/kevinclancy/MaMaRust">Rust implementation</a> of the virtual machine described above. This was a great opportunity to learn about low-level aspects of virtual machine implementation, which are not covered in Wilhelm and Seidl’s book. In particular, I wrote my own memory management and a two-space copying garbage collector for this implementation.</p>
 
 <h1 id="links">Links</h1>
 
