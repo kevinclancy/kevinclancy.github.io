@@ -38,9 +38,13 @@
 
 <p>I’m a software engineer looking for opportunities in web development, program analysis, and compiler development.</p>
 
-<p>My favorite languages are F#, OCaml, and Rust. I also have experience in C++, Java, Typescript, and Python. I believe in using static type checking, writing demanding functions with strong preconditions and postconditions, and using sum datatypes to make illegal states unrepresentable.</p>
+<p>I have experience in C++, Java, Typescript, and Python, and for personal projects, I like to use F#, OCaml, and Rust. I believe in using static type checking, writing demanding functions with strong preconditions and postconditions, and using sum datatypes to make illegal states unrepresentable.</p>
 
-<h1 id="recent-work-experience">Recent Work Experience</h1>
+<h1 id="recent-experience">Recent Experience</h1>
+
+<h2 id="broken-jaw-recovery">Broken Jaw Recovery</h2>
+
+<p>After getting laid off from CertiK, I spend several months job hunting but didn’t find a new position. Then, one day while running, I tripped and broke my jaw. In the year that followed, I did apply to some companies, but did so at a very slow rate. During this time, I was mainly focused on regaining my comfort and confidence, though I also worked on several projects listed in the “Personal Projects” section.</p>
 
 <h2 id="certik">CertiK</h2>
 
@@ -58,11 +62,11 @@
 
 <h3 id="brokenjawnet-message-board">Brokenjaw.net message board</h3>
 
-<p>I recently created an online message board for discussing jaw fractures, called <a href="https://brokenjaw.net">BrokenJaw.net</a>. This site uses the Rust-based <a href="https://loco.rs/docs/getting-started/tour/">Loco</a> backend framework and the SQLite database system. Its frontend is written in Typescript and uses the React framework. I studied up on HTML, CSS, and React while developing this site, though the AI generated frontend code doesn’t keep a clean separation of logical HTML layout and visual CSS styling, opting instead for inline styling.</p>
+<p>I recently created an online message board for discussing jaw fractures, called <a href="https://brokenjaw.net">BrokenJaw.net</a> (<a href="github.com/kevinclancy/kboard">github repo</a>). This site uses the Rust-based backend framework Loco and the SQLite database system. Its frontend is written in Typescript and uses the React framework. I studied up on HTML, CSS, and React while developing this site, though the AI generated frontend code doesn’t keep a clean separation of logical HTML layout and visual CSS styling, opting instead for inline styling. It uses github actions to build, test, and deploy docker containers to an AWS EC2 instance each time code is pushed to its github repo.</p>
 
 <p>This website, while currently functional, is a work in progress. I plan to continue refining it over the coming months.</p>
 
-<p>This is the first project that I’ve created using AI-assisted programming tools. In fact, much of the code was written using Claude Code. On one hand, Claude Code has an almost super-human ability to synthesize large, complex software contexts. On the other hand, it struggles with unpopular concepts that I believe should be widely known; for example, it typically neglects to use discriminated unions to make illegal states unrepresentable (even after I’ve instructed it to do so in my <a href="https://github.com/kevinclancy/kboard/blob/main/CLAUDE.md">CLAUDE.md file</a>). Claude Code is a powerful tool that I will continue to use for personal projects in the future.</p>
+<p>This is the first project that I’ve created using AI-assisted programming tools. In fact, much of the code was written using Claude Code. On one hand, Claude Code has an almost super-human ability to account for complex software contexts while synthesizing new code. On the other hand, it struggles to use advanced software engineering techniques like sum datatypes and pre and post-condition assertions. I use Claude Code to quickly generate a rough draft, quickly synthesizing the correct set of functions to call, even if they are poorly documented. Then, I revise the rough draft for correctness and readability. Claude Code is a powerful tool that I will continue to use for personal projects in the future.</p>
 
 <h3 id="the-loop-server">“The loop” server</h3>
 
