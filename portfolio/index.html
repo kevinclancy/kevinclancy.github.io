@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
-  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Kevin Clancy" />
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Kevin Clancy" />
 
 </head>
 <body><header class="site-header">
@@ -36,15 +36,11 @@
   <div class="post-content">
     <h1 id="summary">Summary</h1>
 
-<p>I’m a software engineer looking for opportunities in web development, program analysis, and compiler development.</p>
+<p>I’m a software engineer looking for opportunities in web development, program analysis, IDE development, and compiler development.</p>
 
 <p>I have experience in C++, Java, Typescript, and Python, and for personal projects, I like to use F#, OCaml, and Rust. I believe in using static type checking, writing demanding functions with strong preconditions and postconditions, and using sum datatypes to make illegal states unrepresentable.</p>
 
 <h1 id="recent-experience">Recent Experience</h1>
-
-<h2 id="broken-jaw-recovery">Broken Jaw Recovery</h2>
-
-<p>After getting laid off from CertiK, I spend several months job hunting but didn’t find a new position. Then, one day while running, I tripped and broke my jaw. In the year that followed, I did apply to some companies, but did so at a very slow rate. During this time, I was mainly focused on regaining my comfort and confidence, though I also worked on several projects listed in the “Personal Projects” section.</p>
 
 <h2 id="certik">CertiK</h2>
 
@@ -60,23 +56,29 @@
 
 <h2 id="web-development">Web Development</h2>
 
-<h3 id="brokenjawnet-message-board">Brokenjaw.net message board</h3>
+<h3 id="brokenjawnet-message-board-github">Brokenjaw.net message board (<a href="github.com/kevinclancy/kboard">github</a>)</h3>
 
-<p>I recently created an online message board for discussing jaw fractures, called <a href="https://brokenjaw.net">BrokenJaw.net</a> (<a href="github.com/kevinclancy/kboard">github repo</a>). This site uses the Rust-based backend framework Loco and the SQLite database system. Its frontend is written in Typescript and uses the React framework. I studied up on HTML, CSS, and React while developing this site, though the AI generated frontend code doesn’t keep a clean separation of logical HTML layout and visual CSS styling, opting instead for inline styling. It uses github actions to build, test, and deploy docker containers to an AWS EC2 instance each time code is pushed to its github repo.</p>
+<p><strong>Skills:</strong> React, Rust, Typescript, HTML, CSS, Loco, SQLite, Docker, Github Actions, AWS, Claude Code</p>
+
+<p>I recently created an online message board for discussing jaw fractures, called <a href="https://brokenjaw.net">BrokenJaw.net</a>. This site uses the Rust-based backend framework Loco and the SQLite database system. Its frontend is written in Typescript and uses the React framework. I studied up on HTML, CSS, and React while developing this site, though the AI generated frontend code doesn’t keep a clean separation of logical HTML layout and visual CSS styling, opting instead for inline styling. It uses github actions to build, test, and deploy docker containers to an AWS EC2 instance each time code is pushed to its github repo.</p>
 
 <p>This website, while currently functional, is a work in progress. I plan to continue refining it over the coming months.</p>
 
 <p>This is the first project that I’ve created using AI-assisted programming tools. In fact, much of the code was written using Claude Code. On one hand, Claude Code has an almost super-human ability to account for complex software contexts while synthesizing new code. On the other hand, it struggles to use advanced software engineering techniques like sum datatypes and pre and post-condition assertions. I use Claude Code to quickly generate a rough draft, quickly synthesizing the correct set of functions to call, even if they are poorly documented. Then, I revise the rough draft for correctness and readability. Claude Code is a powerful tool that I will continue to use for personal projects in the future.</p>
 
-<h3 id="the-loop-server">“The loop” server</h3>
+<h3 id="the-loop-server-github">“The loop” server (<a href="https://github.com/kevinclancy/theloop-backend">github</a>)</h3>
 
-<p><a href="https://github.com/kevinclancy/theloop-backend">The loop server</a> is a process that responds to http requests by reading to and writing from a PostgreSQL database. Its behavior is partially documented in its <a href="https://github.com/kevinclancy/theloop-backend/blob/main/test/test_theloop.ml">integration test</a>, though this test needs to be extended with more detail. I was considering making Facebook Groups style website using this as the backend, but then decided to abandon it.</p>
+<p><strong>Skills:</strong> OCaml, Dream, LWT, PostgreSQL</p>
+
+<p>The loop server is a process that responds to http requests by reading to and writing from a PostgreSQL database. It was written in OCaml using the Dream web framework. Its behavior is partially documented in its <a href="https://github.com/kevinclancy/theloop-backend/blob/main/test/test_theloop.ml">integration test</a>, though this test needs to be extended with more detail. I was considering making Facebook Groups style website using this as the backend, but then decided to abandon it.</p>
 
 <h2 id="languages-and-compilers">Languages and Compilers</h2>
 
-<h3 id="game-kitchen---lua-ide-and-type-checker">Game Kitchen - Lua IDE and Type Checker</h3>
+<h3 id="game-kitchen---lua-ide-and-type-checker-bitbucket">Game Kitchen - Lua IDE and Type Checker (<a href="https://bitbucket.org/kevinclancy/game-kitchen/src">bitbucket</a>)</h3>
 
-<p>Types are the most powerful tool I know of for making software more maintainable. When attending the University of Iowa, I read the book <em>Types and Programming Languages</em> by Benjamin Pierce. I applied the knowledge I gained about type systems by designing and implementing an optional type system for Lua. I also created a Lua debugger and an IDE called <a href="https://bitbucket.org/kevinclancy/game-kitchen/src">Game Kitchen</a>, targeted at the Lua game programming framework Love2D. Game Kitchen was written in F#, C#, C++, and Lua.</p>
+<p><strong>Skills:</strong> C#, F#, Lua, C++, Type Systems, IDE Development</p>
+
+<p>Types are the most powerful tool I know of for making software more maintainable. When attending the University of Iowa, I read the book <em>Types and Programming Languages</em> by Benjamin Pierce. I applied the knowledge I gained about type systems by designing and implementing an optional type system for Lua. I also created a Lua debugger and an IDE called Game Kitchen, targeted at the Lua game programming framework Love2D. Game Kitchen was written in F#, C#, C++, and Lua.</p>
 
 <p>This is an extremely old project. But I’ve included it because it’s one of the more ambitious projects I’ve worked on, and my software engineering sensibilities haven’t changed much since then. I still believe that functional programming and design-by-contract are important techniques that lead to readable, maintainable software.</p>
 
@@ -86,9 +88,11 @@
 
 <h3 id="toy-compilers-and-vms">Toy Compilers and VMs</h3>
 
-<h4 id="the-essence-of-compilation-by-jeremy-siek"><em>The Essence of Compilation</em> by Jeremy Siek</h4>
+<h4 id="the-essence-of-compilation-by-jeremy-siek-github"><em>The Essence of Compilation</em> by Jeremy Siek (<a href="https://github.com/kevinclancy/EssentialsOfCompilation">github</a>)</h4>
 
-<p>I went through the first 6 chapters, <a href="https://github.com/kevinclancy/EssentialsOfCompilation">implementing a Lisp-to-x86 compiler</a> in Racket, which includes:</p>
+<p><strong>Skills:</strong> Compilers, Racket, x86 Assembly, Dataflow Analysis</p>
+
+<p>I went through the first 6 chapters of <em>The Essence of Compilation</em>, implementing a Lisp-to-x86 compiler in Racket, which includes:</p>
 <ul>
   <li>Imperative variables</li>
   <li>Loops</li>
@@ -100,7 +104,9 @@
 
 <p>The garbage collector runtime was provided by the book. (Though I created a similar garbage collector from scratch in the ``Rust-based Maurer Machine’’ project.)</p>
 
-<h4 id="compiler-design-virtual-machines-by-reinhard-wilhelm-and-helmut-seidl"><em>Compiler Design: Virtual Machines</em> by Reinhard Wilhelm and Helmut Seidl</h4>
+<h4 id="compiler-design-virtual-machines-by-reinhard-wilhelm-and-helmut-seidl-github"><em>Compiler Design: Virtual Machines</em> by Reinhard Wilhelm and Helmut Seidl (<a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">github</a>)</h4>
+
+<p><strong>Skills:</strong> F#, Virtual Machines</p>
 
 <p>Having already implemented the <a href="https://github.com/kevinclancy/VirtualMachineCompiler">virtual machine for a C-like language</a> described in Chapter 2, I implemented the ``Maurer Machine’’ <a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">virtual machine for an OCaml-like language</a> described in Chapter 3. This includes both call-by-need and call-by-value versions (in different branches) with the following features</p>
 <ul>
@@ -116,23 +122,27 @@
 
 <p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management.</p>
 
-<h4 id="rust-based-maurer-machine">Rust-based Maurer Machine</h4>
+<h4 id="rust-based-maurer-machine-github">Rust-based Maurer Machine (<a href="https://github.com/kevinclancy/MaMaRust">github</a>)</h4>
 
-<p>I’ve also created a <a href="https://github.com/kevinclancy/MaMaRust">Rust implementation</a> of the virtual machine described above. This was a great opportunity to learn about low-level aspects of virtual machine implementation, which are not covered in Wilhelm and Seidl’s book. In particular, I wrote my own memory management and a two-space copying garbage collector.</p>
+<p><strong>Skills:</strong> Rust, Virtual Machines, Garbage Collection</p>
 
-<h3 id="schema-types---nosql-database-schema-language">Schema Types - NoSQL Database Schema Language</h3>
+<p>I’ve also created a Rust implementation of the virtual machine described above. This was a great opportunity to learn about low-level aspects of virtual machine implementation, which are not covered in Wilhelm and Seidl’s book. In particular, I wrote my own memory management and a two-space copying garbage collector.</p>
+
+<h3 id="schema-types---nosql-database-schema-language-github">Schema Types - NoSQL Database Schema Language (<a href="https://github.com/kevinclancy/SchemaTypes">github</a>)</h3>
+
+<p><strong>Skills:</strong> F#, Type Systems, Database Schemas, MUMPS</p>
 
 <p>Before working at Amazon, I worked at a company called Epic Systems, which develops health record software for hospitals. Epic’s software is based on the <a href="https://en.wikipedia.org/wiki/MUMPS">MUMPS</a> database system. Unlike SQL, the MUMPS databse system provides no formal language for specifying database schemas. Therefore, at Epic, schemas are either conveyed informally in a company manual or internal wiki, or they are never defined at all. A formal schema language allows us to automatically generate validation routines, and it prevents common errors such as <em>coherence</em> errors where a single value may be interpreted in multiple ways.</p>
 
-<p><a href="https://github.com/kevinclancy/SchemaTypes">Schema Types</a> is an experimental schema system for MUMPS, using type syntax to define the structure of MUMPS databases. It expresses the logical layer of the database using a language similar to the calculus of constructions. It expresses the physical layer using something akin to a standard type system, but which references the logical layer using indexed types. I used F# to create a prototype type-checker and test generation tool for Schema Types.</p>
+<p>Schema Types is an experimental schema system for MUMPS, using type syntax to define the structure of MUMPS databases. It expresses the logical layer of the database using a language similar to the calculus of constructions. It expresses the physical layer using something akin to a standard type system, but which references the logical layer using indexed types. I used F# to create a prototype type-checker and test generation tool for Schema Types.</p>
 
 <h2 id="miscellaneous-projects">Miscellaneous Projects</h2>
 
-<h4 id="ray-tracing-in-one-weekend">Ray Tracing in One Weekend</h4>
+<h4 id="ray-tracing-in-one-weekend-github">Ray Tracing in One Weekend (<a href="https://github.com/kevinclancy/raytracing-rust">github</a>)</h4>
+
+<p><strong>Skills:</strong> Rust, Linear Algebra, 3D Math</p>
 
 <p>After reading the Rust book, I wanted to undertake a simple project that would give me a feel for writing my own Rust programs. I decided to implement the project described by Steve Hollasch’s free online book “Ray Tracing in One Weekend”. I didn’t quite complete the book, getting only through chapter 7. This was a great opportunity for me to brush up on my linear algebra and 3D math skills.</p>
-
-<p><a href="https://github.com/kevinclancy/raytracing-rust">Here is the code</a></p>
 
 <p><img src="/assets/images/raytracer.png" alt="Image" /></p>
 
