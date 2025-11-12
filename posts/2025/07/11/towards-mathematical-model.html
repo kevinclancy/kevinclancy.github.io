@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
-  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Kevin Clancy" />
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Kevin Clancy" />
 
 </head>
 <body>
@@ -45,13 +45,13 @@
   </li>
 </ul>
 
-<p>The first approach has the advantage of being real, while the second approach provides deeper understanding and faster iteration times. In this post, I’m going to persue the second approach, but I’m only going to take the first step: <strong>I will model computer games, or simplified approximations of computer games, as mathematical objects.</strong> I’ve never created mathematical models of computer games before, so I’m going to try modelling some of the simplest games I can find that still features space, time, and interacting agents. To this end, I’ve chosen to use a 90s game creation system called <em>MegaZeux</em> as an inspiration for my model. The convenient thing about MegaZeux is that, despite feeling like a standard real-time computer game, its time and space are discrete and can therefore be modeled entirely by integers rather than floating point numbers. I will present my model using elementary mathematics; it should be accessible to anyone who knows what sets and functions are.</p>
+<p>The first approach has the advantage of being real, while the second approach provides deeper understanding and faster iteration times. In this series of posts, I’m going to persue the second approach, but I’m only going to take the first step: <strong>I will model computer games, or simplified approximations of computer games, as mathematical objects.</strong> I’ve never created mathematical models of computer games before, so I’m going to try modelling some of the simplest games I can find that still feature space, time, and interacting agents. To this end, I’ve chosen to use a 90s game creation system called <em>MegaZeux</em> as an inspiration for my model. The convenient thing about MegaZeux is that, despite feeling like a standard real-time computer game, its time and space are discrete and can therefore be modeled entirely by integers rather than floating point numbers. I will present my model using elementary mathematics; it should be accessible to anyone who knows what sets, functions, set-builder notation, and cartesian products are.</p>
 
 <h1 id="understanding-the-problem">Understanding the problem</h1>
 
 <p>This post is going to analyze MegaZeux using intuition rather than rigor, trying to isolate the essence of what a MegaZeux game is. It will specifically focus on how multiple simulated agents interact with other agents and the game world, identifying some fundamental features of gameplay programming by exploring a concrete scenario in a MegaZeux game called <em>Weirdness</em>.</p>
 
-<p>This primary purpose of this post is to motivate my next one, in which I create a mathematical model of a MegaZeux-style computer game. However, it might also be a fun read for people who are interested in computer games and have never heard of MegaZeux, or MegaZeux fans who want to consider the system from an analytical perspective.</p>
+<p>This primary purpose of this post is to motivate my next few posts, in which I create a mathematical model of a MegaZeux-style computer game. However, it might also be a fun read for people who are interested in computer games and have never heard of MegaZeux, or MegaZeux or gaming fans who want to consider computer games from an analytical perspective.</p>
 
 <h2 id="megazeux">MegaZeux</h2>
 
@@ -63,7 +63,7 @@
 
 <p><img src="/assets/images/gameloop/mzx-depot-dungeons.png" /></p>
 
-<p><a href="https://www.digitalmzx.com/show.php?id=2097">Depot Dungeons</a> is a puzzle game where the player must traverse a dungeon while solving puzzles involving lever pulling and crate pushing, while fighting off aggressive mutant cockroaches.</p>
+<p><a href="https://www.digitalmzx.com/show.php?id=2097">Depot Dungeons</a> is a puzzle game where the player must traverse a dungeon while solving puzzles involving lever pulling and crate pushing, all the while fighting off aggressive mutant cockroaches.</p>
 
 <p><img src="/assets/images/gameloop/mzx-kikan-intro.png" /></p>
 
@@ -85,11 +85,11 @@
 
 <p><img src="/assets/images/gameloop/mzx-weirdness-fusebox-on.png" /></p>
 
-<p>In this scenario, the fuse box itself is a robot. Each robot has a <em>robotic script</em>, which is a program pairing several <em>labels</em>, which are names of events to respond to, with <em>handlers</em>, which are sequences of instructions that the robot should execute in response to these events. When the player attempts to move into the grid cell occupied by the fuse box, the game triggers the fuse box script’s “touch” handler, which spawns a dialog asking the player if they want to turn the fuse box off. If they choose “yes” then another handler inside the fuse box’s script is executed. This handler sends a “fuse box off” message to Roy. Upon receiving the “fuse box off” message, Roy’s robotic script causes him to expresses his frustration and walk into the basement to turn the fuse box back on.</p>
+<p>In this scenario, the fuse box itself is a robot. Each robot has a <em>robotic script</em>, which is a program pairing several <em>labels</em>, which are names of events to respond to, with <em>handlers</em>, which are sequences of instructions that the robot should execute in response to these events. When the player attempts to move into the grid cell occupied by the fuse box, the game triggers the fuse box script’s “touch” handler, which spawns a dialog asking the player if they want to turn the fuse box off. If they choose “yes” then another handler inside the fuse box’s script is executed. This handler sends a “fuse box off” message to Roy. Upon receiving the “fuse box off” message, Roy’s robotic script executes its “fuse box off” handler, causing him to expresses his frustration and walk into the basement to turn the fuse box back on.</p>
 
-<p>Let’s take a step back and think about what’s going on here, using intuition rather than deep analysis. <em>MegaZeux</em> is simulating the physical world in a rough manner. The robots in this scenario, Roy and the fuse box, represent physical things in the world. Robotic scripts are an abstraction of the physical things’ “brains”: both actual brains, as in the case of Roy, and pseudo brains, as in the case of the fuse box. A pseudo brain is a subset of a physical object’s characteristics that determines how the object interacts with other objects. In the case of the fuse box, its switch might be part of its pseudo brain, but not its metal case.</p>
+<p>Let’s take a step back and think about what’s going on here, using intuition rather than deep analysis. <em>MegaZeux</em> is simulating the physical world in a rough manner. The robots in this scenario, Roy and the fuse box, represent physical things in the world. Robotic scripts are an abstraction of the physical things’ “brains”: both actual brains, as in the case of Roy, and pseudo brains, as in the case of the fuse box. A pseudo brain is a subset of a physical object’s characteristics that determine how the object interacts with other objects. But a pseudo brain only includes physical characteristics too fine grained to fall within the scope of the game system, thus requiring custom code; in this sense, a brain is a specific type of pseudo brain. For example, the fuse box occupies a grid cell at a (row,column) location understood by the game system. But the position of the switch <em>within</em> the cell is too fine grained and therefore must dealt with using <em>Weirdness</em>-specific pseudo brain code, a robotic script.</p>
 
-<p>Each handler in a robotic script issues commands instructing its robot to interact with the world in various ways. For example, <code class="language-plaintext highlighter-rouge">go SOUTH</code> instructs the robot Roy to attempt walking to the grid cell whose \(y\)-coordinate is one greater than Roy’s current \(y\)-coordinate. This will only happen if the cell to the south of Roy is currently unoccupied. For this reason, we can view commands such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> as a message sent from Roy’s brain to the physical world, which we will call the <em>environment</em>. Upon receiving the message, the environment may or may not choose to move Roy, depending on whether such movement is compatible with its laws of physics, which are <em>dictated by the environment</em>.</p>
+<p>Each handler in a robotic script issues commands instructing its robot to interact with the world in various ways. For example, <code class="language-plaintext highlighter-rouge">go SOUTH</code> instructs the robot Roy to attempt walking to the grid cell whose \(y\)-coordinate is one greater than Roy’s current \(y\)-coordinate. This will only happen if the cell to the south of Roy is currently unoccupied. For this reason, we can view commands such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> as a message sent from Roy’s brain to the physical world, which we will call the <em>environment</em>. Upon receiving the message, the environment may or may not choose to move Roy, depending on whether such movement is compatible with its laws of physics, which are <em>dictated by the environment</em>. For example, a request by Roy to move into a cell occupied by a wall would be rejected by the environment, because the environment’s laws of physics do not a allow a robot and a wall to occupy the same grid cell.</p>
 
 <p>From this discussion, we extract some key features we would like to model.</p>
 <ul>
@@ -160,7 +160,7 @@ A closed simulation is essentially just a special case of an open one, where bot
 
 <h1 id="conclusion">Conclusion</h1>
 
-<p>We’ve examined MegaZeux’s <em>robot</em> system, which is used to define complex objects, both sentient and non-sentient, interacting in a simulated world. Some notable features are:</p>
+<p>We’ve examined MegaZeux’s <em>robot</em> system, which is used to simulate complex objects, both sentient and non-sentient, interacting in a simulated world. Some notable features are:</p>
 
 <ul>
   <li>A robot performs physical actions by submitting requests to an environment. The environment decides whether to honor these requests.</li>
