@@ -47,13 +47,13 @@
 
 \[\mathit{nextState} : 1 \times \mathit{GameState} \to \mathit{GameState}\]
 
-<p>We will construct this closed system out of open systems such as the players. The players are open systems that takes observations of the board state as inputs and produces move choices as outputs. As a rough first approximation, a player can be diagrammed as follows:</p>
+<p>We will construct this closed system out of open systems such as the players. The players are open systems that take observations of the board state as inputs and produce move choices as outputs. As a rough first approximation, a player can be diagrammed as follows:</p>
 
 <center>
 <img src="/assets/images/gameloop/ttt-player.drawio.png" />
 </center>
 
-<p>The above system is considered <em>open</em> because its input and output are not one-element sets. Each turn, an element of BoardState is received as input. The player uses the current board state, possibly along with the player’s own internal state, to decide a move to submit to the board.</p>
+<p>The above system is considered <em>open</em> because its input and output are not one-element sets; they contain actual information that must be received from and sent to unspecified destinations. Each turn, an element of BoardState is received as input. The player uses the current board state, possibly along with the player’s own internal state, to decide a move to submit to the board.</p>
 
 <p>Now, let’s develop a formalism that allows us to compose complex systems from simpler systems.</p>
 
@@ -90,10 +90,10 @@
 
 \[\vrt{\mathit{nextState}}{\mathit{output}} : \vrt{\mathit{State}}{\mathit{State}} \leftrightarrows \vrt{\mathit{In}}{\mathit{Out}}\]
 
-  <p>That is, a dynamical system is a lens whose codomain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
+  <p>That is, a dynamical system is a lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
 </blockquote>
 
-<p>Above, we consider \(\mathit{State}\) the type of our dynamical system’s internal state, \(\mathit{In}\) the type of its inputs, and \(\mathit{Out}\) the type of its outputs. Expanding the definition of lens, we see that</p>
+<p>Above, we consider \(\mathit{State}\) the type of our dynamical system’s internal state, \(\mathit{In}\) the type of its input, and \(\mathit{Out}\) the type of its output. Expanding the definition of lens, we see that</p>
 <ul>
   <li>\(\mathit{nextState} : \mathit{State} \times \mathit{In} \to \mathit{State}\) is a function that takes a pair of a “current” state and an input to a “next” state.</li>
   <li>\(\mathit{output} : \mathit{State} \to \mathit{Out}\) is a function that takes a state to an output.</li>
@@ -101,7 +101,7 @@
 
 <p>This matches the intuitive structure of game engines that I presented previously. Those familiar with digital logic may know the distinction between <em>Moore machines</em> and <em>Mealy machines</em>. The output of a Mealy machine may depend both on its input and its current state, whereas the output of a Moore machine may only depend on its current state. In this sense, a dynamical system is like a Moore machine rather than a Mealy machine: before its input can affect its output, it must store the input in its state as an intermediate step. This can be a bit awkward sometimes, but it’s not a fundamental problem.</p>
 
-<p>A dynamical system named \(S\) can be depicted as follows</p>
+<p>A dynamical system \(S : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\) can be depicted as follows.</p>
 
 <figure>
 <img src="/assets/images/gameloop/discrete-dynamical-system.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
@@ -109,6 +109,8 @@
 Figure 1
 </figcaption>
 </figure>
+
+<p>Note that the set \(\mathit{State}_S\) does not appear in the diagram, because it does not affect the systems that \(S\) interacts with.</p>
 
 <p>If the codomain of one lens matches the domain of another then we can compose them together.</p>
 
@@ -145,15 +147,15 @@ product
 
 <p>Given dynamical systems</p>
 
-\[\vrt{nextState_S}{output_S} : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\]
+\[S : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\]
 
 <p>and</p>
 
-\[\vrt{nextState_T}{output_T} : \vrt{\mathit{State}_T}{\mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_T}{\mathit{Out}_T}\]
+\[T : \vrt{\mathit{State}_T}{\mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_T}{\mathit{Out}_T}\]
 
 <p>their parallel product</p>
 
-\[\vrt{nextState_S}{output_S} \otimes \vrt{nextState_T}{output_T} : \vrt{\mathit{State}_S \times \mathit{State}_T}{\mathit{State}_S \times \mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_S \times \mathit{In}_T}{\mathit{Out}_S \times \mathit{Out}_T}\]
+\[S \otimes T : \vrt{\mathit{State}_S \times \mathit{State}_T}{\mathit{State}_S \times \mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_S \times \mathit{In}_T}{\mathit{Out}_S \times \mathit{Out}_T}\]
 
 <p>can be depicted by juxtaposing the two dynamical systems.</p>
 
@@ -164,7 +166,7 @@ product
 
 <h2 id="example">Example</h2>
 
-<p>Here is an example of a dynamical system from <a href="link">Categorical Dynamical Systems</a>. Define the set</p>
+<p>Here is an example of a dynamical system from <a href="https://www.davidjaz.com/Papers/DynamicalBook.pdf">Categorical Dynamical Systems</a>. Define the set</p>
 
 \[\mathit{Hour} \defeq \{ 1,2,3,4,5,6,7,8,9,10,11,12 \}\]
 
@@ -183,14 +185,14 @@ product
 h + 1 &amp; \text{  otherwise}
 \end{cases}\]
 
-<p>This system represents a wall clock, which takes no internal input and advances one hour forward at each step.</p>
+<p>This system represents a wall clock, which takes no external input and advances one hour forward at each step.</p>
 
 <figure>
 <img src="/assets/images/gameloop/clock.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
 <figcaption>Figure 3</figcaption>
 </figure>
 
-<p>Note that we don’t need to draw an incoming edge; because the input is \(1 = \{ \ast \}\), it transmits only one possible value \(\ast\), and so the location the input comes from is irrelevant.</p>
+<p>Note that we don’t need to draw an incoming edge; because the input is \(1 = \{ \ast \}\), it transmits only one possible choice of value \(\ast\). So instead of receiving input from an external source, \(\mathit{Clock}\) can fabricate the value \(\ast\) at every step, knowing it is the correct choice.</p>
 
 <p>The above clock does not distinguish between \(\am\) and \(\pm\) To fix this,
 we define a dynamical system called \(Meridiem\) that shifts between \(\am\) and \(\pm\) We first define the set
@@ -304,7 +306,7 @@ Then this lens should translate the system’s output using a function \(f : \ma
 
 <p>The demultiplexor circuit has \(n\) different output wires. Their type is not quite \(\mathit{Payload}\); each wire may contain a value of type \(\mathit{Payload}\) or, if it has not been selected, it may contain “no information” of type \(1\).</p>
 
-<p>To express the set of values that each belong to exactly one of the disjoint sets \(\mathit{Payload}\) or \(1\) we need to use the <em>sum</em> set theoretic operation, which is not as well known as its evil twin the Cartesian product.</p>
+<p>To express the set of values that each belong to exactly one of the disjoint sets \(\mathit{Payload}\) or \(1\) we need to use a set theoretic operation called the <em>sum</em>, which is not as well known as its evil twin the Cartesian product.</p>
 
 <blockquote>
   <p><strong>Definition</strong> Given sets \(X\) and \(Y\), their sum \(X + Y\) is defined as</p>
@@ -314,7 +316,7 @@ Then this lens should translate the system’s output using a function \(f : \ma
 
 <p>By tagging values with either \(0\) or \(1\), we ensure that the elements of the two operands are treated as mutually exclusive. It may be instructive to compare the set \(1 = 1 \cup 1\) with the set \(1 + 1\).</p>
 
-<p>While we’re add it, let’s define another set-theoretic operation.</p>
+<p>While we’re at it, let’s define another set-theoretic operation.</p>
 
 <blockquote>
   <p><strong>Definition</strong> Given sets \(X\) and \(Y\), \(X^Y\) is defined as the set of functions from \(Y\)
@@ -406,7 +408,7 @@ We do not model any notion of a winning condition, but instead focus on the evol
 \(\mathbf{n} \defeq \{ 0, 1, \ldots, n-1 \}\). A location on a tic-tac-toe board consists of an
 x-coordinate and a y-coordinate, so we define the set \(\mathit{Loc}\) of locations as</p>
 
-\[\mathit{Loc} \defeq \mathbf{2} \times \mathbf{2}\]
+\[\mathit{Loc} \defeq \mathbf{3} \times \mathbf{3}\]
 
 <p>We name the two players Player 0 and Player 1. Elements of the set \(\mathit{Players}\) identify players</p>
 
@@ -444,9 +446,9 @@ x-coordinate and a y-coordinate, so we define the set \(\mathit{Loc}\) of locati
 
 <p>We now define the \(\mathit{Environment}\) dynamical system. Our first task is deciding its set \(\mathit{State}_{\mathit{Environment}}\) of states. First, each state should convey the current execution step type</p>
 
-\[\mathit{StepType} \defeq \{ \mathit{ReceiveFrom}(0), \mathit{SubmitTo}(1), \mathit{ReceiveFrom}(1), \mathit{SubmitTo}(1), \mathit{IllegalState} \}\]
+\[\mathit{StepType} \defeq \{ \mathit{ReceiveFrom}(0), \mathit{SubmitTo}(0), \mathit{ReceiveFrom}(1), \mathit{SubmitTo}(1), \mathit{IllegalState} \}\]
 
-<p>The \(\mathit{IllegalState}\) element above should be used when \(\mathit{Environment}\) receives an invalid input combination (i.e. one which have prevented it from receiving by design). For those familiar with digital logic, this is somewhat analogous to a “don’t care” value.</p>
+<p>The \(\mathit{IllegalState}\) element above should be used when \(\mathit{Environment}\) receives an invalid input combination (i.e. one which we have prevented it from receiving by design). For those familiar with digital logic, this is somewhat analogous to a “don’t care” value.</p>
 
 <p>Additionally, the state should convey the current board. We’ve already defined the set \(\mathit{Board}\) of board states above. Hence, our full state set is defined as</p>
 
@@ -473,7 +475,7 @@ x-coordinate and a y-coordinate, so we define the set \(\mathit{Loc}\) of locati
 
 \[b[\ell \mapsto n](k) \defeq \begin{cases}
 b(k) &amp; \text{if } k \neq \ell \\
-b(n) &amp; \text{if } k = \ell
+n &amp; \text{if } k = \ell
 \end{cases}\]
 
 <p>We define \(\mathit{nextState}_{\mathit{Environment}} : \mathit{In}_{\mathit{Environment}} \times \mathit{State}_{\mathit{Environment}} \to \mathit{State}_{\mathit{Environment}}\) as
@@ -569,7 +571,7 @@ b(n) &amp; \text{if } k = \ell
 
 \[w^\sharp(\ell, b_0, b_1, \ast) \defeq (b_0, b_1, \ell)\]
 
-<p>Or complete system is then equal to:</p>
+<p>Our complete system is then equal to:</p>
 
 \[\vrt{w^\sharp}{w} \circ (A \otimes B)\]
 
@@ -593,7 +595,7 @@ b(n) &amp; \text{if } k = \ell
 
 <p>Our model implements the first two features. The game board can be seen as the environment, which encapsulates all physical information, namely the contents of every cell on the game board. A player can be seen as a robot; by virtue of being a dynamical systems, it encapsulates its own private data, i.e. mental state.</p>
 
-<p>The last feature, message passing among robots, is not present in the model I described. In a game’s source code, message passing might look similar to the following pseudo-code.</p>
+<p>The last feature, message passing among robots, is not present in the model I described. Speculating, in a game’s source code, message passing might look similar to the following pseudo-code.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// When the player switches off the fuse box, this channel notifies all subscribers.
 channel fuse_box_off : 1;
