@@ -1,4 +1,474 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-11-09T20:25:22-08:00</updated><id>/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">Modelling Tic-Tac-Toe</title><link href="/2025/10/18/modelling-tic-tac-toe.html" rel="alternate" type="text/html" title="Modelling Tic-Tac-Toe" /><published>2025-10-18T09:35:00-07:00</published><updated>2025-10-18T09:35:00-07:00</updated><id>/2025/10/18/modelling-tic-tac-toe</id><content type="html" xml:base="/2025/10/18/modelling-tic-tac-toe.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-11-12T12:50:04-08:00</updated><id>/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">Modelling MegaZeux</title><link href="/2025/11/04/modelling-megazeux.html" rel="alternate" type="text/html" title="Modelling MegaZeux" /><published>2025-11-04T08:00:00-08:00</published><updated>2025-11-04T08:00:00-08:00</updated><id>/2025/11/04/modelling-megazeux</id><content type="html" xml:base="/2025/11/04/modelling-megazeux.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+\(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>Now that <a href="/2025/10/18/modelling-tic-tac-toe.html">we’ve modeled tic-tac-toe using dynamical systems</a>, let’s try modelling MegaZeux. Our goal isn’t to recreate every feature of the MegaZeux game creation system, but to understand its essence. Let’s explore what MegaZeux is <em>trying</em> to be, redesigning any features we find to be arbitrary or inelegant.</p>
+
+<h2 id="concurrency-megazeux-and-the-real-world">Concurrency, MegaZeux, and the Real World</h2>
+
+<p>In tic-tac-toe, players take turns making moves. But MegaZeux is a simulation of the real world. In the real world, all agents act concurrently.</p>
+
+<p>As it turns out, MegaZeux does <em>not</em> faithfully reflect the concurrent nature of the real world. Robots execute in a turn-based manner every frame. The order that the robots execute in is decided by their position on the grid. It starts in the top-left corner, updating every robot it encounters as it moves right across the top row. Then it iterates across the second row, then the third, until it reaches the bottom-right corner of the game board.</p>
+
+<p>This is awkward. It’s an arbitrary rule that a game developer needs to learn to explain the behavior of MegaZeux games. Consider two side-by-side robots. If both attempt walking one cell to the left on the same frame then both robots move. However, if both walk one cell to the right then only the right robot moves, because when the left robot walks right, it crashes into the right robot.</p>
+
+<p>Our model, unlike MegaZeux, will allow all robots to act at once. The game stepper will evolve in the following fashion. First, it executes the initialization step:</p>
+
+<ul>
+  <li>The environment sends the initial game state to the robots; the game state includes positions of all robots, as well as wall positions. The environment sends \(1\) to each robot telling it that its last action succeeded, even though no such action exists; robots should be programmed to ignore this value. The robots use this information to update their states and store actions (\(\mathit{Idle}\), \(\mathit{North}\), \(\mathit{East}\), \(\mathit{South}\), \(\mathit{West}\)) to submit on the next step.</li>
+</ul>
+
+<p>Then, it executes steps of these two types in a loop:</p>
+
+<ol>
+  <li>
+    <p>All robots concurrently transmit their stored action, computed on the previous step, to the environment. The robots also clear their stored actions. The environment executes the actions received from the robots to the best of its ability. If a robot proposes moving into a wall, off of the game board, or into a location where another robot currently is, then the move is not executed. If multiple robots attempt to move into the same cell then the environment randomly chooses one to move into the cell, committing the “losers” to their present positions. The environment stores the resulting state of the game board and booleans indicating whether each robot’s most recent action succeeded to submit back to the robots on the next step.</p>
+  </li>
+  <li>
+    <p>(This is like the initialization step, but now the success values are meaningful.) The environment sends the current game state to the robots; the game state includes positions of all robots, as well as wall positions. The environment also sends to each robot a boolean indicating whether the robot’s most recently submitted action succeeded. The robots use this information to update their states and store actions to submit on the next step.</p>
+  </li>
+</ol>
+
+<h2 id="non-deterministic-lenses-and-dynamical-systems">Non-deterministic lenses and dynamical systems</h2>
+
+<p>According to our plan, when multiple robots attempt moving into the same cell, we randomly choose one to succeed. But this requires a feature beyond the scope of the technique of lenses and dynamical systems described in the previous blog post. Namely, non-determinism.</p>
+
+<p>We’ll need to extend our definitions so that an environment can update its state non-deterministically. Recall that if \(\mathit{X}\) is a set then \(P X\) is the set of all subsets of \(X\), where \(P -\) is called the powerset operator. If we think of a set as a collection of possibilities, then what we want is a new formulation of dynamical systems, where the passback function has the type</p>
+
+\[\mathit{State} \times \mathit{In} \to P \mathit{State}\]
+
+<p>Instead of producing a successor state as output, it produces the set of all possible successor states. In <a href="https://www.davidjaz.com/Papers/DynamicalBook.pdf">Categorical Systems Theory</a>, this is called a <em>possibilistic</em> system. Before we define possibilistic systems, we must first define a possibilistic version of lenses.</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>A <strong>\(P\)-lens</strong> \(\vrt{f^\sharp}{f} : \vrt{A^-}{A^+} \leftrightarrows \vrt{B^-}{B^+}\) is a pair consisting of two functions:</p>
+  <ul>
+    <li>A passforward function \(f : A^+ \to B^+\)</li>
+    <li>A passback function \(f^\sharp : A^+ \times B^- \to P A^-\)</li>
+  </ul>
+
+  <p>The arena \(\vrt{A^-}{A^+}\) is called the <strong>domain</strong> of \(\vrt{f^\sharp}{f}\) and the arena \(\vrt{B^-}{B^+}\) is called the <strong>codomain</strong> of \(\vrt{f^\sharp}{f}\).</p>
+</blockquote>
+
+<p>Now, we present the nondeterministic notion of dynamical systems.</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>A <strong>possibilistic dynamical system</strong> is a \(P\)-lens of the form</p>
+
+\[\vrt{\mathit{nextState}}{\mathit{output}} : \vrt{\mathit{State}}{\mathit{State}} \leftrightarrows \vrt{\mathit{In}}{\mathit{Out}}\]
+
+  <p>That is, a dynamical system is a \(P\)-lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
+</blockquote>
+
+<p>We must also update the definitions of our composition operators.</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>Given \(P\)-lenses \(\vrt{f^\sharp}{f} : \vrt{A^-}{A^+} \leftrightarrows \vrt{B^-}{B^+}\) and
+\(\vrt{g^\sharp}{g} : \vrt{B^-}{B^+} \leftrightarrows \vrt{C^-}{C^+}\) their <strong>composite</strong>
+\(\vrt{g^\sharp}{g} \circ \vrt{f^{\sharp}}{f}\) is defined as \(\vrt{h^\sharp}{h}\), where</p>
+
+  <ul>
+    <li>\(h\) is defined as the function composite \(g \circ f\)</li>
+    <li>\(h^\sharp\) is defined such that</li>
+  </ul>
+
+\[h^\sharp(a^+, c^-) \defeq \bigcup_{b^-~\in~g^\sharp(f(a^+), c^-)} f^\sharp(a^+, b^-)\]
+</blockquote>
+
+<p>We must also update our parallel composition operator.</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>Given two lenses \(\vrt{f^\sharp}{f} : \vrt{A^-}{A^+} \leftrightarrows \vrt{B^-}{B^+}\) and
+\(\vrt{g^\sharp}{g} : \vrt{C^-}{C^+} \leftrightarrows \vrt{D^-}{D^+}\) we define their parallel
+product
+\(\vrt{f^\sharp}{f} \otimes \vrt{g^\sharp}{g} : \vrt{A^- \times C^-}{A^+ \times C^+} \leftrightarrows \vrt{B^- \times D^-}{B^+ \times D^+}\) is defined as the lens
+\(\vrt{h^\sharp}{h}\), where</p>
+
+\[h(a^+, c^+) \defeq (f(a^+), g(c^+))\]
+
+  <p>and</p>
+
+\[h^\sharp(a^+, c^+, b^-, d^-) \defeq \{ (a^-, c^-) \mid a^- \in f^\sharp(a^+, b^-),~c^- \in g^\sharp(c^+, d^-) \}\]
+</blockquote>
+
+<h1 id="the-model">The Model</h1>
+
+<p>We call the game world that our robots traverse the <em>board</em>.
+Our MegaZeux model is parameterized by three natural numbers:</p>
+
+<ul>
+  <li>n - the number of robots</li>
+  <li>w - the width of the board in cells</li>
+  <li>h - the height of the board in cells</li>
+</ul>
+
+<p>Recall that we write a natural number \(k\) in bold to denote the set of natural numbers that are less than it, i.e. \(\mathbf{k} \defeq \{ 0, \ldots, k-1 \}\) .</p>
+
+<p>The set of board cell locations is then \(\mathbf{w} \times \mathbf{h}\). Our board state can then be defined as:</p>
+
+\[\mathit{BoardState} \defeq \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^\mathbf{n}\]
+
+<p>Elements of the first component \(\mathbf{2}^{\mathbf{w} \times \mathbf{h}}\) are functions mapping each board cell location to \(0\) if the cell is vacant and \(1\) if the cell contains a wall. Elements of the second component \((\mathbf{w} \times \mathbf{h})^{\mathbf{n}}\) map each robot identifier \(i\) to the cell location at which robot \(i\) is currently located.</p>
+
+<p>Our environment takes steps of two types: receive and send. For send steps, we need to store a mapping from robot identifiers to booleans indicating whether the robot’s most recent action succeeded. Thus we define</p>
+
+\[\mathit{StepType} \defeq 1 + \mathbf{2}^{\mathbf{n}}\]
+
+<p>where the left summand \(1\) is used for receive steps and the right summand is for send steps.</p>
+
+<p>The state of our environment \(\mathit{Env}\) is then defined as:</p>
+
+\[\mathit{State}_{\mathit{Env}} \defeq \mathit{BoardState} \times \mathit{StepType}\]
+
+<p>At each turn, a robot can act by either staying <strong>I</strong>dle or moving in one of the directions <strong>N</strong>orth, <strong>E</strong>ast, <strong>S</strong>outh, or <strong>W</strong>est. Therefore, we define the set of actions as:</p>
+
+\[\mathit{Act} \defeq \{ I, N, E, S, W \}\]
+
+<p>And the environment’s input, if any, is a map from each robot identifier \(i\) to the action submitted by robot \(i\) on a turn.</p>
+
+\[\mathit{In}_{\mathit{Env}} \defeq (1 + \mathit{Act})^{\mathbf{n}}\]
+
+<p>Since the robots only submit actions at every other step, we also include the summand \(1\) in the definition of \(\mathit{In}_{\mathit{Env}}\) to use on turns where the robots do not submit.</p>
+
+<p>On every \(\mathit{Send}\) step, the environment must output to each robot a copy of the game state along with a boolean (an element of \(\mathbf{2}\)) indicating whether or not the robot’s most recently submitted action succeeded.</p>
+
+\[\mathit{Out}_{\mathit{Env}} \defeq (1 + \mathit{BoardState} \times \mathbf{2})^{\mathbf{n}}\]
+
+<p>The top-down perspective of the MegaZeux game stepper then looks as follows.</p>
+
+<figure>
+<img src="/assets/images/modelling-megazeux/stepper_2.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
+<figcaption>
+Figure 1
+</figcaption>
+</figure>
+
+<p>To help explain the diagram above, we introduce a notational convenience. Elements of function spaces like \(\mathit{Out}_{\mathit{Env}} = (1 + \mathit{BoardState} \times \mathbf{2})^{\mathbf{n}}\) are functions from robot identifiers (elements of \(\mathbf{n}\)) to output values. We can construct such a function using <em>lambda notation</em>: the expression \(\lambda i \in \mathbf{n} . (0, \ast)\) denotes the constant function that always returns \((0, \ast)\) regardless of which robot identifier \(i\) you pass in. If you’re familiar with programming, this is analogous to anonymous functions like Python’s <code class="language-plaintext highlighter-rouge">lambda i: (0, star)</code> or JavaScript’s <code class="language-plaintext highlighter-rouge">i =&gt; (0, star)</code>.</p>
+
+<p>The diagram includes two combinational lenses labeled \(\mathit{t2f}\) and \(\mathit{f2t}\), which convert between n-ary Cartesian products and function spaces. When the \(n\) robots are composed in parallel, their collective output is an \(n\)-tuple (an element of the \(n\)-fold Cartesian product), but the environment expects a function from robot identifiers to actions. Similarly, the environment outputs a function mapping each robot to its board state and success value, but the parallel composition of robots expects an \(n\)-tuple. The \(\mathit{t2f}\) lens converts a tuple \((v_0, v_1, \ldots, v_{n-1})\) to the function \(\lambda i \in \mathbf{n} . v_i\), while \(\mathit{f2t}\) converts a function \(\phi : \mathbf{n} \to X\) to the tuple \((\phi(0), \phi(1), \ldots, \phi(n-1))\).</p>
+
+<p>Note that, unlike the tic-tac-toe game stepper from the previous post, the MegaZeux stepper has no need for multiplexors and demultiplexors. In tic-tac-toe, the demultiplexor routes the board state to exactly one player per turn (based on whose turn it is), and the multiplexor collects moves from whichever player is active. In MegaZeux, all robots act simultaneously at each turn, so there is no selective routing.</p>
+
+<h2 id="the-environment">The Environment</h2>
+
+<p>Now that we’ve presented the structure of our possibilistic game stepper as a diagram, let’s define the subsystem \(\mathit{Env}\). It is defined as the possibilistic system</p>
+
+\[\vrt{\mathit{nextState}_{\mathit{Env}}}{\mathit{output}_{\mathit{Env}}} : \vrt{\mathit{State}_{\mathit{Env}}}{\mathit{State}_{\mathit{Env}}} \leftrightarrows \vrt{\mathit{In}_{\mathit{Env}}}{\mathit{Out}_{\mathit{Env}}}\]
+
+<p>The \(\mathit{output}_{\mathit{Env}}\) function replicates the wall and robot positions to all robots and distributes to each robot the result of its last action:</p>
+
+\[\mathit{output}_{\mathit{Env}} : \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times (1 + \mathbf{2}^{\mathbf{n}}) \to (1 + \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times \mathbf{2})^{\mathbf{n}}\]
+
+\[\mathit{output}_{\mathit{Env}}(m, r, (0, \ast)) \defeq \lambda i \in \mathbf{n} . (0, \ast)\]
+
+\[\mathit{output}_{\mathit{Env}}(m, r, (1, s)) \defeq \lambda i \in \mathbf{n} . (1, (m, r, s(i)))\]
+
+<p>The \(\mathit{nextState}_{\mathit{Env}}\) passback function has type:</p>
+
+\[\mathit{nextState}_{\mathit{Env}} : \mathit{State}_{\mathit{Env}} \times \mathit{In}_{\mathit{Env}} \to P\mathit{State}_{\mathit{Env}}\]
+
+<p>Expanding the definitions:</p>
+
+\[\mathit{nextState}_{\mathit{Env}} : (\mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times (1 + \mathbf{2}^{\mathbf{n}})) \times (1 + \mathit{Act})^{\mathbf{n}} \to P(\mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times (1 + \mathbf{2}^{\mathbf{n}}))\]
+
+<p>We need a few helper functions. First, given a robot position map \(r\) and an action \(a \in \mathit{Act}\), we define \(\mathit{move}(r, i, a)\) to compute the proposed new position for robot \(i\):</p>
+
+\[\mathit{move} : (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times \mathbf{n} \times \mathit{Act} \to \mathbf{w} \times \mathbf{h}\]
+
+\[\mathit{move}(r, i, a) \defeq \begin{cases}
+(x, y) &amp; \text{if } a = I \\
+(x, y - 1) &amp; \text{if } a = N \\
+(x + 1, y) &amp; \text{if } a = E \\
+(x, y + 1) &amp; \text{if } a = S \\
+(x - 1, y) &amp; \text{if } a = W
+\end{cases}\]
+
+\[\text{where } (x, y) \defeq r(i)\]
+
+<p>Next, we need to determine if a move is valid (doesn’t hit a wall, go out of bounds, or collide with a robot’s current position):</p>
+
+\[\mathit{valid} : \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times \mathbf{n} \times \mathit{Act} \to \mathbf{2}\]
+
+\[\mathit{valid}(m, r, i, a) \defeq \begin{cases}
+\mathit{true} &amp; \text{if } \mathit{move}(r,i,a) \in \mathbf{w} \times \mathbf{h} \\
+&amp; \land~m(\mathit{move}(r,i,a)) = 0 \\
+&amp; \land~\mathit{move}(r,i,a) \notin \{r(j) \mid j \in \mathbf{n}\} \\
+\mathit{false} &amp; \text{otherwise}
+\end{cases}\]
+
+<p>Now we can define \(\mathit{nextState}_{\mathit{Env}}\). On a Send step in which the environment’s preconditions are satisfied (i.e., all robots provide no input), we transition back to Receive:</p>
+
+\[\mathit{nextState}_{\mathit{Env}}((m, r, (1, s)), \lambda i \in \mathbf{n} . (0, \ast)) \defeq \{(m, r, (0, \ast))\}\]
+
+<p>On a Receive step where the environment’s preconditions are satisified (i.e., all robots provide an action), we process the robot actions and non-deterministically resolve conflicts. Let \(a \in (1 + \mathit{Act})^{\mathbf{n}}\) be the input, where \(a(i) = (1, \alpha_i)\) for all \(i \in \mathbf{n}\) and some action \(\alpha_i\).</p>
+
+<p>For each cell location \(\ell \in \mathbf{w} \times \mathbf{h}\), let \(\mathit{candidates}(\ell, m, r, a)\) denote the set of robots attempting to move to \(\ell\):</p>
+
+\[\mathit{candidates} : (\mathbf{w} \times \mathbf{h}) \times \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times \mathit{Act}^{\mathbf{n}} \to P\mathbf{n}\]
+
+\[\mathit{candidates}(\ell, m, r, a) \defeq \{i \in \mathbf{n} \mid \mathit{valid}(m,r,i,a(i)) \land \mathit{move}(r,i,a(i)) = \ell\}\]
+
+<p>Then we define the set of target locations that robots are attempting to move to:</p>
+
+\[\mathit{targets} : \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times \mathit{Act}^{\mathbf{n}} \to P(\mathbf{w} \times \mathbf{h})\]
+
+\[\mathit{targets}(m, r, a) \defeq \{ \ell \in \mathbf{w} \times \mathbf{h} \mid |\mathit{candidates}(\ell, m, r, a)| \geq 1 \}\]
+
+<blockquote>
+  <p><strong>Definition</strong> For sets \(X\) and \(Y\), we write \(X \rightharpoonup Y\) for the set of partial functions from \(X\) to \(Y\),
+defined as</p>
+
+\[X \rightharpoonup Y \defeq \{ f \subseteq X \times Y \mid ((x,y) \in f \wedge (x,z) \in f) \Rightarrow y = z \}\]
+
+  <p>For \(f \in X \rightharpoonup Y\), we write \(f(x) \! \downarrow\) and say that “\(f\) is defined at \(x\)” when there
+exists a \(y \in Y\) with \((x,y) \in f\). We write \(f(x) \! \uparrow\) and say that “\(f\) is undefined at \(x\)” when no
+such \(y \in Y\) exists. When \(f(x) \! \downarrow\), we write \(f(x)\) for the unique \(y \in Y\) with \((x,y) \in f\).</p>
+
+  <p>We define \(\mathit{dom}(f)\), the domain of the partial function \(f : X \rightharpoonup Y\), as</p>
+
+\[\mathit{dom}(f) \defeq \{ x \mid f(x) \! \downarrow \}\]
+</blockquote>
+
+<p>For each target, a <em>resolution</em> chooses one of the candidates to successfully move into the target.</p>
+
+\[\mathit{resolutions} : \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times \mathit{Act}^{\mathbf{n}} \to P(\mathbf{w} \times \mathbf{h} \rightharpoonup \mathbf{n})\]
+
+\[\mathit{resolutions}(m, r, a) \defeq \{ q \in \mathbf{w} \times \mathbf{h} \rightharpoonup \mathbf{n} \mid \mathit{dom}(q) = \mathit{targets}(m,r,a) \wedge \forall \ell \in \mathit{dom}(q).~q(\ell) \in \mathit{candidates}(\ell, m, r, a)  \}\]
+
+<p>Given a resolution \(q \in \mathit{resolutions}(m,r,a)\), we compute the new robot positions and success indicators. The function \(\mathit{nextr}\) computes the new position for each robot: a robot moves to its target cell if it won the resolution for that cell (i.e., the resolution chose it), otherwise it stays in place.</p>
+
+\[\mathit{nextr} : \mathit{Act}^{\mathbf{n}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times (\mathbf{w} \times \mathbf{h} \rightharpoonup \mathbf{n}) \to (\mathbf{w} \times \mathbf{h})^{\mathbf{n}}\]
+
+\[\mathit{nextr}(a,r,q)(i) \defeq \begin{cases}
+\mathit{move}(r, i, a(i)) &amp; \text{if } q(\mathit{move}(r, i, a(i))) = i \\
+r(i) &amp; \text{otherwise}
+\end{cases}\]
+
+<p>The function \(\mathit{success}\) indicates whether each robot’s action succeeded: a robot succeeds if its position changed, or if it chose to idle.</p>
+
+\[\mathit{success} : \mathit{Act}^{\mathbf{n}} \times (\mathbf{w} \times \mathbf{h})^{\mathbf{n}} \times (\mathbf{w} \times \mathbf{h} \rightharpoonup \mathbf{n}) \to \mathbf{2}^{\mathbf{n}}\]
+
+\[\mathit{success}(a,r,q)(i) \defeq \begin{cases}
+1 &amp; \text{if } \mathit{nextr}(a,r,q)(i) \neq r(i) \vee a(i) = I \\
+0 &amp; \text{otherwise}
+\end{cases}\]
+
+<p>We can now define the Receive step transition in terms of these helper functions:</p>
+
+\[\mathit{nextState}_{\mathit{Env}}((m, r, (0, \ast)), a) \defeq \{ (m, \mathit{nextr}(a,r,q), (1, \mathit{success}(a,r,q))) \mid q \in \mathit{resolutions}(m, r, a) \}\]
+
+<p>For any other combination of state and input (which–as violations of our environment’s preconditions–are never intended to arise), we return the empty set:</p>
+
+\[\mathit{nextState}_{\mathit{Env}}(z, a) \defeq \emptyset\]
+
+<h2 id="the-robots">The Robots</h2>
+
+<p>For each robot identifier \(i \in \mathbf{n}\), we write \(\mathit{Robot}_i\) for the possibilistic system corresponding to robot \(i\).</p>
+
+<p>We posit the existence of a set \(\Sigma_i\) containing the <em>mental state</em> of robot \(i\). A value of \(\Sigma_i\) might contain a program counter for the script robot \(i\) is currently running, and it might contain private data members as well. For distinct \(i,j \in \mathbf{n}\) the sets \(\Sigma_i\) and \(\Sigma_j\) are not required to be equal and are typically distinct.</p>
+
+<p>In addition to mental state, the state of robot \(i\) also contains <em>administrative state</em>. The administrative state \(S\), which is uniform across all robots, synchronizes the robot with the environment and stages actions to transmit to the environment.</p>
+
+\[S \defeq 1 + \mathit{Act}\]
+
+<p>The value \((0,\ast) \in S\) means that the environment is currently in a \(\mathit{Submit}\) state. This means that the robots are currently receiving the board state and their success values. The value \((1, a) \in S\) means that the environment is currently in a \(\mathit{Receive}\) state. The value \(a\) is the action computed by the robot at the previous step, which has been stored in preparation for transmission at the current step.</p>
+
+<p>Then the state set of robot \(i\) is defined as:</p>
+
+\[\mathit{State}_{\mathit{Robot}_i} \defeq S \times \Sigma_i\]
+
+<p>Figure 1 above shows us the input and output sets shared by the \(n\) robots:</p>
+
+\[\mathit{In}_{\mathit{Robot}_i} \defeq 1 + (\mathit{BoardState} \times \mathbf{2})\]
+
+\[\mathit{Out}_{\mathit{Robot}_i} \defeq 1 + \mathit{Act}\]
+
+<p>Note that \(\mathit{Out}_{\mathit{Robot}_i} = S\).</p>
+
+<p>Now, we must define \(\mathit{Robot}_i\) as a possibilistic lens:</p>
+
+\[\mathit{Robot}_i : \vrt{\mathit{State}_{\mathit{Robot}_i}}{\mathit{State}_{\mathit{Robot}_i}} \leftrightarrows \vrt{\mathit{In}_{\mathit{Robot}_i}}{\mathit{Out}_{\mathit{Robot}_i}} \defeq \vrt{nextState_{\mathit{Robot}_i}}{\mathit{output}_{\mathit{Robot}_i}}\]
+
+<p>where we define</p>
+
+\[\mathit{output}_{\mathit{Robot}_i} : S \times \Sigma_i \to 1 + \mathit{Act}\]
+
+\[\mathit{output}_{\mathit{Robot}_i}(s, \sigma) \defeq s\]
+
+<p>and</p>
+
+\[\mathit{nextState}_{\mathit{Robot}_i} : S \times \Sigma_i \times (1 + \mathit{BoardState} \times \mathbf{2}) \to P(S \times \Sigma_i)\]
+
+<p>We posit the existence of a function \(\phi_i : \Sigma_i \times \mathit{BoardState} \times \mathbf{2} \to \mathit{Act} \times \Sigma_i\) which, given robot \(i\)’s mental state, the current board state, and whether its last action succeeded, computes the next action and updates the mental state.</p>
+
+<p>When in the “robot receiving” state \((0, *)\), the robot expects board state as input, and uses \(\phi\) to compute its new state and action.</p>
+
+\[\mathit{nextState}_{\mathit{Robot}_i}((0, \ast), \sigma, (1, (b, s))) \defeq \{((1, a), \sigma')\}\]
+
+\[\text{where } (a, \sigma') = \phi_i(\sigma, b, s)\]
+
+<p>When in the “robot sending” state \((1, a)\), the robot expects empty input and transitions back to the “robot receiving” state.</p>
+
+\[\mathit{nextState}_{\mathit{Robot}_i}((1, a), \sigma, (0, \ast)) \defeq \{((0, \ast), \sigma)\}\]
+
+<p>For any other combination of state and input (precondition violations), we return the empty set:</p>
+
+\[\mathit{nextState}_{\mathit{Robot}_i}(z, \sigma, x) \defeq \emptyset\]
+
+<h2 id="wiring-things-up">Wiring things up</h2>
+
+<p>We now have all the pieces to assemble our game stepper: the environment \(\mathit{Env}\) and the \(n\) robots \(\mathit{Robot}_0, \ldots, \mathit{Robot}_{n-1}\). To create the full system, we need to connect the robots layer to the environment layer using composition.</p>
+
+<p>The robots layer is formed by composing all robots in parallel:</p>
+
+\[\mathit{Robots} \defeq \mathit{Robot}_0 \otimes \mathit{Robot}_1 \otimes \cdots \otimes \mathit{Robot}_{n-1}\]
+
+<p>We convert to the environment’s input set by post-composing by the \(\mathit{t2f}\) combinational lens.</p>
+
+\[A \defeq \mathit{t2f} \circ \mathit{Robots}\]
+
+<p>We convert from the environment’s output set to the players’ input set by postcomposing with \(\mathit{f2t}\)</p>
+
+\[B \defeq \mathit{f2t} \circ \mathit{Env}\]
+
+<p>The signatures of \(A\) and \(B\) are</p>
+
+\[A : \vrt{\mathit{State_{\mathit{Robot}_1}} \times \cdots \times \mathit{State}_{\mathit{Robot}_n}}{\mathit{State_{\mathit{Robot}_1}} \times \cdots \times \mathit{State}_{\mathit{Robot}_n}} \leftrightarrows \vrt{(1 + \mathit{BoardState} \times \mathbf{2}) \times \underset{n}{\cdots} \times (1 + \mathit{BoardState} \times \mathbf{2})}{(1 + \mathit{Act})^{\mathbf{n}}}\]
+
+<p>and</p>
+
+\[B : \vrt{\mathit{State_{\mathit{Env}}}}{\mathit{State}_{\mathit{Env}}} \leftrightarrows \vrt{(1 + \mathit{Act})^{\mathbf{n}}}{(1 + \mathit{BoardState} \times \mathbf{2}) \times \underset{n}{\cdots} \times (1 + \mathit{BoardState} \times \mathbf{2})}\]
+
+<p>We juxtapose them with the parallel product:</p>
+
+\[A \otimes B : \vrt{\mathit{State_{\mathit{Robot}_1}} \times \cdots \times \mathit{State}_{\mathit{Robot}_n} \times \mathit{State}_{\mathit{Env}}}{\mathit{State_{\mathit{Robot}_1}} \times \cdots \times \mathit{State}_{\mathit{Robot}_n} \times \mathit{State}_{\mathit{Env}}} \leftrightarrows \vrt{(1 + \mathit{BoardState} \times \mathbf{2}) \times \underset{n}{\cdots} \times (1 + \mathit{BoardState} \times \mathbf{2}) \times (1 + \mathit{Act})^{\mathbf{n}}}{(1 + \mathit{Act})^{\mathbf{n}} \times (1 + \mathit{BoardState} \times \mathbf{2}) \times \underset{n}{\cdots} \times (1 + \mathit{BoardState} \times \mathbf{2})}\]
+
+<p>which is depicted by the following diagram</p>
+
+<figure>
+<img src="/assets/images/modelling-megazeux/ab-juxtapose.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
+<figcaption>
+Figure 2
+</figcaption>
+</figure>
+
+<p>We wire \(A\) and \(B\) together by post-composing \(A \otimes B\) with a wiring lens that creates the feedback loop. The wiring lens must take the output of \(A \otimes B\) (which has \(A\)’s output followed by \(B\)’s output) and route it appropriately: \(B\)’s output should feed into \(A\)’s input, and \(A\)’s output should feed into \(B\)’s input.</p>
+
+\[\vrt{w^\sharp}{w} : \vrt{(1 + \mathit{BoardState} \times \mathbf{2}) \times \underset{n}{\cdots} \times (1 + \mathit{BoardState} \times \mathbf{2}) \times (1 + \mathit{Act})^{\mathbf{n}}}{(1 + \mathit{Act})^{\mathbf{n}} \times (1 + \mathit{BoardState} \times \mathbf{2}) \times \underset{n}{\cdots} \times (1 + \mathit{BoardState} \times \mathbf{2})} \leftrightarrows \vrt{1}{1}\]
+
+<p>where the passforward function \(w\) is defined as:</p>
+
+\[w(a, b_0, b_1, \ldots, b_{n-1}) \defeq \ast\]
+
+<p>This function simply discards both outputs, as the system is closed (there is no external environment to communicate with).</p>
+
+<p>The passback function \(w^\sharp\) creates the feedback connections:</p>
+
+\[w^\sharp(a, b_0, b_1, \ldots, b_{n-1}, \ast) \defeq \{(b_0, b_1, \ldots, b_{n-1}, a)\}\]
+
+<p>The complete game stepper is then:</p>
+
+\[\mathit{Stepper} \defeq \vrt{w^\sharp}{w} \circ (A \otimes B)\]
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Now we’re getting somewhere. We have a game stepper that almost resembles MegaZeux. Like MegaZeux, it has a varying number of robots driven by distinct scripts. Also like MegaZeux, these robots are located on a 2D grid and move on the grid by submitting requests to an environment. Instead of executing the robot scripts in sequence, our model diverges from MegaZeux by executing the scripts of all robots concurrently at each frame. This more accurately reflects the real world and prevents a game from confusing developers with hidden execution ordering rules.</p>
+
+<h2 id="looking-ahead">Looking Ahead</h2>
+
+<p>Recall our original checklist of features:</p>
+
+<ul>
+  <li>✅ A robot performs physical actions by submitting requests to an environment. The environment decides whether to honor these requests.</li>
+  <li>✅ A robot has internal state, but it’s a purely “mental” state that is used to make decisions. Physical properties of the robot are stored in the environment’s internal state.</li>
+  <li>❌ A robot may send a message to another robot, which represents information sent along some physical communication medium.</li>
+</ul>
+
+<p>We still need to implement the last one. Now that we’ve extended our dynamical systems formalism to <em>possibilistic</em> dynamical systems capable of modelling non-deterministic behavior, robots can process all messages received on the previous frame in any non-deterministically chosen order.</p>
+
+<p>To refresh your memory, here is the sample pseudo-code of robot message passing that I presented in the previous post.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// When the player switches off the fuse box, this channel notifies all subscribers.
+channel fuse_box_off : 1;
+
+robot roy {
+  receives on fuse_box_off;
+
+  state working {
+    handler fuse_box_off (_ : 1) = {
+      set_state(fix_fusebox);
+    }
+  }
+
+  state fix_fusebox {
+    ...
+  }
+}
+
+robot fuse_box {
+  sends on fuse_box_off;
+
+  state on {
+    handler on_player_touch (_ : 1) = {
+      send fuse_box_off(*);
+      set_state(off);
+    }
+  }
+
+  state off {
+    ...
+  }
+}
+</code></pre></div></div>
+
+<p>Diagramatically, each robot \(R\) appears as a rectangle representing a possibilistic dynamical system. Now, in addition to an input wire transmitting elements of the \(\mathit{GameState}\) set, the system \(R\) also has an input wire for each channel that it subscribes to as a receiver. In addition to the output wire transmitting elements of the set \(\mathit{Act}\) of actions, it also has one output wire for each channel \(R\) subscribes to as a sender.</p>
+
+<p>So, for example, the \(\mathit{Roy}\) system has two input wires: one transmits observations of \(\mathit{GameState}\) sent from the environment, and the other transmits the collection of all messages sent along the \(\mathit{fuse\_box\_off}\) channel during a single frame. Because \(\mathit{Roy}\) does not subscribe to any channels as a sender, it has only an \(\mathit{Act}\) output wire.</p>
+
+<figure>
+<img src="/assets/images/modelling-megazeux/roy-example.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
+<figcaption>
+Figure 3
+</figcaption>
+</figure>
+
+<p>And likewise for the \(\mathit{FuseBox}\) system.</p>
+
+<figure>
+<img src="/assets/images/modelling-megazeux/fuse-box-solo.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
+<figcaption>
+Figure 4
+</figcaption>
+</figure>
+
+<p>Now, you might wonder why the channel wires are labelled with \(M_{\mathit{fin}} 1\) even though the \(\mathit{fuse\_box\_off}\) channel was declared with type \(1\). The reason is that \(1\) is the type of the individual messages that the channel transmits, but the channel may transmit multiple messages from multiple sender robots on the same frame. Because we’ve decided that distinct messages sent on the same frame are sent “at the same instant” (more precisely, they’re sent within such a small interval that determining their order is too fine-grained to fall within the scope of our game system), the channel wire must transmit an unordered collection of messages rather than a single message. Given a set \(X\), the elements of the set \(P X\) are unordered collections of the set \(X\). But in elements of \(P X\) (subsets of \(X\)), all elements are unique. This is not appropriate for message collections, because multiple robots, or even a single robot, can transmit the same message multiple times along a channel on a single frame. Furthermore, if \(X\) is an infinite set, say the set \(\mathbb N = \{ 0, 1, 2, \ldots \}\) of natural numbers, then its subsets can be infinite as well; collections of messages must be finite so that a robot can sequentially process all of them.</p>
+
+<blockquote>
+  <p><strong>Definition</strong> Given a set \(X\), the set \(M_{\text{fin}}X\) of <em>finite multisets</em> of \(X\) is defined as follows:</p>
+
+\[M_{\text{fin}}X \defeq \{ f : X \to \mathbb{N} \mid \text{finite support} \}\]
+
+  <p>where a function has finite support if \(\{x \in X \mid f(x) &gt; 0\}\) is finite. A function \(f : X \to \mathbb N\) represents a multiset where each element \(x \in X\) appears \(f(x)\) times.</p>
+</blockquote>
+
+<p>To leave things off, the following informal diagram demonstrates how message channels are wired together in the game stepper system.</p>
+
+<figure>
+<img src="/assets/images/modelling-megazeux/channel-wiring.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
+<figcaption>
+Figure 5
+</figcaption>
+</figure>
+
+<p>For each channel, all of the sender wires are directed into a combinational lens called \(\mathit{dist}\). This lens takes the union of the multisets and duplicates this union along each of the wires going into the receivers of the channel. The receivers store the multiset internally, waiting for the next frame to process it and replace it. We’ll cover how this works in more detail in a future post</p>]]></content><author><name></name></author><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)]]></summary></entry><entry><title type="html">Modelling Tic-Tac-Toe</title><link href="/2025/10/18/modelling-tic-tac-toe.html" rel="alternate" type="text/html" title="Modelling Tic-Tac-Toe" /><published>2025-10-18T09:35:00-07:00</published><updated>2025-10-18T09:35:00-07:00</updated><id>/2025/10/18/modelling-tic-tac-toe</id><content type="html" xml:base="/2025/10/18/modelling-tic-tac-toe.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
 \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)
 \(\newcommand{am}{\text{a.m.}}\)
 \(\newcommand{pm}{\text{p.m.}}\)</p>
@@ -21,13 +491,13 @@
 
 \[\mathit{nextState} : 1 \times \mathit{GameState} \to \mathit{GameState}\]
 
-<p>We will construct this closed system out of open systems such as the players. The players are open systems that takes observations of the board state as inputs and produces move choices as outputs. As a rough first approximation, a player can be diagrammed as follows:</p>
+<p>We will construct this closed system out of open systems such as the players. The players are open systems that take observations of the board state as inputs and produce move choices as outputs. As a rough first approximation, a player can be diagrammed as follows:</p>
 
 <center>
 <img src="/assets/images/gameloop/ttt-player.drawio.png" />
 </center>
 
-<p>The above system is considered <em>open</em> because its input and output are not one-element sets. Each turn, an element of BoardState is received as input. The player uses the current board state, possibly along with the player’s own internal state, to decide a move to submit to the board.</p>
+<p>The above system is considered <em>open</em> because its input and output are not one-element sets; they contain actual information that must be received from and sent to unspecified destinations. Each turn, an element of BoardState is received as input. The player uses the current board state, possibly along with the player’s own internal state, to decide a move to submit to the board.</p>
 
 <p>Now, let’s develop a formalism that allows us to compose complex systems from simpler systems.</p>
 
@@ -64,10 +534,10 @@
 
 \[\vrt{\mathit{nextState}}{\mathit{output}} : \vrt{\mathit{State}}{\mathit{State}} \leftrightarrows \vrt{\mathit{In}}{\mathit{Out}}\]
 
-  <p>That is, a dynamical system is a lens whose codomain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
+  <p>That is, a dynamical system is a lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
 </blockquote>
 
-<p>Above, we consider \(\mathit{State}\) the type of our dynamical system’s internal state, \(\mathit{In}\) the type of its inputs, and \(\mathit{Out}\) the type of its outputs. Expanding the definition of lens, we see that</p>
+<p>Above, we consider \(\mathit{State}\) the type of our dynamical system’s internal state, \(\mathit{In}\) the type of its input, and \(\mathit{Out}\) the type of its output. Expanding the definition of lens, we see that</p>
 <ul>
   <li>\(\mathit{nextState} : \mathit{State} \times \mathit{In} \to \mathit{State}\) is a function that takes a pair of a “current” state and an input to a “next” state.</li>
   <li>\(\mathit{output} : \mathit{State} \to \mathit{Out}\) is a function that takes a state to an output.</li>
@@ -75,7 +545,7 @@
 
 <p>This matches the intuitive structure of game engines that I presented previously. Those familiar with digital logic may know the distinction between <em>Moore machines</em> and <em>Mealy machines</em>. The output of a Mealy machine may depend both on its input and its current state, whereas the output of a Moore machine may only depend on its current state. In this sense, a dynamical system is like a Moore machine rather than a Mealy machine: before its input can affect its output, it must store the input in its state as an intermediate step. This can be a bit awkward sometimes, but it’s not a fundamental problem.</p>
 
-<p>A dynamical system named \(S\) can be depicted as follows</p>
+<p>A dynamical system \(S : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\) can be depicted as follows.</p>
 
 <figure>
 <img src="/assets/images/gameloop/discrete-dynamical-system.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
@@ -83,6 +553,8 @@
 Figure 1
 </figcaption>
 </figure>
+
+<p>Note that the set \(\mathit{State}_S\) does not appear in the diagram, because it does not affect the systems that \(S\) interacts with.</p>
 
 <p>If the codomain of one lens matches the domain of another then we can compose them together.</p>
 
@@ -119,15 +591,15 @@ product
 
 <p>Given dynamical systems</p>
 
-\[\vrt{nextState_S}{output_S} : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\]
+\[S : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\]
 
 <p>and</p>
 
-\[\vrt{nextState_T}{output_T} : \vrt{\mathit{State}_T}{\mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_T}{\mathit{Out}_T}\]
+\[T : \vrt{\mathit{State}_T}{\mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_T}{\mathit{Out}_T}\]
 
 <p>their parallel product</p>
 
-\[\vrt{nextState_S}{output_S} \otimes \vrt{nextState_T}{output_T} : \vrt{\mathit{State}_S \times \mathit{State}_T}{\mathit{State}_S \times \mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_S \times \mathit{In}_T}{\mathit{Out}_S \times \mathit{Out}_T}\]
+\[S \otimes T : \vrt{\mathit{State}_S \times \mathit{State}_T}{\mathit{State}_S \times \mathit{State}_T} \leftrightarrows \vrt{\mathit{In}_S \times \mathit{In}_T}{\mathit{Out}_S \times \mathit{Out}_T}\]
 
 <p>can be depicted by juxtaposing the two dynamical systems.</p>
 
@@ -138,7 +610,7 @@ product
 
 <h2 id="example">Example</h2>
 
-<p>Here is an example of a dynamical system from <a href="link">Categorical Dynamical Systems</a>. Define the set</p>
+<p>Here is an example of a dynamical system from <a href="https://www.davidjaz.com/Papers/DynamicalBook.pdf">Categorical Dynamical Systems</a>. Define the set</p>
 
 \[\mathit{Hour} \defeq \{ 1,2,3,4,5,6,7,8,9,10,11,12 \}\]
 
@@ -157,14 +629,14 @@ product
 h + 1 &amp; \text{  otherwise}
 \end{cases}\]
 
-<p>This system represents a wall clock, which takes no internal input and advances one hour forward at each step.</p>
+<p>This system represents a wall clock, which takes no external input and advances one hour forward at each step.</p>
 
 <figure>
 <img src="/assets/images/gameloop/clock.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
 <figcaption>Figure 3</figcaption>
 </figure>
 
-<p>Note that we don’t need to draw an incoming edge; because the input is \(1 = \{ \ast \}\), it transmits only one possible value \(\ast\), and so the location the input comes from is irrelevant.</p>
+<p>Note that we don’t need to draw an incoming edge; because the input is \(1 = \{ \ast \}\), it transmits only one possible choice of value \(\ast\). So instead of receiving input from an external source, \(\mathit{Clock}\) can fabricate the value \(\ast\) at every step, knowing it is the correct choice.</p>
 
 <p>The above clock does not distinguish between \(\am\) and \(\pm\) To fix this,
 we define a dynamical system called \(Meridiem\) that shifts between \(\am\) and \(\pm\) We first define the set
@@ -278,7 +750,7 @@ Then this lens should translate the system’s output using a function \(f : \ma
 
 <p>The demultiplexor circuit has \(n\) different output wires. Their type is not quite \(\mathit{Payload}\); each wire may contain a value of type \(\mathit{Payload}\) or, if it has not been selected, it may contain “no information” of type \(1\).</p>
 
-<p>To express the set of values that each belong to exactly one of the disjoint sets \(\mathit{Payload}\) or \(1\) we need to use the <em>sum</em> set theoretic operation, which is not as well known as its evil twin the Cartesian product.</p>
+<p>To express the set of values that each belong to exactly one of the disjoint sets \(\mathit{Payload}\) or \(1\) we need to use a set theoretic operation called the <em>sum</em>, which is not as well known as its evil twin the Cartesian product.</p>
 
 <blockquote>
   <p><strong>Definition</strong> Given sets \(X\) and \(Y\), their sum \(X + Y\) is defined as</p>
@@ -288,7 +760,7 @@ Then this lens should translate the system’s output using a function \(f : \ma
 
 <p>By tagging values with either \(0\) or \(1\), we ensure that the elements of the two operands are treated as mutually exclusive. It may be instructive to compare the set \(1 = 1 \cup 1\) with the set \(1 + 1\).</p>
 
-<p>While we’re add it, let’s define another set-theoretic operation.</p>
+<p>While we’re at it, let’s define another set-theoretic operation.</p>
 
 <blockquote>
   <p><strong>Definition</strong> Given sets \(X\) and \(Y\), \(X^Y\) is defined as the set of functions from \(Y\)
@@ -380,7 +852,7 @@ We do not model any notion of a winning condition, but instead focus on the evol
 \(\mathbf{n} \defeq \{ 0, 1, \ldots, n-1 \}\). A location on a tic-tac-toe board consists of an
 x-coordinate and a y-coordinate, so we define the set \(\mathit{Loc}\) of locations as</p>
 
-\[\mathit{Loc} \defeq \mathbf{2} \times \mathbf{2}\]
+\[\mathit{Loc} \defeq \mathbf{3} \times \mathbf{3}\]
 
 <p>We name the two players Player 0 and Player 1. Elements of the set \(\mathit{Players}\) identify players</p>
 
@@ -418,9 +890,9 @@ x-coordinate and a y-coordinate, so we define the set \(\mathit{Loc}\) of locati
 
 <p>We now define the \(\mathit{Environment}\) dynamical system. Our first task is deciding its set \(\mathit{State}_{\mathit{Environment}}\) of states. First, each state should convey the current execution step type</p>
 
-\[\mathit{StepType} \defeq \{ \mathit{ReceiveFrom}(0), \mathit{SubmitTo}(1), \mathit{ReceiveFrom}(1), \mathit{SubmitTo}(1), \mathit{IllegalState} \}\]
+\[\mathit{StepType} \defeq \{ \mathit{ReceiveFrom}(0), \mathit{SubmitTo}(0), \mathit{ReceiveFrom}(1), \mathit{SubmitTo}(1), \mathit{IllegalState} \}\]
 
-<p>The \(\mathit{IllegalState}\) element above should be used when \(\mathit{Environment}\) receives an invalid input combination (i.e. one which have prevented it from receiving by design). For those familiar with digital logic, this is somewhat analogous to a “don’t care” value.</p>
+<p>The \(\mathit{IllegalState}\) element above should be used when \(\mathit{Environment}\) receives an invalid input combination (i.e. one which we have prevented it from receiving by design). For those familiar with digital logic, this is somewhat analogous to a “don’t care” value.</p>
 
 <p>Additionally, the state should convey the current board. We’ve already defined the set \(\mathit{Board}\) of board states above. Hence, our full state set is defined as</p>
 
@@ -447,7 +919,7 @@ x-coordinate and a y-coordinate, so we define the set \(\mathit{Loc}\) of locati
 
 \[b[\ell \mapsto n](k) \defeq \begin{cases}
 b(k) &amp; \text{if } k \neq \ell \\
-b(n) &amp; \text{if } k = \ell
+n &amp; \text{if } k = \ell
 \end{cases}\]
 
 <p>We define \(\mathit{nextState}_{\mathit{Environment}} : \mathit{In}_{\mathit{Environment}} \times \mathit{State}_{\mathit{Environment}} \to \mathit{State}_{\mathit{Environment}}\) as
@@ -543,7 +1015,7 @@ b(n) &amp; \text{if } k = \ell
 
 \[w^\sharp(\ell, b_0, b_1, \ast) \defeq (b_0, b_1, \ell)\]
 
-<p>Or complete system is then equal to:</p>
+<p>Our complete system is then equal to:</p>
 
 \[\vrt{w^\sharp}{w} \circ (A \otimes B)\]
 
@@ -567,7 +1039,7 @@ b(n) &amp; \text{if } k = \ell
 
 <p>Our model implements the first two features. The game board can be seen as the environment, which encapsulates all physical information, namely the contents of every cell on the game board. A player can be seen as a robot; by virtue of being a dynamical systems, it encapsulates its own private data, i.e. mental state.</p>
 
-<p>The last feature, message passing among robots, is not present in the model I described. In a game’s source code, message passing might look similar to the following pseudo-code.</p>
+<p>The last feature, message passing among robots, is not present in the model I described. Speculating, in a game’s source code, message passing might look similar to the following pseudo-code.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// When the player switches off the fuse box, this channel notifies all subscribers.
 channel fuse_box_off : 1;
@@ -576,7 +1048,6 @@ robot roy {
   receives on fuse_box_off;
 
   state working {
-
     handler fuse_box_off (_ : 1) = {
       set_state(fix_fusebox);
     }
@@ -607,36 +1078,23 @@ robot fuse_box {
 
 <p>Each robot is implemented as a state machine. A robot definition begins with a list of declarations stating which channels the robot may send and receive upon. Next, the robot defines a list of states. These states can declare <em>handlers</em> to provide code that executes when a message is received, and the handlers in turn can issue <code class="language-plaintext highlighter-rouge">send</code> commands, which broadcast values to all of the subscribers of a channel.</p>
 
-<p>Diagramatically, the dynamical system for such a setup might look something like this.</p>
+<p>If a robot sends a message along a channel, when is the message received by the channel’s subscribers? Our answer is that it is received on the next frame. The reason for this is that all robots acting on a frame are assumed to be acting at roughly the same time: times so close together that their difference is considered too fine-grained for our game engine to track.</p>
 
-<figure>
-<img src="/assets/images/gameloop/fuse_box_example.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
-<figcaption>Diagram 12</figcaption>
-</figure>
+<p>A game engine may very reasonably execute multiple robot scripts in sequence on a single frame, but having the second robot receive messages sent by the first robot on the same frame is problematic. Not only does it violate our intuition that all robots are executing “at the same time” on a single frame, but it creates a hidden rule where a message sent from one robot to another may or may not arrive until the next frame depending on which robot was processed first.</p>
 
-<p>We’ve used a new set operation:</p>
+<p>If two robots transmit messages along the same channel on the same frame, which message do the channel’s subscribers process first? Since both messages are considered to be sent “at the same time,” our game system is too coarse-grained to answer this question. Our model should therefore non-deterministically permit any ordering. However, our current dynamical system formalism doesn’t support non-determinism.</p>
 
-<blockquote>
-  <p><strong>Definition</strong> Given a set \(X\), the set \(X^★\) is defined as the set of possibly empty lists whose elements are drawn from \(X\):</p>
+<p>The next blog post will correct this by extending the formalism with non-deterministic state transitions. It will also present a basic model of MegaZeux where all robots operate concurrently at every frame. We won’t have time to model message channels in that post, but by introducing non-determinism into the MegaZeux model, we will establish the foundation needed to add message passing in a subsequent post.</p>
 
-\[X^★ \defeq \{ [x_1, \ldots, x_n] \mid \forall i \in 1..n. x_i \in X \}\]
-</blockquote>
+<hr />
 
-<p>In diagram 12, the ellipse is a <em>broadcaster</em>. Each element of a list received on an incoming wire is duplicated across all outgoing wires. This allows multiple robots to receive a single message sent along a channel.</p>
-
-<p>An outstanding issue is deciding when a robot handles messages. Clearly, we do not want to handle messages immediately after they are sent, as that could lead to an infinite loop of sending and receiving messages. Instead, we will preserve the existing round robin turn-based approach, and have each robot handle all of its pending messages at the beginning of its turn.</p>
-
-<p>A robot’s behavior then corresponds to a function</p>
-
-\[GameState \times X_1^{★} \times \ldots \times X_n^{★} \to Move \times Y_1^{★} \times \ldots \times Y_m^{★}\]
-
-<p>where \(X_1,\ldots,X_n\) are the types of the channels the robot receives on and \(Y_1, \ldots, Y_m\) are the types of the channels the robot sends on. Many issues arise from this, such as which order a robot handles its messages in and how to map between the functions of the above form and robots’ dynamical systems. These will be covered in the next post, which I have not yet written.</p>]]></content><author><name></name></author><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\) \(\newcommand{am}{\text{a.m.}}\) \(\newcommand{pm}{\text{p.m.}}\)]]></summary></entry><entry><title type="html">Towards a Mathematical Model of Computer Games</title><link href="/posts/2025/07/11/towards-mathematical-model.html" rel="alternate" type="text/html" title="Towards a Mathematical Model of Computer Games" /><published>2025-07-11T20:56:48-07:00</published><updated>2025-07-11T20:56:48-07:00</updated><id>/posts/2025/07/11/towards-mathematical-model</id><content type="html" xml:base="/posts/2025/07/11/towards-mathematical-model.html"><![CDATA[<h1 id="seeking-a-mathematical-model-of-computer-games">Seeking a mathematical model of computer games</h1>
+<p><strong>Next:</strong> <a href="/2025/11/04/modelling-megazeux.html">Modelling MegaZeux</a></p>]]></content><author><name></name></author><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\) \(\newcommand{am}{\text{a.m.}}\) \(\newcommand{pm}{\text{p.m.}}\)]]></summary></entry><entry><title type="html">Towards a Mathematical Model of Computer Games</title><link href="/posts/2025/07/11/towards-mathematical-model.html" rel="alternate" type="text/html" title="Towards a Mathematical Model of Computer Games" /><published>2025-07-11T20:56:48-07:00</published><updated>2025-07-11T20:56:48-07:00</updated><id>/posts/2025/07/11/towards-mathematical-model</id><content type="html" xml:base="/posts/2025/07/11/towards-mathematical-model.html"><![CDATA[<h1 id="seeking-a-mathematical-model-of-computer-games">Seeking a mathematical model of computer games</h1>
 
 <p>Many years ago, I worked in the computer game industry as a gameplay programmer. My intuition was that the languages I used, C++ and Lua, were not suitable for gameplay programming.</p>
 
-<p>There were a few reasons for this. First, not only did C++ and Lua lack in-built notions of space and time, but they also lacked general purpose feautures for reasoning about them. For example, I could represent a 3D vector as an object in C++, but the C++ type system had no means to specify which basis (a.k.a. “coordinate system”) the vector belonged to, making it easy to perform the invalid operation of adding two vectors belonging to different bases. Second, despite game characters dynamically adjustinging their goals in response to stimulus from their environment, C++ and Lua had no in-built notion of things like imperfect perception and goal setting.</p>
+<p>There were a few reasons for this. First, not only did C++ and Lua lack in-built notions of space and time, but they also lacked general purpose features for reasoning about them. For example, I could represent a 3D vector as an object in C++, but the C++ type system had no means to specify which basis (a.k.a. “coordinate system”) the vector belonged to, making it easy to perform the invalid operation of adding two vectors belonging to different bases. Second, despite game characters dynamically adjusting their goals in response to stimulus from their environment, C++ and Lua had no in-built notion of things like imperfect perception and goal setting.</p>
 
-<p>It would be fallacious to claim that the above features are better off built in to a language instead of implemented using general purpose features. In most mainstream langauges, we can implement some sort of state machine system for controlling game characters, where each state represents a distinct goal that a character is persuing. We <em>could</em> tag each vector with a basis identifier, and tag each point with its affine frame, dynamically enforcing proper usage at runtime. Perhaps we could even use some sort of indexed type system to enforce proper vector operations statically, though I’m not sure if any mainstream languages are capable of this.</p>
+<p>It would be fallacious to claim that the above features are better off built in to a language instead of implemented using general purpose features. In most mainstream languages, we can implement some sort of state machine system for controlling game characters, where each state represents a distinct goal that a character is pursuing. We <em>could</em> tag each vector with a basis identifier, and tag each point with its affine frame, dynamically enforcing proper usage at runtime. Perhaps we could even use some sort of indexed type system to enforce proper vector operations statically, though I’m not sure if any mainstream languages are capable of this.</p>
 
 <p>Nonetheless, I think it’s worth experimenting with the design of game specific languages. Even if it turns out that the abstractions of general purpose languages are sufficient for game specific needs, our game specific experimentation may clarify exactly what is needed and how it should be structured.</p>
 
@@ -651,13 +1109,13 @@ robot fuse_box {
   </li>
 </ul>
 
-<p>The first approach has the advantage of being real, while the second approach provides deeper understanding and faster iteration times. In this post, I’m going to persue the second approach, but I’m only going to take the first step: <strong>I will model computer games, or simplified approximations of computer games, as mathematical objects.</strong> I’ve never created mathematical models of computer games before, so I’m going to try modelling some of the simplest games I can find that still features space, time, and interacting agents. To this end, I’ve chosen to use a 90s game creation system called <em>MegaZeux</em> as an inspiration for my model. The convenient thing about MegaZeux is that, despite feeling like a standard real-time computer game, its time and space are discrete and can therefore be modeled entirely by integers rather than floating point numbers. I will present my model using elementary mathematics; it should be accessible to anyone who knows what sets and functions are.</p>
+<p>The first approach has the advantage of being real, while the second approach provides deeper understanding and faster iteration times. In this series of posts, I’m going to pursue the second approach, but I’m only going to take the first step: <strong>I will model computer games, or simplified approximations of computer games, as mathematical objects.</strong> I’ve never created mathematical models of computer games before, so I’m going to try modelling some of the simplest games I can find that still feature space, time, and interacting agents. To this end, I’ve chosen to use a 90s game creation system called <em>MegaZeux</em> as an inspiration for my model. The convenient thing about MegaZeux is that, despite feeling like a standard real-time computer game, its time and space are discrete and can therefore be modeled entirely by integers rather than floating point numbers. I will present my model using elementary mathematics; it should be accessible to anyone who knows what sets, functions, set-builder notation, and cartesian products are.</p>
 
 <h1 id="understanding-the-problem">Understanding the problem</h1>
 
 <p>This post is going to analyze MegaZeux using intuition rather than rigor, trying to isolate the essence of what a MegaZeux game is. It will specifically focus on how multiple simulated agents interact with other agents and the game world, identifying some fundamental features of gameplay programming by exploring a concrete scenario in a MegaZeux game called <em>Weirdness</em>.</p>
 
-<p>This primary purpose of this post is to motivate my next one, in which I create a mathematical model of a MegaZeux-style computer game. However, it might also be a fun read for people who are interested in computer games and have never heard of MegaZeux, or MegaZeux fans who want to consider the system from an analytical perspective.</p>
+<p>The primary purpose of this post is to motivate my next few posts, in which I create a mathematical model of a MegaZeux-style computer game. However, it might also be a fun read for people who are interested in computer games and have never heard of MegaZeux, or gaming fans who want to consider computer games from an analytical perspective.</p>
 
 <h2 id="megazeux">MegaZeux</h2>
 
@@ -665,11 +1123,11 @@ robot fuse_box {
 
 <p>In MegaZeux, scriptable game characters are idosyncratically called <em>robots</em>. However, we will often refer to them as agents. Each robot is controlled by a <em>robotic script</em>. Because robotic scripting is not the state of the art in game character scripting, I will intentionally avoid discussing it comprehensively. I care about what robotic scripting accomplishes rather than how robotic scripting works.</p>
 
-<p>Here are a few examples of Megazuex games:</p>
+<p>Here are a few examples of MegaZeux games:</p>
 
 <p><img src="/assets/images/gameloop/mzx-depot-dungeons.png" /></p>
 
-<p><a href="https://www.digitalmzx.com/show.php?id=2097">Depot Dungeons</a> is a puzzle game where the player must traverse a dungeon while solving puzzles involving lever pulling and crate pushing, while fighting off aggressive mutant cockroaches.</p>
+<p><a href="https://www.digitalmzx.com/show.php?id=2097">Depot Dungeons</a> is a puzzle game where the player must traverse a dungeon while solving puzzles involving lever pulling and crate pushing, all the while fighting off aggressive mutant cockroaches.</p>
 
 <p><img src="/assets/images/gameloop/mzx-kikan-intro.png" /></p>
 
@@ -683,7 +1141,7 @@ robot fuse_box {
 
 <p><img src="/assets/images/gameloop/mzx-weirdness-roy-computer.png" /></p>
 
-<p>If the player goes into the basement, he can turn off the fuse box, causing the lights in the house to shut off and destorying Roy’s UltraZeux work.</p>
+<p>If the player goes into the basement, he can turn off the fuse box, causing the lights in the house to shut off and destroying Roy’s UltraZeux work.</p>
 
 <p><img src="/assets/images/gameloop/mzx-weirdness-fusebox-off.png" /></p>
 
@@ -691,11 +1149,11 @@ robot fuse_box {
 
 <p><img src="/assets/images/gameloop/mzx-weirdness-fusebox-on.png" /></p>
 
-<p>In this scenario, the fuse box itself is a robot. Each robot has a <em>robotic script</em>, which is a program pairing several <em>labels</em>, which are names of events to respond to, with <em>handlers</em>, which are sequences of instructions that the robot should execute in response to these events. When the player attempts to move into the grid cell occupied by the fuse box, the game triggers the fuse box script’s “touch” handler, which spawns a dialog asking the player if they want to turn the fuse box off. If they choose “yes” then another handler inside the fuse box’s script is executed. This handler sends a “fuse box off” message to Roy. Upon receiving the “fuse box off” message, Roy’s robotic script causes him to expresses his frustration and walk into the basement to turn the fuse box back on.</p>
+<p>In this scenario, the fuse box itself is a robot. Each robot has a <em>robotic script</em>, which is a program pairing several <em>labels</em>, which are names of events to respond to, with <em>handlers</em>, which are sequences of instructions that the robot should execute in response to these events. When the player attempts to move into the grid cell occupied by the fuse box, the game triggers the fuse box script’s “touch” handler, which spawns a dialog asking the player if they want to turn the fuse box off. If they choose “yes” then another handler inside the fuse box’s script is executed. This handler sends a “fuse box off” message to Roy. Upon receiving the “fuse box off” message, Roy’s robotic script executes its “fuse box off” handler, causing him to express his frustration and walk into the basement to turn the fuse box back on.</p>
 
-<p>Let’s take a step back and think about what’s going on here, using intuition rather than deep analysis. <em>MegaZeux</em> is simulating the physical world in a rough manner. The robots in this scenario, Roy and the fuse box, represent physical things in the world. Robotic scripts are an abstraction of the physical things’ “brains”: both actual brains, as in the case of Roy, and pseudo brains, as in the case of the fuse box. A pseudo brain is a subset of a physical object’s characteristics that determines how the object interacts with other objects. In the case of the fuse box, its switch might be part of its pseudo brain, but not its metal case.</p>
+<p>Let’s take a step back and think about what’s going on here, using intuition rather than deep analysis. <em>MegaZeux</em> is simulating the physical world in a rough manner. The robots in this scenario, Roy and the fuse box, represent physical things in the world. Robotic scripts are an abstraction of the physical things’ “brains”: both actual brains, as in the case of Roy, and pseudo brains, as in the case of the fuse box. A pseudo brain is a subset of a physical object’s characteristics that determine how the object interacts with other objects. But a pseudo brain only includes physical characteristics too fine grained to fall within the scope of the game system, thus requiring custom code; in this sense, a brain is a specific type of pseudo brain. For example, the fuse box occupies a grid cell at a (row,column) location understood by the game system. But the position of the switch <em>within</em> the cell is too fine grained and therefore must be dealt with using <em>Weirdness</em>-specific pseudo brain code, a robotic script.</p>
 
-<p>Each handler in a robotic script issues commands instructing its robot to interact with the world in various ways. For example, <code class="language-plaintext highlighter-rouge">go SOUTH</code> instructs the robot Roy to attempt walking to the grid cell whose \(y\)-coordinate is one greater than Roy’s current \(y\)-coordinate. This will only happen if the cell to the south of Roy is currently unoccupied. For this reason, we can view commands such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> as a message sent from Roy’s brain to the physical world, which we will call the <em>environment</em>. Upon receiving the message, the environment may or may not choose to move Roy, depending on whether such movement is compatible with its laws of physics, which are <em>dictated by the environment</em>.</p>
+<p>Each handler in a robotic script issues commands instructing its robot to interact with the world in various ways. For example, <code class="language-plaintext highlighter-rouge">go SOUTH</code> instructs the robot Roy to attempt walking to the grid cell whose \(y\)-coordinate is one greater than Roy’s current \(y\)-coordinate. This will only happen if the cell to the south of Roy is currently unoccupied. For this reason, we can view commands such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> as a message sent from Roy’s brain to the physical world, which we will call the <em>environment</em>. Upon receiving the message, the environment may or may not choose to move Roy, depending on whether such movement is compatible with its laws of physics, which are <em>dictated by the environment</em>. For example, a request by Roy to move into a cell occupied by a wall would be rejected by the environment, because the environment’s laws of physics do not allow a robot and a wall to occupy the same grid cell.</p>
 
 <p>From this discussion, we extract some key features we would like to model.</p>
 <ul>
@@ -726,7 +1184,7 @@ robot fuse_box {
 
 <p>and</p>
 
-\[\mathit{nextState} : \mathit{Input} \times \mathit{GameState} \to \mathit{Output}\]
+\[\mathit{nextState} : \mathit{Input} \times \mathit{GameState} \to \mathit{GameState}\]
 
 <p>Such a system is called <em>open</em>, because the source of the \(\mathit{Input}\) wire and the destination of the \(\mathit{Output}\) wire are left unspecified.</p>
 
@@ -753,7 +1211,7 @@ A closed simulation is essentially just a special case of an open one, where bot
 
 <p>The idea here is that computing an output in the set \(1\) is equivalent to not computing an output at all, because choosing an element of a one-element set does not involve making a decision. Likewise an element of \((\ast, s)\) of \(1 \times \mathit{GameState}\) is equivalent to \(s\) since \(\ast\) is the only choice for the first component of the pair.</p>
 
-<p>A box doesn’t seem very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms its current state into output, and also transforms input and an internal state into a next internal state at each point in a sequence a time steps.</p>
+<p>A box doesn’t seem very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms its current state into output, and also transforms input and an internal state into a next internal state at each point in a sequence of time steps.</p>
 
 <p>What are the stateful subcomponents? As a first approximation, they are</p>
 
@@ -766,7 +1224,7 @@ A closed simulation is essentially just a special case of an open one, where bot
 
 <h1 id="conclusion">Conclusion</h1>
 
-<p>We’ve examined MegaZeux’s <em>robot</em> system, which is used to define complex objects, both sentient and non-sentient, interacting in a simulated world. Some notable features are:</p>
+<p>We’ve examined MegaZeux’s <em>robot</em> system, which is used to simulate complex objects, both sentient and non-sentient, interacting in a simulated world. Some notable features are:</p>
 
 <ul>
   <li>A robot performs physical actions by submitting requests to an environment. The environment decides whether to honor these requests.</li>
