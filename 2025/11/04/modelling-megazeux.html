@@ -142,7 +142,7 @@ Our MegaZeux model is parameterized by three natural numbers:</p>
 
 \[\mathit{BoardState} \defeq \mathbf{2}^{\mathbf{w} \times \mathbf{h}} \times (\mathbf{w} \times \mathbf{h})^\mathbf{n}\]
 
-<p>Elements of the first component \(\mathbf{2}^{\mathbf{w} \times \mathbf{h}}\) are functions mapping each board cell location to \(0\) if the cell is vacant and \(1\) if the cell contains a wall. Elements of the second component \((\mathbf{w} \times \mathbf{h})^{\mathbf{n}}\) map each robot identifier \(i\) to the cell location at which robot \(i\) is currently located.</p>
+<p>Elements of the first component \(\mathbf{2}^{\mathbf{w} \times \mathbf{h}}\) are functions mapping each board cell location to \(0\) if the cell contains no wall and \(1\) if the cell contains a wall. Elements of the second component \((\mathbf{w} \times \mathbf{h})^{\mathbf{n}}\) map each robot identifier \(i\) to the cell location at which robot \(i\) is currently located.</p>
 
 <p>Our environment takes steps of two types: receive and send. For send steps, we need to store a mapping from robot identifiers to booleans indicating whether the robot’s most recent action succeeded. Thus we define</p>
 
