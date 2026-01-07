@@ -29,7 +29,7 @@
 
 <h1 id="introduction">Introduction</h1>
 
-<p>Now that <a href="/2025/10/18/modelling-tic-tac-toe.html">we’ve modeled tic-tac-toe using dynamical systems</a>, let’s try modelling MegaZeux. Our goal isn’t to recreate every feature of the MegaZeux game creation system, but to understand its essence. Let’s explore what MegaZeux is <em>trying</em> to be, redesigning any features we find to be arbitrary or inelegant.</p>
+<p>Now that <a href="/modelling-computer-games/2025/10/18/modelling-tic-tac-toe.html">we’ve modeled tic-tac-toe using dynamical systems</a>, let’s try modelling MegaZeux. Our goal isn’t to recreate every feature of the MegaZeux game creation system, but to understand its essence. Let’s explore what MegaZeux is <em>trying</em> to be, redesigning any features we find to be arbitrary or inelegant.</p>
 
 <h2 id="concurrency-megazeux-and-the-real-world">Concurrency, MegaZeux, and the Real World</h2>
 
@@ -87,7 +87,7 @@
 
 \[\vrt{\mathit{nextState}}{\mathit{output}} : \vrt{\mathit{State}}{\mathit{State}} \leftrightarrows \vrt{\mathit{In}}{\mathit{Out}}\]
 
-  <p>That is, a dynamical system is a \(P\)-lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
+  <p>That is, a possibilistic dynamical system is a \(P\)-lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
 </blockquote>
 
 <p>We must also update the definitions of our composition operators.</p>
@@ -497,7 +497,7 @@ Figure 5
 <p>For each channel, all of the sender wires are directed into a combinational lens called \(\mathit{dist}\). This lens takes the union of the input multisets and duplicates this union along each of the wires going into the receivers of the channel. The receivers store the multiset internally, waiting for the next frame to process it and replace it. We’ll cover how this works in more detail in a future post.</p>
 
 
-  </div><a class="u-url" href="/2025/11/04/modelling-megazeux.html" hidden></a>
+  </div><a class="u-url" href="/modelling-computer-games/2025/11/04/modelling-megazeux.html" hidden></a>
 </article>
 
       </div>
