@@ -39,13 +39,13 @@
 
 <h3 id="brokenjawnet-message-board-github">Brokenjaw.net message board (<a href="github.com/kevinclancy/kboard">github</a>)</h3>
 
-<p><strong>Skills:</strong> React, Rust, Typescript, HTML, CSS, Loco, SQLite, Docker, Github Actions, AWS, Claude Code</p>
+<p><strong>Skills:</strong> React, Rust, Typescript, HTML, CSS, Loco, SQLite, Docker, Github Actions, AWS, S3, Terraform, Claude Code</p>
 
 <p>I recently created an online message board for discussing jaw fractures, called <a href="https://brokenjaw.net">BrokenJaw.net</a>. This site uses the Rust-based backend framework Loco and the SQLite database system. Its frontend is written in Typescript and uses the React framework. I studied up on HTML, CSS, and React while developing this site, though the AI generated frontend code doesn’t keep a clean separation of logical HTML layout and visual CSS styling, opting instead for inline styling. It uses github actions to build, test, and deploy docker containers to an AWS EC2 instance each time code is pushed to its github repo.</p>
 
 <p>This website, while currently functional, is a work in progress. I plan to continue refining it over the coming months.</p>
 
-<p>This is the first project that I’ve created using AI-assisted programming tools. In fact, much of the code was written using Claude Code. On one hand, Claude Code has an almost super-human ability to account for complex software contexts while synthesizing new code. On the other hand, it struggles to use advanced software engineering techniques like sum datatypes and pre and post-condition assertions. I use Claude Code to quickly generate a rough draft, quickly synthesizing the correct set of functions to call, even if they are poorly documented. Then, I revise the rough draft for correctness and readability. Claude Code is a powerful tool that I will continue to use for personal projects in the future.</p>
+<p>This is the first project that I’ve created using AI-assisted programming tools. In fact, much of the code was written using Claude Code. On one hand, Claude Code has an almost super-human ability to account for complex software contexts while synthesizing new code. It’s also fairly good at getting details correct and writing readable, roboust code. Claude Code is a powerful tool that I will continue to use for personal projects in the future.</p>
 
 <h3 id="the-loop-server-github">“The loop” server (<a href="https://github.com/kevinclancy/theloop-backend">github</a>)</h3>
 
@@ -67,7 +67,7 @@
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/Ls3Z3xyKTC8" frameborder="0" allowfullscreen=""></iframe>
 
-<h3 id="toy-compilers-and-vms">Toy Compilers and VMs</h3>
+<h3 id="compilers-and-vms">Compilers and VMs</h3>
 
 <h4 id="the-essence-of-compilation-by-jeremy-siek-github"><em>The Essence of Compilation</em> by Jeremy Siek (<a href="https://github.com/kevinclancy/EssentialsOfCompilation">github</a>)</h4>
 
@@ -88,9 +88,9 @@
 
 <h4 id="compiler-design-virtual-machines-by-reinhard-wilhelm-and-helmut-seidl-github"><em>Compiler Design: Virtual Machines</em> by Reinhard Wilhelm and Helmut Seidl (<a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">github</a>)</h4>
 
-<p><strong>Skills:</strong> F#, Virtual Machines</p>
+<p><strong>Skills:</strong> Rust, Virtual Machines, Garbage Collection</p>
 
-<p>Having already implemented the <a href="https://github.com/kevinclancy/VirtualMachineCompiler">virtual machine for a C-like language</a> described in Chapter 2, I implemented the ``Maurer Machine’’ <a href="https://github.com/kevinclancy/MaMaCompiler/tree/cbv-variants-modules">virtual machine for an OCaml-like language</a> described in Chapter 3. This includes both call-by-need and call-by-value versions (in different branches) with the following features</p>
+<p>Having already implemented the <a href="https://github.com/kevinclancy/VirtualMachineCompiler">virtual machine for a C-like language</a> described in Chapter 2, I implemented the Maurer Machine <a href="https://github.com/kevinclancy/MaMaRust">virtual machine for an OCaml-like language</a> described in Chapter 3.</p>
 <ul>
   <li>Higher-order functions</li>
   <li>Curried Application</li>
@@ -98,17 +98,15 @@
   <li>Closures</li>
   <li>Mutually recursive functions</li>
   <li>Tuples</li>
-  <li>Algebraic datatypes &amp; match expressions (with ‘when’ clauses but no pattern matching)</li>
   <li>Tail call elimination</li>
 </ul>
 
-<p>Note that the above virtual machines are “toy” virtual machines that piggyback off of the dotnet runtime. They don’t implement their own garbage collectors and memory management.</p>
-
-<h4 id="rust-based-maurer-machine-github">Rust-based Maurer Machine (<a href="https://github.com/kevinclancy/MaMaRust">github</a>)</h4>
-
-<p><strong>Skills:</strong> Rust, Virtual Machines, Garbage Collection</p>
-
-<p>I’ve also created a Rust implementation of the virtual machine described above. This was a great opportunity to learn about low-level aspects of virtual machine implementation, which are not covered in Wilhelm and Seidl’s book. In particular, I wrote my own memory management and a two-space copying garbage collector.</p>
+<p>I went beyond the material described in the book, adding the following features:</p>
+<ul>
+  <li>Mutable reference cells</li>
+  <li>Algebraic datatypes, pattern matching, and match expressions with ‘when’ clauses</li>
+  <li>A two-space copying garbage collector</li>
+</ul>
 
 <h3 id="schema-types---nosql-database-schema-language-github">Schema Types - NoSQL Database Schema Language (<a href="https://github.com/kevinclancy/SchemaTypes">github</a>)</h3>
 
