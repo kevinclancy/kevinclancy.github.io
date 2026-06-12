@@ -54,7 +54,7 @@
 <img src="/assets/images/gameloop/ttt-player.drawio.png" />
 </center>
 
-<p>The above system is considered <em>open</em> because its input and output are not one-element sets; they contain actual information that must be received from and sent to unspecified destinations. Each turn, an element of BoardState is received as input. The player uses the current board state, possibly along with the player’s own internal state, to decide a move to submit to the board.</p>
+<p>The above system is considered <em>open</em> because its input and output are not one-element sets; they contain actual information that must be received from and sent to unspecified destinations. Each turn, an element of \(BoardState\), representing the current state of the board, is received as input. The player uses this board state, possibly along with the player’s own internal state, to decide a move to submit to the board.</p>
 
 <p>Now, let’s develop a formalism that allows us to compose complex systems from simpler systems.</p>
 
@@ -100,7 +100,7 @@
   <li>\(\mathit{output} : \mathit{State} \to \mathit{Out}\) is a function that takes a state to an output.</li>
 </ul>
 
-<p>This matches the intuitive structure of game engines that I presented previously. Those familiar with digital logic may know the distinction between <em>Moore machines</em> and <em>Mealy machines</em>. The output of a Mealy machine may depend both on its input and its current state, whereas the output of a Moore machine may only depend on its current state. In this sense, a dynamical system is like a Moore machine rather than a Mealy machine: before its input can affect its output, it must store the input in its state as an intermediate step. This can be a bit awkward sometimes, but it’s not a fundamental problem.</p>
+<p>This matches the intuitive structure of game engines that I presented previously. Those familiar with digital logic may know the distinction between <em>Moore machines</em> and <em>Mealy machines</em>: the output of a Mealy machine may depend both on its input and its current state, whereas the output of a Moore machine may only depend on its current state. In this sense, a dynamical system is like a Moore machine rather than a Mealy machine: before its input can affect its output, it must store the input in its state as an intermediate step. This can be a bit awkward sometimes, but it’s not a fundamental problem.</p>
 
 <p>A dynamical system \(S : \vrt{\mathit{State}_S}{\mathit{State}_S} \leftrightarrows \vrt{\mathit{In}_S}{\mathit{Out}_S}\) can be depicted as follows.</p>
 
@@ -179,7 +179,7 @@ product
 
 \[f(x) \defeq x\]
 
-<p>and</p>
+<p>and the passback function \(f^\sharp\) is defined as:</p>
 
 \[f^\sharp(h, \ast) \defeq \begin{cases}
 1 &amp; \text{  if } h = 12 \\
@@ -298,7 +298,7 @@ Then this lens should translate the system’s output using a function \(f : \ma
 
 <h2 id="demultiplexors">Demultiplexors</h2>
 
-<p>Imagine a turn-based board game with multiple players. At each turn, we want to provide exactly one player with the state of the board so that they can make an informed move. The challenge is to send a payload value along a different wire depending on some selector value, and to send “nothing” along all other wires. More precisely, we need a combinational circuit, called a <em>demultiplexor</em>, that takes two inputs. Letting each bold natural number \(\mathbf{n}\) denote the set of natural numbers less than it, i.e.
+<p>Imagine a turn-based board game with multiple players. At each turn, we want to provide exactly one player with the state of the board so that they can make an informed move. The challenge is to send a payload value along a specific wire determined by some selector value, and to send “nothing” along all other wires. More precisely, we need a combinational circuit, called a <em>demultiplexor</em>, that takes two inputs. Letting each bold natural number \(\mathbf{n}\) denote the set of natural numbers less than it, i.e.
 \(\mathbf{n} \defeq \{ 0, 1, \ldots, n-1 \}\), these inputs are:</p>
 
 <ul>
