@@ -95,8 +95,8 @@
 <p>From this discussion, we extract some key features we would like to model.</p>
 <ul>
   <li>Robots that affect the physical world by making requests to an environment. The environment may or may not honor these requests at its discretion.</li>
-  <li>A specific type of request a Robot can make to the environment is <em>message sending</em> to another agent, as when the fuse box sends the “fuse box off” message to Roy</li>
-  <li>Agents receive messages from the environment and other agents; these message may affect their behavior. The environment can be viewed as a mediator, so that all messages received by robot \(B\) from robot \(A\) can be viewed as coming directly from the environment and indirectly from robot \(B\).</li>
+  <li>A specific type of request a Robot can make to the environment is <em>message sending</em> to another agent, as when the fuse box sends the “fuse box off” message to Roy.</li>
+  <li>Agents receive messages from the environment and other agents; these message may affect their behavior. The environment can be viewed as a mediator, so that all messages received by robot \(B\) from robot \(A\) can be viewed as coming directly from the environment and indirectly from robot \(A\).</li>
 </ul>
 
 <h1 id="computer-games-as-dynamical-systems">Computer games as dynamical systems</h1>
@@ -108,14 +108,14 @@
 <figcaption>Diagram 1</figcaption>
 </figure>
 
-<p>We can view the game’s state as encapsulated in the game stepper; nothing outside of the game stepper may modify its internal state. The game evolves over a sequence of discrete time steps. At each time step, the game stepper must compute two quantities.</p>
+<p>We can view the game’s state as encapsulated in the game stepper; nothing outside of the game stepper may modify its internal state. The game evolves over a sequence of discrete time steps. At each time step, the game stepper must compute two quantities:</p>
 
 <ul>
   <li>From the game’s current state, the game stepper must compute its output, a matrix of color values to display to the screen.</li>
   <li>The game stepper must also compute the game’s next state from its input and its current state.  Its input might be a mapping from key identifiers to booleans indicating whether each key is pressed. The game’s state might contain a matrix of physical locations, where each location contains an identifier denoting either a game character, a wall, or an empty space.</li>
 </ul>
 
-<p>Put differently, the game stepper is a pair of two functions</p>
+<p>Put differently, the game stepper is a pair of two functions:</p>
 
 \[\mathit{output} : \mathit{GameState} \to \mathit{Output}\]
 
@@ -148,12 +148,12 @@ A closed simulation is essentially just a special case of an open one, where bot
 
 <p>The idea here is that computing an output in the set \(1\) is equivalent to not computing an output at all, because choosing an element of a one-element set does not involve making a decision. Likewise an element of \((\ast, s)\) of \(1 \times \mathit{GameState}\) is equivalent to \(s\) since \(\ast\) is the only choice for the first component of the pair.</p>
 
-<p>A box doesn’t seem very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms its current state into output, and also transforms input and an internal state into a next internal state at each point in a sequence of time steps.</p>
+<p>A box isn’t very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms, at each point in a sequence of time steps, its current state into output and its input and internal state into the next internal state.</p>
 
-<p>What are the stateful subcomponents? As a first approximation, they are</p>
+<p>What are the stateful subcomponents? As a first approximation, they are:</p>
 
 <ul>
-  <li>The environment, whose state consists of the grid of available and occupied cells</li>
+  <li>The environment, whose state consists of the grid of available and occupied cells.</li>
   <li>The robots. The internal state of the fuse box may track whether it is on or off. The internal state of Roy may contain a program counter that determines which of the instructions such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> or <code class="language-plaintext highlighter-rouge">go EAST</code> he will perform at the next time step.</li>
 </ul>
 
@@ -169,7 +169,7 @@ A closed simulation is essentially just a special case of an open one, where bot
   <li>A robot may send a message to another robot, which represents information sent along some physical communication medium.</li>
 </ul>
 
-<p>In my next post, I will define a game stepper for tic-tac-toe, which resembles MegaZeux in a few different ways</p>
+<p>In my next post, I will define a game stepper for tic-tac-toe, which resembles MegaZeux in a few different ways:</p>
 
 <ul>
   <li>The environment is the game board.</li>

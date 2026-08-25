@@ -96,7 +96,7 @@
 
 <p>Above, we consider \(\mathit{State}\) the type of our dynamical system’s internal state, \(\mathit{In}\) the type of its input, and \(\mathit{Out}\) the type of its output. Expanding the definition of lens, we see that</p>
 <ul>
-  <li>\(\mathit{nextState} : \mathit{State} \times \mathit{In} \to \mathit{State}\) is a function that takes a pair of a “current” state and an input to a “next” state.</li>
+  <li>\(\mathit{nextState} : \mathit{State} \times \mathit{In} \to \mathit{State}\) is a function that takes a pair of a <em>current</em> state and an input to a <em>next</em> state.</li>
   <li>\(\mathit{output} : \mathit{State} \to \mathit{Out}\) is a function that takes a state to an output.</li>
 </ul>
 
@@ -113,7 +113,7 @@ Figure 1
 
 <p>Note that the set \(\mathit{State}_S\) does not appear in the diagram, because it does not affect the systems that \(S\) interacts with.</p>
 
-<p>If the codomain of one lens matches the domain of another then we can compose them together.</p>
+<p>If the codomain of one lens matches the domain of another then we can compose them together:</p>
 
 <blockquote>
   <p><strong>Definition</strong></p>
@@ -128,7 +128,7 @@ Figure 1
   </ul>
 </blockquote>
 
-<p>We also have a parallel composition operator on lenses.</p>
+<p>We also have a parallel composition operator on lenses:</p>
 
 <blockquote>
   <p><strong>Definition</strong></p>

@@ -1,4 +1,873 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-06-12T10:59:04-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">Loose Ends and Future Directions</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html" rel="alternate" type="text/html" title="Loose Ends and Future Directions" /><published>2025-11-18T08:00:00-08:00</published><updated>2025-11-18T08:00:00-08:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-08-25T14:39:47-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">1. Modules are like Vending Machines</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html" rel="alternate" type="text/html" title="1. Modules are like Vending Machines" /><published>2026-08-23T09:00:00-07:00</published><updated>2026-08-23T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html"><![CDATA[<p>Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>age_map.insert("joe", 20)
+age_map.insert("bob", 30)
+</code></pre></div></div>
+<p>and understands that next time that their program encounters the expression <code class="language-plaintext highlighter-rouge">age_map.get("joe")</code> it will return the last value passed in as the second argument in <code class="language-plaintext highlighter-rouge">age_map.insert("joe", ____)</code>, namely <code class="language-plaintext highlighter-rouge">20</code> if no other calls to <code class="language-plaintext highlighter-rouge">insert</code> are made.</p>
+
+<p>What the programmer does <em>not</em> need to understand is <em>why</em> invoking <code class="language-plaintext highlighter-rouge">age_map.get</code> reliably recalls <code class="language-plaintext highlighter-rouge">20</code>. The real reason is that <code class="language-plaintext highlighter-rouge">age_map</code> refers to a piece of data that is structured in a specific way that records associations. It may be implemented in terms of a hash table, or possibly a balanced binary tree. But those details are a distraction when trying to reason about real-world entities and high level business logic.</p>
+
+<p><em>Module systems</em> are a language feature that allow us to hide data representations such as hash tables and binary trees by “covering” them with constructs called <em>signatures</em>, which consist of the following components:</p>
+
+<ul>
+  <li>A set of data types defining the sorts of entities that can be manipulated.</li>
+  <li>A set of operations to be performed on the entities.</li>
+  <li>A specification constraining what behaviors the signature’s clients may observe when invoking a sequence of its operations.</li>
+</ul>
+
+<p>For example, an <code class="language-plaintext highlighter-rouge">AgeMap</code> signature may define, among other operations, the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type t
+val insert : t -&gt; string -&gt; int -&gt; unit
+val get : t -&gt; string -&gt; int
+</code></pre></div></div>
+<p>Above, <code class="language-plaintext highlighter-rouge">t</code> is the type of age maps, which the value <code class="language-plaintext highlighter-rouge">age_map</code> belongs to. And <code class="language-plaintext highlighter-rouge">unit</code> is the type of the empty tuple; it’s returned by functions that are called only for their side effects.</p>
+
+<p>In addition, the signature should also contain a behavior specification. Intuitively, it would list behavioral equations such as the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>forall (map:t) (name:string) (age:int) (age2:int) (age3:int).
+   (insert map name age) &amp;&amp;
+   ((not (insert map name age2)) Until (age3 = get map name)) =&gt;
+   age3 = age
+</code></pre></div></div>
+
+<p>Above is a “pseudocode specification”, in that it doesn’t conform to any formally defined specification language that I know of. It says that if we insert <code class="language-plaintext highlighter-rouge">(name,age)</code> into the map and then do not insert any other age corresponding to <code class="language-plaintext highlighter-rouge">name</code> before calling <code class="language-plaintext highlighter-rouge">get map name</code>, then <code class="language-plaintext highlighter-rouge">get map name</code> should return <code class="language-plaintext highlighter-rouge">age</code>. More concisely, an entry inserted into the map stays there unless we override it.</p>
+
+<p>The reason the above specification is pseudo-code rather than formal is that there is no widely used specification language for module signatures. Some have been developed; the most modern one that I know of is Gospel for OCaml. However, it’s not clear that any are production ready. There are a variety of reasons why signature specifications aren’t built in to modern module systems. Among them, deciding conformance to such specifications is undecidable.</p>
+
+<p>Nonetheless, it should be obvious that specifications are a fundamental aspect of signatures. In modern software, they’re present informally, as careful comments and field names which, like “map”, reference commonly understood concepts. It’s a mistake to explain module systems without acknowledging this, in the same way that it’s a mistake to explain functions without acknowledging that they may have preconditions and postconditions that are more precise than a type system can express.</p>
+
+<h1 id="example---functional-queues">Example - Functional Queues</h1>
+
+<h2 id="the-functional-queue-signature">The functional queue signature</h2>
+
+<p>To make this more concrete, here is a signature written in OCaml. This signature describes a datatype for queues with functional updates. Instead of a single abstract datatype, we define a family of abstract datatypes indexed by the type <code class="language-plaintext highlighter-rouge">'a</code> of elements contained in the queues.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Queue = sig
+  (** The standard functional queue ADT *)
+
+  type 'a t
+  (** A functional queue whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty queue *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [q' = push q v] pushes element [v] onto the back of queue [q] to
+    obtain [q']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(a, q') = pop q] Pops front [a] of the queue [q], yielding [q']
+
+      ## Requires
+
+      * [not (is_empty q)]
+
+      ## Returns
+
+      * a:'a - The element popped from the front of [q]
+
+      * q':'a t - The queue resulting from popping the front off [q]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty q] Is queue [q] empty? *)
+
+  (* LAW:
+    The sequence underlying the queue named "empty" (defined above) is the empty sequence
+  *)
+
+  (* LAW:
+
+    If s is the sequence of elements of type 'a underlying a queue q then
+    [is_empty q] is true iff s is the empty sequence
+
+  *)
+
+  (* LAW:
+
+     If s is the sequence of elements underlying a queue q,
+     then the sequence underlying [push q a] is s ++ [a] (a appended to the end of s)
+
+  *)
+
+  (* LAW:
+
+     If [a] ++ s (element a prepended to the sequence s) is the sequence of elements underlying
+     a queue q, then [pop q] = (a, q'), where the sequence underlying queue q' is s
+  *)
+end
+
+</code></pre></div></div>
+
+<p>This signature describes <em>functional</em> queues in particular, meaning that each of the operations leave their argument queues intact. For example, <code class="language-plaintext highlighter-rouge">push q v</code> returns a new queue that behaves as <code class="language-plaintext highlighter-rouge">q</code> but with an additional element <code class="language-plaintext highlighter-rouge">v</code> pushed to its back; at the same time, we still have access to <code class="language-plaintext highlighter-rouge">q</code> even after calling <code class="language-plaintext highlighter-rouge">push</code> and binding its result to a variable <code class="language-plaintext highlighter-rouge">q'</code>.</p>
+
+<p>This signature can be thought of as a <em>vocabulary</em>, declaring <em>types</em> that classify the objects or entities of the vocabulary (or “values” in programming terminology), as well as declaring <em>operations</em> that can be used to manipulate the entities. Above, we can see that OCaml’s type declarations start with the keyword <code class="language-plaintext highlighter-rouge">type</code> and that its operation declarations start with the keyword <code class="language-plaintext highlighter-rouge">val</code>. However, importantly, the signature should also define <em>laws</em> constraining how the operations behave across multiple calls. Since OCaml has no built-in capacity to express such laws, I’ve included the laws as comments that begin with the text “LAW”. Note that the axioms are somewhat redundant with respect to the comments that have already been attached to values. In practice, laws typically are inferred from the val fields names and the comments attached to them, not from standalone comments labelled with “LAW”.</p>
+
+<h2 id="implementing-signatures-using-structs">Implementing Signatures using Structs</h2>
+
+<p>While the signature describes how functional queues can be used, we cannot provide access to functional queues until we have <em>implemented</em> the signature by defining a struct. A struct can be thought of as a list of definitions of two kinds:</p>
+
+<ul>
+  <li>For each type declaration in the signature, the struct must have a matching concrete type definition.</li>
+  <li>For each val declaration in the signature, the struct must have a concrete value definition (a let binding) whose type matches the declaration’s.</li>
+</ul>
+
+<p>Here is an example implementation of the Queue signature:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module ListQueue = struct
+  type 'a t = 'a list
+
+  let empty : 'a t = []
+
+  let is_empty (q : 'a t) : bool =
+    match q with [] -&gt; true | _ -&gt; false
+
+  let push (q : 'a t) (v : 'a) : 'a t = q @ [ v ]
+
+  let pop (q : 'a t) : 'a * 'a t =
+    match q with
+    | [] -&gt; invalid_arg "pop: empty queue"
+    | a :: s -&gt; (a, s)
+end
+
+module Q : Queue = ListQueue
+</code></pre></div></div>
+
+<p>It provides a family of concrete representations <code class="language-plaintext highlighter-rouge">'a list</code> for the abstract type family <code class="language-plaintext highlighter-rouge">'a t</code>. Then, it provides concrete values implementing each of the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s values.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">: Queue</code> on the bottom line seals the <code class="language-plaintext highlighter-rouge">Queue</code> signature over the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct. This first checks that the types of the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct’s let bindings match the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s val declarations. Then, it “creates a barrier” so that any client making use of <code class="language-plaintext highlighter-rouge">Q</code> cannot treat a value of type <code class="language-plaintext highlighter-rouge">'a Q.t</code> as a value of type <code class="language-plaintext highlighter-rouge">'a list</code> by pattern matching it into a cons cell or a nil list. Instead, all its clients can do is manipulate values of type <code class="language-plaintext highlighter-rouge">'a Q.t</code> using the vocabulary provided by <code class="language-plaintext highlighter-rouge">Queue</code>: namely, the <code class="language-plaintext highlighter-rouge">empty</code> value and the <code class="language-plaintext highlighter-rouge">push</code>, <code class="language-plaintext highlighter-rouge">pop</code>, and <code class="language-plaintext highlighter-rouge">is_empty</code> operations.</p>
+
+<p>Note that the struct <code class="language-plaintext highlighter-rouge">ListQueue</code> is not an efficient queue implementation, because its <code class="language-plaintext highlighter-rouge">push</code> operation is O(n). A benefit of sealing is that when replacing the current implementation struct with a more efficient one, we need only check that the new implementation satisfies the <code class="language-plaintext highlighter-rouge">Queue</code> signature once. We do not need to check whether each individual client of <code class="language-plaintext highlighter-rouge">Q</code> is compatible with the new implementation.</p>
+
+<h2 id="using-sealed-structs">Using Sealed Structs</h2>
+
+<p>Once a struct has been sealed, we’ve obtained the “final product” of module systems: a “vocabulary” comprising a set of opaque types paired with a set of operations that can be performed on them, obeying a set of laws defined by the signature. The only thing left is to use this vocabulary. There are essentially two ways to do this:</p>
+
+<ul>
+  <li>1 - Use the sealed module to implement a function.</li>
+  <li>2 - Use the sealed module to construct another (higher level) sealed module.</li>
+</ul>
+
+<h2 id="using-modules-to-implement-functions">Using modules to implement functions</h2>
+
+<p>Here, I will demonstrate type 1 in depth.</p>
+
+<p>One of the most well-known applications of the Queue abstract datatype is to implement the standard “breadth-first search” (or “BFS” for short) algorithm. This algorithm takes the node <code class="language-plaintext highlighter-rouge">source</code> of a graph as input and computes the shortest path from source to every other node in the graph.</p>
+
+<p>In addition to access to the Queue datatype, the BFS algorithm requires access to the nodes and edges of a graph. For this, we define another signature:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
+  (** An undirected graph of location nodes, only some of which are traversable.
+      This graph is static, in that traversability and adjacency do not change over time.
+  *)
+
+  type node
+  (** A node in a graph *)
+
+  val compare_node : node -&gt; node -&gt; int
+  (** [compare_node n m] Returns 0 iff node [n] equals node [m] *)
+
+  val adjacent_nodes : node -&gt; node list
+  (** [adjacent_nodes n] All traversable nodes adjacent to node [n] *)
+
+  (* LAW:
+     The relation Eq defined such that
+
+     n Eq m &lt;=&gt; (compare_node n m = 0)
+
+     is an equivalence relation (reflexive, symmetric, and transitive)
+  *)
+
+  (* LAW:
+     The relation Lt defined such that
+
+     n Lt m &lt;=&gt; (compare_node n m &lt; 0)
+
+     is a strict total order (transitive, irreflexive, and trichotomy w.r.t. Eq)
+  *)
+
+  (* LAW:
+    n Eq m =&gt; (adjacent_nodes n = adjacent_nodes m)
+  *)
+end
+</code></pre></div></div>
+
+<p>Now we can use the BFS algorithm to implement the <code class="language-plaintext highlighter-rouge">shortest_path</code> function, which uses BFS in service of computing a shortest path (if any) from a source node to a destination node:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let shortest_path (module T : TraverseGraph)
+                  (source : T.node) (dest : T.node) : T.node list option =
+(**
+  Computes a shortest path from `source` to `dest`, or returns `None`
+  if no such path exists.
+
+  # Parameters
+
+  * T - The graph to traverse
+
+  * source - The source node to begin from
+
+  * dest - The destination node to end at
+
+  # Return
+
+  * A shortest path as a list of nodes [start, n1, n2, ..., dest].
+
+  * Or None if no path from `source` to `dest` exists
+
+*)
+
+  let module NodeSet = Set.Make (struct
+    type t = T.node
+    let compare = T.compare_node
+  end) in
+
+  let module NodeMap = Map.Make (struct
+    type t = T.node
+    let compare = T.compare_node
+  end) in
+
+  let visited = ref NodeSet.empty in
+  (** The set of nodes that have already been visited *)
+
+  let parents = ref NodeMap.empty in
+  (** Maps each node to its parent in the bfs tree *)
+
+  let to_visit = ref (Q.push Q.empty source) in
+  (** A queue of nodes to be visited *)
+
+  while not (Q.is_empty (!to_visit)) do
+    let (node, q') = Q.pop !to_visit in
+    to_visit := q';
+    match NodeSet.mem node !visited with
+    | true -&gt;
+      ()
+    | false -&gt;
+      visited := NodeSet.add node !visited;
+      let should_enqueue (neighbor : T.node) : bool =
+        not (NodeSet.mem neighbor !visited)
+      in
+      let traversable_neighbors = List.filter should_enqueue (T.adjacent_nodes node) in
+      let add_parent (parents' : T.node NodeMap.t) (neighbor : T.node) : T.node NodeMap.t =
+        match NodeMap.mem neighbor parents' with
+        | true -&gt;
+          parents'
+        | false -&gt;
+          NodeMap.add neighbor node parents'
+      in
+      parents := List.fold_left add_parent !parents traversable_neighbors;
+      to_visit := List.fold_left (fun q n -&gt; Q.push q n) !to_visit traversable_neighbors
+  done;
+
+  let rec construct_path (curr_node : T.node) (path_to_dest : T.node list) : (T.node list) option =
+    (**
+
+      # Parameters
+
+      * curr_node - A node in the graph
+
+      * path_to_dest - A path from `curr_node` to `dest`
+
+      # Return
+
+      * If it exists, a path from the `source` to `dest` node, including both source and destination
+
+      * Otherwise, None
+
+    *)
+    match T.compare_node source curr_node with
+    | 0 -&gt;
+      Some(curr_node :: path_to_dest)
+    |_ -&gt;
+      match NodeMap.find_opt curr_node !parents with
+      | Some(parent) -&gt;
+        construct_path parent (curr_node :: path_to_dest)
+      | None -&gt;
+        None
+  in
+  construct_path dest []
+</code></pre></div></div>
+
+<p>Note that while the above function takes the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> module as an argument <code class="language-plaintext highlighter-rouge">T</code>, the <code class="language-plaintext highlighter-rouge">Queue</code> module is referenced via a module identifier <code class="language-plaintext highlighter-rouge">Q</code> in context, as a “global”. The reason for the distinction is that any two modules implementing the <code class="language-plaintext highlighter-rouge">Queue</code> signature are observationally indistinguishable, so we only need one implementation in our program. On the other hand, different <code class="language-plaintext highlighter-rouge">TraverseGraph</code> implementations may have distinct set of nodes and edges, and so distinct calls to <code class="language-plaintext highlighter-rouge">shortest_path</code> can take distinct <code class="language-plaintext highlighter-rouge">T</code> modules implementing <code class="language-plaintext highlighter-rouge">TraverseGraph</code> as arguments.</p>
+
+<h2 id="faulty-sealing">Faulty sealing</h2>
+
+<p>Those familiar with the BFS algorithm know it depends on a loop invariant that only holds if the <code class="language-plaintext highlighter-rouge">Q</code> module is actually a queue; i.e., <code class="language-plaintext highlighter-rouge">Q</code> must satisfy all of the axioms of the <code class="language-plaintext highlighter-rouge">Queue</code> signature. Unfortunately, OCaml’s type checker only ensures that a sealed struct provides all abstract types listed in the signature and that its fields’ types agree with the types of the sealing signature’s val declarations. It does not check that the struct satisfies the signatures’ laws (obviously, since OCaml doesn’t even allow us to express the laws formally).</p>
+
+<p>To see how this can go wrong, consider that we can seal a struct implementing the standard “stack” abstract datatype using the <code class="language-plaintext highlighter-rouge">Queue</code> signature that we’ve already defined:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module ListStack = struct
+  type 'a t = 'a list
+
+  let empty = []
+
+  let is_empty s = match s with [] -&gt; true | _ -&gt; false
+
+  let push s v = v :: s
+
+  let pop s =
+    match s with
+    | [] -&gt; invalid_arg "pop: empty stack"
+    | a :: s' -&gt; (a, s')
+end
+
+module Q : Queue = ListStack
+</code></pre></div></div>
+
+<p>Because <code class="language-plaintext highlighter-rouge">ListStack</code> does not satisfy the “First-In-First-Out” law that queues do, the BFS loop invariant breaks, making <code class="language-plaintext highlighter-rouge">shortest_path</code> a faulty function that can return non-minimal paths between its <code class="language-plaintext highlighter-rouge">source</code> and <code class="language-plaintext highlighter-rouge">dst</code> arguments.</p>
+
+<h1 id="using-modules-to-implement-modules">Using modules to implement modules</h1>
+
+<h2 id="implementing-modules-uing-global-modules">Implementing modules uing global modules</h2>
+
+<p>A long running process could implement a batch scheduler that executes tasks submitted from an external source at a regular interval. For fairness, we want to perform the earliest submitted tasks first, so we store them in a queue data structure.</p>
+
+<p>Here is a rough sketch of what this would look like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module Q : Queue = struct
+  .. the list-based queue struct defined above ..
+end
+
+module type JobQueue = sig
+   type t
+
+   val create : time_delta -&gt; t
+   (** [create dt] returns a new job queue that executes pending tasks whenever at least time [dt] has passed since the last
+       task execution *)
+
+   val try_task : t -&gt; bool
+   (** Tries to execute the task at the front of the queue, returning `false` if the queue is empty or it is not yet time to execute the next task,
+       or `true` if a task was executed
+    *)
+
+   val submit_task : t -&gt; (unit -&gt; unit) -&gt; unit
+   (** [submit_task b task] adds [task] to [b]  *)
+end
+
+module JQ : JobQueue = struct
+   type t = {
+      task_queue : (unit -&gt; unit) Q.t ;
+      (** A queue of "tasks", which are functions taking no input and producing no result *)
+
+      last_executed : time ;
+      (** The time that the queue last executed a task *)
+
+      execution_period : time_delta
+      (** The time minimum time required between executing distinct tasks *)
+   } ref
+
+   let try_task = ... implementation goes here ...
+
+   let submit_task = ... implementation goes here ...
+end
+</code></pre></div></div>
+
+<p>Both the types and value bindings in <code class="language-plaintext highlighter-rouge">JQ</code> can be defined in terms of types and terms of the <code class="language-plaintext highlighter-rouge">Q</code> module: we can see for example, that the JQ struct’s type <code class="language-plaintext highlighter-rouge">t</code> is defined in terms of the type <code class="language-plaintext highlighter-rouge">Q.t</code>. Inside the implementation of <code class="language-plaintext highlighter-rouge">try_task</code>, which takes a value of type <code class="language-plaintext highlighter-rouge">t</code> as an argument, we may access the <code class="language-plaintext highlighter-rouge">Q.t</code> value contained therein, which we can only manipulate using the <code class="language-plaintext highlighter-rouge">Queue</code> signature.</p>
+
+<h2 id="implementing-modules-using-parameter-modules">Implementing modules using parameter modules</h2>
+
+<p>Here <code class="language-plaintext highlighter-rouge">JQ</code> is defined in reference to <code class="language-plaintext highlighter-rouge">Q</code>, a specific implementation of the <code class="language-plaintext highlighter-rouge">Queue</code> signature. Because <code class="language-plaintext highlighter-rouge">Queue</code> provides a full specification of a module’s behavior, there is no reason we would need to use multiple distinct <code class="language-plaintext highlighter-rouge">Queue</code> implementatations in the same program. However, we could weaken the <code class="language-plaintext highlighter-rouge">Queue</code> signature into a more general signature <code class="language-plaintext highlighter-rouge">PushPopBag</code> that does not enforce any ordering, satisfied by both the queue struct and the stack struct, as well as an implementation which allows <code class="language-plaintext highlighter-rouge">pop</code> to produce a randomly chosen element from the set.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type PushPopBag = sig
+  (** A bag which we can insert and delete elements from *)
+
+  type 'a t
+  (** A push-pop bag whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty bag *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [b' = push b v] pushes element [v] into the bag [b] to
+    obtain [b']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(v, b') = pop b] Pops an arbitrary element [v] of the bag [b], yielding [b']
+
+      ## Requires
+
+      * [not (is_empty b)]
+
+      ## Returns
+
+      * v:'a - The element popped from [b]
+
+      * b':'a t - The bag resulting from popping a value off [b]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty b] Is bag [b] empty? *)
+
+  (* LAW:
+    The bag underlying the bag named "empty" (defined above) is the empty bag
+  *)
+
+  (* LAW:
+
+    If c is the bag of elements of type 'a underlying a push-pop bag b then
+    [is_empty b] is true iff c is the empty bag
+
+  *)
+
+  (* LAW:
+
+     If c is the bag of elements underlying a push-pop bag b,
+     then the bag underlying [push b a] is c + a (a inserted into c)
+
+  *)
+
+  (* LAW:
+
+     If c is the bag of elements underlying a push-pop bag b, then [pop b] = (a, b'), where the bag underlying push-pop bag b' is (c - a),
+     i.e. c with one occurrence of a removed.
+  *)
+end
+</code></pre></div></div>
+
+<p>Then, we could weaken the signature “job queue” to “job bag”.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type JobBag = sig
+   type t
+
+   val create : time_delta -&gt; t
+   (** [create dt] returns a new job bag that executes pending tasks whenever at least time [dt] has passed since the last
+       task execution *)
+
+   val try_task : t -&gt; bool
+   (** Tries to execute some task in the bag, returning `false` if the bag is empty or it is not yet time to execute the next task,
+       or `true` if the task was executed.
+    *)
+
+   val submit_task : t -&gt; (unit -&gt; unit) -&gt; unit
+   (** [submit_task b task] adds [task] to [b]  *)
+end
+</code></pre></div></div>
+
+<p>If only we had some “module function” construct that transforms module arguments into result modules, we could invoke it multiple times to produce different JobBag modules, all of which implement the <code class="language-plaintext highlighter-rouge">JobBag</code> signature but which have different push/pop behaviors (one with FIFO behavior, one with LIFO behavior, etc.).</p>
+
+<p>Such “module functions” exist in OCaml. They are called <em>functors</em>. A functor <code class="language-plaintext highlighter-rouge">JB</code> for producing <code class="language-plaintext highlighter-rouge">JobBag</code> implementations might appear as follows.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module JB (B : PushPopBag) : JobBag = struct
+   type t = r{
+      task_bag : (unit -&gt; unit) B.t ;
+      (** A bag of "tasks", which are functions taking no input and producing no result *)
+
+      last_executed : time ;
+      (** The time that the queue last executed a task *)
+
+      execution_period : time_delta
+      (** The time minimum time required between executing distinct tasks *)
+   } ref
+
+   let try_task = ... implementation goes here ...
+
+   let submit_task = ... implementation goes here ...
+end
+</code></pre></div></div>
+
+<p>There’s a lot more that can be said about functors, but I will leave that discussion for a later post.</p>
+
+<h1 id="conclusion-modules-are-like-vending-machines">Conclusion: Modules are Like Vending Machines</h1>
+
+<p>I will wrap things up with a physical world analogy. Modules are like soda vending machines. The consumers interacts with the vending machine by performing a sequence chosen from the following set of operations:</p>
+
+<ul>
+  <li>Coin insertion</li>
+  <li>Product selection</li>
+  <li>Coin return</li>
+</ul>
+
+<p>Coin insertion, for example, requires a coin and a vending machine as input, and produces a modified vending machine as output. The consumer knows that if she inserts a coin and then selects a product, she will probably receive a soda. It is not enough for the machine to merely provide the three operations listed above; it must obey laws that are mutually understood by the machine’s creator and the consumer (its signature). For example, the consumer knows that if she performs “coin insertion” and then performs “coin return” immediately afterward, the machine should emit the inserted coin. However, the consumer does not care about where her coin is stored in between, the shape and volume of its container, etc. These details are hidden from the consumer to make her life easier.</p>
+
+<p>So far, we have used comments to express a signature’s laws. In my next post, I will explore more formal techniques for doing so.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code age_map.insert("joe", 20) age_map.insert("bob", 30) and understands that next time that their program encounters the expression age_map.get("joe") it will return the last value passed in as the second argument in age_map.insert("joe", ____), namely 20 if no other calls to insert are made.]]></summary></entry><entry><title type="html">The Language</title><link href="https://kevinclancy.github.io/modelling-computer-games/2026/06/15/the-language.html" rel="alternate" type="text/html" title="The Language" /><published>2026-06-15T09:00:00-07:00</published><updated>2026-06-15T09:00:00-07:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2026/06/15/the-language</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2026/06/15/the-language.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+\(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>In this post, I will present a language for defining scripts that define tic-tac-toe players, as described in <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a>. Eventually, I’d like to repurpose this into a language for describing megazeux robots.</p>
+
+<p>I will define an interpretation that maps each program of this language to a dynamical system</p>
+
+\[\vrt{\mathsf{State}}{\mathsf{State}} \leftrightarrows \vrt{1 + \mathsf{Board}}{1 + \mathsf{Loc}}\]
+
+<h1 id="examples">Examples</h1>
+
+<p>Recall that we define the set of board positions as</p>
+
+\[\mathsf{Loc} \defeq \mathbf{3} \times \mathbf{3}\]
+
+<p>The following examples are scripts assumed to drive player 0 rather than player 1. The board set is defined as \(\{ 0, 1, 2 \}^{\mathsf{Loc}}\), where \(0\) is used for player \(0\)’s pieces, \(1\) is used for player \(1\)’s pieces, and \(2\) is used for empty cells.</p>
+
+<p>From player \(0\)’s perspective, the game advances periodically, repeating the following phases infinitely:</p>
+
+<ol>
+  <li>Player \(0\) sends the “empty signal” \((0, \ast)\) to the environment while receiving the current board.</li>
+  <li>Player \(0\) sends its move to the environment while receiving the “empty signal” \((0, \ast)\).</li>
+  <li>Player \(0\) sends an empty signal and receives an empty signal while the environment submits the current board to player \(1\).</li>
+  <li>Player \(0\) sends an empty signal and receives an empty signal while player \(1\) submits its move to the environment.</li>
+</ol>
+
+<p>The following example script tries placing a \(0\) at each location from top-left to bottom-right in succession. The command <code class="language-plaintext highlighter-rouge">get input from yield K1 (ind%3, ind/3)</code> submits the board position <code class="language-plaintext highlighter-rouge">(ind%3, ind/3)</code> to place a \(0\), waiting until the next time step to resume control. Upon resuming control and receiving an input, we check that the input is the left injection *, signalling a precondition violation using the <code class="language-plaintext highlighter-rouge">fail</code> command otherwise.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var ind = 0 in
+var num_board_cells = 9 in
+while true do
+  get input from yield K0 *;
+  match input with
+  | K0 * -&gt; fail;
+  | K1 board -&gt; ();
+  get input from yield K1 (ind % 3, ind / 3);
+  match input with
+  | K0 * -&gt; ()
+  | K1 board -&gt; fail;
+  get input from yield K0 *;
+  match input with
+  | K0 * -&gt; ()
+  | K1 board -&gt; fail;
+  get input from yield K0 *;
+  match input with
+  | K0 * -&gt; ()
+  | K1 board -&gt; fail;
+  ind := (ind + 1)%num_board_cells;
+end
+</code></pre></div></div>
+
+<p>The next script improves the previous one by only attempting to place a \(0\) at unoccupied cells.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var ind = 0 in
+var num_board_cells = 9 in
+while true do
+  get input from yield K0 *;
+  let board =
+    match input with
+    | K0 * -&gt; fail
+    | K1 board -&gt; board
+  in
+  while (board (ind%3, ind/3)) != 2 do
+    ind := (ind + 1)%num_board_cells;
+  end;
+  get input from yield K1 (ind % 3, ind / 3);
+  match input with
+  | K0 * -&gt; ()
+  | K1 board -&gt; fail;
+  get input from yield K0 *;
+  match input with
+  | K0 * -&gt; ()
+  | K1 board -&gt; fail;
+  get input from yield K0 *;
+  match input with
+  | K0 * -&gt; ()
+  | K1 board -&gt; fail;
+end
+</code></pre></div></div>
+
+<h1 id="syntax">Syntax</h1>
+
+<h1 id="domains">Domains</h1>
+
+<p>We define the set \(\Sigma\) of <em>states</em> as the set of maps from variable names to values.</p>
+
+<p>Let \(I\) and \(O\) be sets considered as discrete predomains. We consider \(I\) to be the set of our process’s inputs and we consider \(O\) to be the set of our process’s outputs.
+We define the domain \(\Omega_{I,O}\) of “results” to contain all trees of input/output behaviors that a process may exhibit, more formally, an element \(\omega \in \Omega_{I,O}\) can be:</p>
+
+<ul>
+  <li>The behavior \(\bot\) of processes that loop indefinitely without producing any output or receiving any input</li>
+  <li>The behavior \(\langle o, \lambda i. \alpha_i \rangle\) of processes that produce the output \(o \in O\), then receive input \(i \in I\) before either transitioning to a behavior \(\omega_i\) if \(\alpha_i = K_1 \omega_i\) for some behavior \(\omega_i\) or halting abnormally if \(\alpha_i = K_0 \ast\)</li>
+</ul>
+
+<p>More formally, \(\Omega\) is a domain with the following isomorphism.</p>
+
+\[\Omega \cong (O \times (I \to (\Omega + 1)))_\bot\]
+
+<p>OOPS!
+Using domains as an ambient category is a weird idea: a dynamical system’s output wire doesn’t provide a complete value to the environment, but instead partial information, or a thunk which may or may not diverge. Let’s use a language with provably productive scripts instead.</p>
+
+<p>From the above isomorphism, we can obtain a lens</p>
+
+\[\vrt{f^\sharp}{f} : \vrt{\Omega}{\Omega} \leftrightarrows \vrt{I}{O}\]
+
+<p>which reinterprets \(\Omega\) as the state space of a dynamical system. Write \(\mathsf{unfold} : \Omega \to (O \times (I \to (\Omega + 1)))_\bot\) for the forward direction of the isomorphism. Given a state \(\omega \in \Omega\), either \(\mathsf{unfold}(\omega) = \bot\) (the process is diverging), or \(\mathsf{unfold}(\omega) = \langle o, k \rangle\) for some output \(o \in O\) and continuation \(k : I \to (\Omega + 1)\).</p>
+
+<p>The <strong>passforward</strong> \(f : \Omega \to O\) reads off the output the process exposes at its current state:</p>
+
+\[f(\omega) \defeq \begin{cases} o &amp; \text{if } \mathsf{unfold}(\omega) = \langle o, k \rangle \\ \ast &amp; \text{if } \mathsf{unfold}(\omega) = \bot \end{cases}\]
+
+<p>Here the diverging case \(\bot\) has no output to expose; since \(O = 1 + \mathsf{Loc}\) we send it to the “empty signal” \(K_0 \ast\), treating a silent, non-productive process as one that exposes nothing.</p>
+
+<p>The <strong>passback</strong> \(f^\sharp : \Omega \times I \to (\Omega + 1)\) feeds an input to the current state and produces either a successor state or an abnormal halt:</p>
+
+\[f^\sharp(\omega, i) \defeq \begin{cases} k(i) &amp; \text{if } \mathsf{unfold}(\omega) = \langle o, k \rangle \\ K_0 \ast &amp; \text{if } \mathsf{unfold}(\omega) = \bot \end{cases}\]
+
+<p>That is, when the process is productive we apply its continuation \(k\) to the input \(i\), yielding \(K1~\omega_i\) (the successor behavior) or \(K0~\ast\) (an abnormal halt) exactly as recorded in \(\Omega\). When the process is diverging, no input can be consumed, so the step halts abnormally.</p>
+
+<p>Together, \(\vrt{f^\sharp}{f}\) is a partial lens of type \(\vrt{\Omega}{\Omega} \leftrightarrows \vrt{I}{O}\), and pairing it with an initial result \(\omega_0 \in \Omega\) yields the partial dynamical system denoted by a program.</p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)]]></summary></entry><entry><title type="html">The Semantics of Lens Logic</title><link href="https://kevinclancy.github.io/modelling-computer-games/2026/05/03/semantics-of-lens-logic.html" rel="alternate" type="text/html" title="The Semantics of Lens Logic" /><published>2026-05-03T09:00:00-07:00</published><updated>2026-05-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2026/05/03/semantics-of-lens-logic</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2026/05/03/semantics-of-lens-logic.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+\(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
+
+<h1 id="introduction">Introduction</h1>
+
+<p>A subset \(A \subseteq X\) can be read as a property of elements of \(X\): an element belongs to \(A\) if and only if it has the property. For example, the set \(\mathsf{even} = \{0, 2, 4, 6, \ldots\} \subseteq \mathbb N\) is the property “is an even natural number”, and \(2 \in \mathsf{even}\) records the fact that \(2\) has it.</p>
+
+<p>Under this reading, set-theoretic operations correspond to logical ones. Union is “or”: a natural number is even or odd if it lies in \(\mathsf{even} \cup \mathsf{odd} = \{0, 2, 4, \ldots\} \cup \{1, 3, 5, \ldots\}\). Intersection is “and”; complement is “not”; the empty set is falsehood; the whole set \(X\) is truth.</p>
+
+<p>Above, we’ve used sets to model logic formulas and set-theoretic operations to model logical operations. This modelling is useful partly because we understand it intuitively. It helps us understand why the building blocks of logic have the algebraic properties they do. Furthermore, a formal correspondence between set theoretic semantics and logic allows us to justify the logic as sound.</p>
+
+<p>I’m searching for a logical system to reason about dynamical systems and lenses. I’m not sure what such a logic would look like, and I haven’t spent much time thinking about it. In this post, as a first step toward finding such a logic, I’ll attempt to develop its underlying set theoretic semantics.</p>
+
+<p>I will focus on partial systems, and the tic-tac-toe system from <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a> in particular.</p>
+
+<h1 id="preliminary-notions">Preliminary notions</h1>
+
+<p>Before we start, we establish some preliminary concepts. Namely, we formalize semantic notions for the sorts of systems that can be placed inside and outside an arena, respectively.</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>A <strong>semantic partial system</strong>, or <strong>semantic system</strong> for short, with input set \(A\) and output set \(B\) is a triple \(p \defeq (S, s_0 \in S, \bar{p}~: S \to (1 + S)^A \times B)\), where \(S\) is a set whose elements are the states the system can take on, \(s_0 \in S\) is the initial state, and the function \(\bar{p}\) maps each state \(s\) to a pair \((f, b)\), where \(b \in B\) is the output the system exposes at state \(s\), and \(f\) is the system’s update function: for each input \(a \in A\), \(f(a)\) either “fails”, if \(f(a) = \kappa_1 \ast\), or produces a successor state \(s'\) if \(f(a) = \kappa_2 s'\). We write \(\mathsf{Sys}_{A, B}\) for the collection of all semantic systems with input set \(A\) and output set \(B\).</p>
+</blockquote>
+
+<p>Note that a semantic partial system is essentially a partial dynamical system paired with an initial state, as the function \(\bar{p} : S \to (1 + S)^A \times B\) can be thought of as the pair of functions of types \(S \to B\) and \(S \to (1 + S)^A\), the latter of which can be uncurried to \(S \times A \to (1 + S)\).</p>
+
+<h1 id="predicates-on-arenas">Predicates on arenas</h1>
+
+<h2 id="inner-and-outer-systems">Inner and outer systems</h2>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>An <strong>inner system</strong> \(p\) on an arena \(\vrt{A}{B}\) is a semantic system of the form \((S, s_0 \in S, \bar{p} : S \to (1 + S)^A \times B)\). An <strong>outer system</strong> on \(\vrt{A}{B}\) is a semantic system of the form \((S, s_0 \in S, \bar{p} : S \to (1 + S)^B \times A)\).</p>
+</blockquote>
+
+<p>An arena \(\vrt{A}{B}\) can be thought of as a boundary between two semantic systems. An inner system \(p = (S, s_0, \bar{p} : S \to (1 + S)^A \times B)\) and an outer system \(q = (T, t_0, \bar{q} : T \to (1 + T)^B \times A)\). (Note the reversal of \(A\) and \(B\).) It witnesses a sequence of time steps. A time step with inner state \(s\) and outer state \(t\) consists of two phases:</p>
+
+<ol>
+  <li>
+    <p>The element \(b \defeq \bar{p}(s);\pi_2 \in B\) flows from the inner system to the arena while simultaneously, the element \(a \defeq \bar{q}(t);\pi_2\) flows from the outer system to the arena.</p>
+  </li>
+  <li>
+    <p>A new inner system state \(s'\) is computed as \(\kappa_2 s' = (\bar{p}(s);\pi_1)(a)\) and simultaneously a new outer system state \(t'\) is computed as \(\kappa_2 t' = (\bar{q}(t);\pi_1)(b)\). Alternatively, if either \((\bar{p}(s);\pi_1)(a) = \kappa_1 \ast\) or \((\bar{q}(t);\pi_1)(b) = \kappa_1 \ast\) then an error has occurred, and so the outer and inner system both grind to a halt; this isn’t supposed to happen.</p>
+  </li>
+</ol>
+
+<p>We use a set by selecting an element. A predicate on a set \(X\) is a subset of \(X\) that provides us partial information about a use of \(X\) by constraining the set of possible elements to select.</p>
+
+<p>Analogously, a useful notion of a predicate on an arena might provide partial information about a usage of an arena. But just how are arenas used? There are a few candidates for how to use an arena \(\vrt{A}{B}\), among them are:</p>
+
+<ol>
+  <li>
+    <p>Selecting a semantic system \(p \defeq (S, s_0 \in S, \bar{p} : S \to (1 + S)^A \times B)\) to place inside the boundary mediated by the arena.</p>
+  </li>
+  <li>
+    <p>Selecting a semantic system \(q \defeq (T, t_0 \in T, \bar{q} : T \to (1 + T)^B \times A)\) to place outside the boundary mediated by the arena.</p>
+  </li>
+</ol>
+
+<p>We develop a semantics in which both placements — inner and outer — give rise to predicate notions, and these interact via lens-mediated structure.</p>
+
+<p>As a first attempt, we might define our predicate notions as follows:</p>
+
+<blockquote>
+  <p><strong>Preliminary definition</strong></p>
+
+  <p>An <strong>inner predicate</strong> \(P\) on an arena \(\vrt{A}{B}\) is a set of inner systems on \(\vrt{A}{B}\). An <strong>outer predicate</strong> \(Q\) on an arena \(\vrt{A}{B}\) is a set of outer systems on \(\vrt{A}{B}\).</p>
+</blockquote>
+
+<p>But this definition is problematic. An obvious predicate in \(\vrt{A}{B}\) is \(\mathsf{true}\), also called \(\top\): the collection of all possible inner systems on \(\vrt{A}{B}\). This collection, however, is so big that it is unwieldy. Since each triple in the collection contains a set as its first component, we have at least one inner system for each non-empty set. This implies that the collection of inner systems is “too large” to be a set.</p>
+
+<h2 id="system-behaviors">System behaviors</h2>
+
+<p>A better approach is to prohibit our logic from making any statements about a system’s internal state. The \(S\) component of an inner system \((S, s_0, \bar{p} : S \to (1 + S)^A \times B)\) can be thought of as its representation: the set of the system’s possible internal states. Instead of quantifying over all possible representations, we choose a single representation \(Z\) whose elements directly convey the <em>behavior</em> of the system:</p>
+
+<p>Letting, \(A^*\) denote the set of all finite sequences of elements of \(A\), and letting \(\langle a_1, a_2, \ldots, a_n \rangle\) denote the member of \(A^*\) whose elements are, in order, \(a_1, a_2, \ldots a_n\), we define:</p>
+
+\[Z_{A,B} \defeq \{ f \in (1 + B)^{A^*} \mid (\forall \sigma \in A^*.~f(\sigma) = \kappa_1 \ast \Rightarrow \forall \sigma' \in A^* f(\sigma \cdot \sigma') = \kappa_1 \ast)  \wedge f(\langle \rangle) \neq \kappa_1 \ast \}\]
+
+<p>\(f \in Z_{A,B}\) represents a system such that, for \(\sigma \in A^*\),</p>
+
+<ul>
+  <li>If \(f(\sigma) = \kappa_2 b\) then the system produces output \(b\) after receiving the sequence of inputs \(\sigma\).</li>
+  <li>If \(f(\sigma) = \kappa_1 \ast\) then the system halts due to a precondition violation after reading some prefix of the sequence of inputs \(\sigma\) (possibly the entire sequence).</li>
+</ul>
+
+<p>With the above points in mind, the two constraints in the definition of \(Z_{A,B}\) can be understood as follows:</p>
+
+<p>The first constraint</p>
+
+\[(\forall \sigma \in A^*.~f(\sigma) = \kappa_1 \ast \Rightarrow \forall \sigma' \in A^*.~f(\sigma \cdot \sigma') = \kappa_1 \ast)\]
+
+<p>can be understood to mean that once our system halts due to a precondition violation, it cannot produce any outputs after receiving further inputs. The second constraint</p>
+
+\[f(\langle \rangle) \neq \kappa_1 \ast\]
+
+<p>can be understood to mean that no precondition can be violated before the system has received any inputs. We summarize the above discussion with the following definition:</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>The set \(Z_{A,B}\) defined above is called the set of <strong>inner behaviors</strong> on the arena \(\vrt{A}{B}\).</p>
+</blockquote>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>A subset of \(Z_{A,B}\) is called an <strong>inner predicate</strong> on the arena \(\vrt{A}{B}\).</p>
+</blockquote>
+
+<h2 id="behaviors-represent-classes-of-systems">Behaviors represent classes of systems</h2>
+
+<p>Any element \(f \in Z_\vrt{A}{B}\) can serve as the initial state of an inner system \((Z_{A,B}, f, \zeta : Z_{A,B} \to (1 + Z_{A,B})^A \times B)\).</p>
+
+<p>TODO: define and explain the final coalgebra</p>
+
+<h1 id="a-logic-on-inner-predicates">A logic on inner predicates</h1>
+
+<p>Now we explore the design of our logic. First, we want the ability to constrain the set of inputs our inner systems expect at specific times, as well as constrain the set of outputs our inner systems produce. A constraint on a set like \(A\) is essentially a subset \(X \subseteq A\); thus, our logic will contain a sublogic for expressing subsets of the input and output sets \(A\) and \(B\). Such logics are not novel; this sublogic, formulas could denote subsets and logical operators such as \(- \wedge -\) and \(- \vee -\) could correspond to set-theoretic operators such as \(- \cap -\) and \(- \cup -\). We elide the definition of this sublogic for now, but use subscripted symbols such as \(\varphi_A, \psi_A\) as metavariables for formulas expressing subsets of \(A\), and likewise use \(\varphi_B, \psi_B\) for formulas expressing subsets of \(B\). As an abuse of notation, we write \(a \in \varphi_A\) to mean that \(a\) is an element of the set denoted by \(\varphi_A\).</p>
+
+<p>The metavariable \(\upsilon\) is used for logic formulas describing sets of inner behaviors on \(\vrt{A}{B}\). A first pass at its syntax might look as follows:</p>
+
+\[\upsilon ::= [\varphi_A](\upsilon) \mid \downarrow \varphi_B \mid \upsilon_1 \wedge \upsilon_2 \mid \upsilon_1 \vee \upsilon_2\]
+
+<p>Roughly, the formula \([\varphi_A](\upsilon)\) denotes the set of all behaviors \(f\) such that:</p>
+
+<ul>
+  <li>We have \(\zeta(f) = (h, b)\)</li>
+  <li>\(b\) is any element of \(B\)</li>
+  <li>For every \(a \in \varphi_A\), \(h(a) = \kappa_2 f'\) for some \(f' \in Z_{A,B}\)</li>
+  <li>We have \(f' \in \upsilon\)</li>
+</ul>
+
+<p>And the formula \(\downarrow \varphi_B\) denotes the set of all behaviors \(f\) such that \(f(\langle \rangle) \in \varphi_B\).</p>
+
+<h1 id="transforming-arena-predicates">Transforming arena predicates</h1>
+
+<p>Fable wrote this section.</p>
+
+<p><a href="#transforming-arena-predicates">#transforming-arena-predicates</a></p>
+
+<p>Given an arena \(\vrt{A}{B}\), we now know two kinds of predicates on it: inner predicates, which constrain what may be placed inside the boundary it mediates, and outer predicates, which constrain what may be placed outside. But predicates stranded on individual arenas only take us so far. The whole point of our framework is that lenses relate arenas to one another, so a semantics of lens logic should explain how predicates travel along lenses.</p>
+
+<p>We have a familiar prototype to imitate. A function \(h : X \to Y\) induces two operations on ordinary predicates. The <strong>direct image</strong> operation transports a predicate on \(X\) forward along \(h\):</p>
+
+\[h_\ast\, P \defeq \{ h(x) \mid x \in P \}\]
+
+<p>and the <strong>inverse image</strong> operation transports a predicate on \(Y\) backward along \(h\):</p>
+
+\[h^\ast\, Q \defeq \{ x \in X \mid h(x) \in Q \}\]
+
+<p>A partial lens is not a function between arenas — an arena is a pair of sets rather than a set, and a lens passes information in two directions at once — so it is not immediately clear how to imitate this prototype. The key observation is that a partial lens induces a function, not between its domain and codomain arenas themselves, but between the collections of inner systems inhabiting them. Direct and inverse image along that induced function then come for free.</p>
+
+<h2 id="pushing-inner-systems-forward">Pushing inner systems forward</h2>
+
+<p><a href="#pushing-inner-systems-forward">#pushing-inner-systems-forward</a></p>
+
+<p>Throughout this section, fix a partial lens</p>
+
+\[\ell \defeq \vrt{f^\sharp}{f} : \vrt{A}{B} \leftrightarrows \vrt{C}{D}\]
+
+<p>so that its passforward and passback functions have types \(f : B \to D\) and \(f^\sharp : B \times C \to 1 + A\).</p>
+
+<p>Suppose we place an inner system \(p\) on \(\vrt{A}{B}\) and then fit the lens \(\ell\) around it like a shell. Viewed from outside the shell, the assembly behaves as an inner system on \(\vrt{C}{D}\). At each time step it exposes an output in \(D\), obtained by translating \(p\)’s output \(b \in B\) downstream through \(f\). It receives an input \(c \in C\), which is translated upstream through \(f^\sharp(b, c)\) before being delivered to \(p\). And it can fail in two ways: the translation itself may fail — that is, \(f^\sharp(b, c) = \kappa_1 \ast\), a precondition violation belonging to the lens — or the translation may succeed with some \(a \in A\) on which \(p\)’s own update function fails. Formalizing this picture:</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>Let \(p \defeq (S, s_0, \bar{p})\) be an inner system on \(\vrt{A}{B}\). The <strong>pushforward</strong> of \(p\) along \(\ell\), written \(\ell_\ast\, p\), is the inner system \((S, s_0, \bar{q})\) on \(\vrt{C}{D}\) defined as follows: for each state \(s \in S\), letting \((u, b) \defeq \bar{p}(s)\),</p>
+
+\[\bar{q}(s) \defeq (v, f(b))\]
+
+  <p>where for each \(c \in C\)</p>
+
+\[v(c) \defeq \begin{cases}
+\kappa_1 \ast &amp; \text{if } f^\sharp(b, c) = \kappa_1 \ast \\
+u(a) &amp; \text{if } f^\sharp(b, c) = \kappa_2\, a
+\end{cases}\]
+</blockquote>
+
+<p>Only the boundary behaviour changes: the state set and initial state pass through untouched, because the lens is a stateless adapter. Note also how two distinct failure modes are folded into one, just as they were when we composed partial lenses in <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a>: a precondition violation anywhere in the pipeline halts everything.</p>
+
+<p>Pushforward lets us redeem the promise made in the echo box example. Consider a partial dynamical system — a partial lens \(\vrt{f^\sharp}{f} : \vrt{\mathsf{State}}{\mathsf{State}} \leftrightarrows \vrt{\mathsf{In}}{\mathsf{Out}}\) — together with a chosen initial state \(s_0 \in \mathsf{State}\). Pushing the echo box forward along it, we compute, for each \(s \in \mathsf{State}\):</p>
+
+\[\overline{\left(\vrt{f^\sharp}{f}_{\!\ast}\; \mathsf{echo}^{s_0}_{\mathsf{State}}\right)}(s) = \left(f^\sharp(s, {-}),\; f(s)\right)\]
+
+<p>since the echo box’s update function never fails and returns whatever state it is handed, so that the second case in the definition of \(v\) collapses to \(f^\sharp(s, c)\) itself. This is exactly the semantic system that intuition demands the pair \((\vrt{f^\sharp}{f}, s_0)\) denote: at state \(s\) it exposes the output \(f(s)\), and it evolves — or fails — according to \(f^\sharp\). In slogan form, <em>a dynamical system is a lens wrapped around an echo box</em>, and pushforward is what “wrapped around” means. For instance, the tic-tac-toe environment of <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a>, started from the state \((\mathit{ReceiveFrom}(0), b_0)\) where \(b_0\) is the empty board, denotes the inner system</p>
+
+\[\vrt{\mathit{nextState}_{\mathit{Environment}}}{\mathit{output}_{\mathit{Environment}}}_{\!\ast}\; \mathsf{echo}^{(\mathit{ReceiveFrom}(0),\, b_0)}_{\mathit{State}_{\mathit{Environment}}}\]
+
+<p>on the arena \(\vrt{1 + \mathit{Loc}}{(1 + \mathit{Board}) \times \mathbf{3}}\).</p>
+
+<p>Pushforward also interacts well with lens composition. Write \(\mathsf{id} : \vrt{A}{B} \leftrightarrows \vrt{A}{B}\) for the identity partial lens, whose passforward is the identity function on \(B\) and whose passback is \((b, a) \mapsto \kappa_2\, a\).</p>
+
+<blockquote>
+  <p><strong>Proposition</strong></p>
+
+  <p>Pushforward is functorial. That is, for every inner system \(p\) on \(\vrt{A}{B}\) and all partial lenses \(\ell : \vrt{A}{B} \leftrightarrows \vrt{C}{D}\) and \(m : \vrt{C}{D} \leftrightarrows \vrt{E}{F}\), we have</p>
+
+\[\mathsf{id}_\ast\, p = p \qquad \text{and} \qquad (m \circ \ell)_\ast\, p = m_\ast\, (\ell_\ast\, p)\]
+</blockquote>
+
+<p>Both equations follow by unfolding definitions. The second deserves a moment of attention: its two sides fail in exactly the same circumstances, because the composite passback defined in <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a> signals a violation exactly when either constituent passback does. The bookkeeping we did when composing partial lenses is precisely what makes pushforward respect composition. Practically speaking, functoriality means it doesn’t matter whether we wrap a system in several adapters one at a time or fuse the adapters into a single lens first.</p>
+
+<h2 id="direct-and-inverse-image">Direct and inverse image</h2>
+
+<p><a href="#direct-and-inverse-image">#direct-and-inverse-image</a></p>
+
+<p>With pushforward in hand, our partial lens \(\ell\) induces a function</p>
+
+\[\ell_\ast : \mathsf{Sys}_{A, B} \to \mathsf{Sys}_{C, D}\]
+
+<p>from the inner systems on its domain arena to the inner systems on its codomain arena. Inner predicates are subsets of these collections, so we may transport them along \(\ell_\ast\) exactly as in the prototype at the top of this section.</p>
+
+<blockquote>
+  <p><strong>Definition</strong></p>
+
+  <p>Let \(P\) be an inner predicate on \(\vrt{A}{B}\) and let \(Q\) be an inner predicate on \(\vrt{C}{D}\). The <strong>direct image</strong> of \(P\) along \(\ell\) is the inner predicate on \(\vrt{C}{D}\) defined as</p>
+
+\[\ell_\ast\, P \defeq \{ \ell_\ast\, p \mid p \in P \}\]
+
+  <p>and the <strong>inverse image</strong> of \(Q\) along \(\ell\) is the inner predicate on \(\vrt{A}{B}\) defined as</p>
+
+\[\ell^\ast\, Q \defeq \{ p \in \mathsf{Sys}_{A, B} \mid \ell_\ast\, p \in Q \}\]
+</blockquote>
+
+<p>We overload \(\ell_\ast\) to denote both the pushforward of a single system and the direct image of a predicate; the argument always disambiguates. Functoriality of pushforward immediately gives \((m \circ \ell)_\ast\, P = m_\ast (\ell_\ast\, P)\) and \((m \circ \ell)^\ast\, Q = \ell^\ast (m^\ast\, Q)\) — note how inverse image reverses the order of composition.</p>
+
+<p>Each operation has a natural reading. The direct image \(\ell_\ast\, P\) holds of exactly those systems obtainable by wrapping some \(P\)-system in \(\ell\): it is the most precise claim we can make about the outside of the shell knowing only that \(P\) holds inside. Dually, the inverse image \(\ell^\ast\, Q\) holds of a system just when wrapping it in \(\ell\) produces a \(Q\)-system: it is the least demanding condition we can impose inside the shell that guarantees \(Q\) outside. Readers with a program verification background may recognize a strongest postcondition and a weakest precondition here, with the lens playing the role of the program.</p>
+
+<h2 id="a-galois-connection">A Galois connection</h2>
+
+<p><a href="#a-galois-connection">#a-galois-connection</a></p>
+
+<p>“Most precise” and “least demanding” are two descriptions of a single relationship.</p>
+
+<blockquote>
+  <p><strong>Proposition</strong></p>
+
+  <p>For every inner predicate \(P\) on \(\vrt{A}{B}\) and every inner predicate \(Q\) on \(\vrt{C}{D}\),</p>
+
+\[\ell_\ast\, P \subseteq Q \quad \text{ if and only if } \quad P \subseteq \ell^\ast\, Q\]
+</blockquote>
+
+<p>Both sides assert the same thing: that \(\ell_\ast\, p \in Q\) for every \(p \in P\). A pair of monotone maps related by an equivalence of this shape is called a <strong>Galois connection</strong>; direct image is its <em>lower adjoint</em> and inverse image its <em>upper adjoint</em>. Two standard consequences, obtained by instantiating the equivalence at \(Q \defeq \ell_\ast\, P\) and \(P \defeq \ell^\ast\, Q\) respectively, are</p>
+
+\[P \subseteq \ell^\ast (\ell_\ast\, P) \qquad \qquad \ell_\ast\, (\ell^\ast\, Q) \subseteq Q\]
+
+<p>Once we have a logic with lens modalities, we expect this equivalence to reappear as a two-way proof rule for moving a lens from one side of an entailment to the other.</p>
+
+<p>The introduction proposed union, intersection, and complement as the semantic counterparts of “or”, “and”, and “not”. Our two predicate transformers treat these connectives very differently:</p>
+
+<ul>
+  <li>Inverse image, being a preimage, commutes with <em>all</em> of them: \(\ell^\ast (Q_1 \cap Q_2) = \ell^\ast\, Q_1 \cap \ell^\ast\, Q_2\), and likewise for unions, complements, the empty predicate, and the total predicate. In logical terms, \(\ell^\ast\) behaves like a substitution, distributing freely through the propositional structure of any formula it is applied to.</li>
+  <li>Direct image preserves unions and the empty predicate — a lower adjoint preserves all joins — but in general neither intersections nor complements. For intersections we have only the inclusion \(\ell_\ast (P_1 \cap P_2) \subseteq \ell_\ast\, P_1 \cap \ell_\ast\, P_2\), which can be strict: a system on \(\vrt{C}{D}\) may arise both as the pushforward of a member of \(P_1\) and as the pushforward of a <em>different</em> member of \(P_2\) without arising from any member of \(P_1 \cap P_2\).
+The lopsided behaviour of direct image is not a defect; it is the signature of an existential. For an ordinary function \(h\), direct image is the semantic \(\exists\), and it participates in a triple of adjoints \(h_\ast \dashv h^\ast \dashv \forall_h\) whose rightmost member is the semantic \(\forall\). The analogous operation exists in our setting too:</li>
+</ul>
+
+\[\forall_\ell\, P \defeq \{ q \in \mathsf{Sys}_{C, D} \mid \text{for all } p \in \mathsf{Sys}_{A, B}, \text{ if } \ell_\ast\, p = q \text{ then } p \in P \}\]
+
+<p>We won’t need \(\forall_\ell\) for a while, but its presence is an early hint that when we eventually design the logic’s syntax, lenses should give rise to both diamond-like and box-like modalities.</p>
+
+<h2 id="what-about-outer-predicates">What about outer predicates?</h2>
+
+<p><a href="#what-about-outer-predicates">#what-about-outer-predicates</a></p>
+
+<p>Everything in this section so far concerns inner predicates, and one might expect a mirror-image story for outer predicates: surely a partial lens \(\ell : \vrt{A}{B} \leftrightarrows \vrt{C}{D}\) should transform an outer system on \(\vrt{C}{D}\) into an outer system on \(\vrt{A}{B}\), by fitting the shell around the <em>hole</em> rather than around the occupant?</p>
+
+<p>Surprisingly, it should not — at least not in this formalism. Consider an outer system \(q \defeq (T, t_0, \bar{q} : T \to (1 + T)^D \times C)\) on \(\vrt{C}{D}\) and attempt to construct from it an outer system on \(\vrt{A}{B}\). Such a system must expose, at each of its states, an output in \(A\). But the only means \(\ell\) provides for producing an element of \(A\) is the passback \(f^\sharp(b, c)\), whose first argument is the current output of the inner system — a value that, in the two-phase time step of <a href="#predicates-on-arenas">Predicates on arenas</a>, is produced simultaneously with, and independently of, the outer system’s own output. An outer system must compute its output from its own state alone, so the construction is stuck. (It goes through only in the special case where \(f^\sharp\) ignores its first argument.)</p>
+
+<p>Lenses therefore act on the inhabitants of arenas asymmetrically: inner systems push forward, but outer systems do not pull back. Rather than fight this asymmetry, we will let inner and outer predicates interact through the time-step protocol itself, via a satisfaction relation between the occupants of the two sides of an arena — the missing ingredient needed to make precise the “condition \(Q\) on outer systems” from the echo box example. Defining that relation is our next task.</p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)]]></summary></entry><entry><title type="html">Loose Ends and Future Directions</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html" rel="alternate" type="text/html" title="Loose Ends and Future Directions" /><published>2025-11-18T08:00:00-08:00</published><updated>2025-11-18T08:00:00-08:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
 \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
 
 <h1 id="brain-dump">Brain Dump</h1>
@@ -980,7 +1849,7 @@ robot fuse_box {
 
 <p>Above, we consider \(\mathit{State}\) the type of our dynamical system’s internal state, \(\mathit{In}\) the type of its input, and \(\mathit{Out}\) the type of its output. Expanding the definition of lens, we see that</p>
 <ul>
-  <li>\(\mathit{nextState} : \mathit{State} \times \mathit{In} \to \mathit{State}\) is a function that takes a pair of a “current” state and an input to a “next” state.</li>
+  <li>\(\mathit{nextState} : \mathit{State} \times \mathit{In} \to \mathit{State}\) is a function that takes a pair of a <em>current</em> state and an input to a <em>next</em> state.</li>
   <li>\(\mathit{output} : \mathit{State} \to \mathit{Out}\) is a function that takes a state to an output.</li>
 </ul>
 
@@ -997,7 +1866,7 @@ Figure 1
 
 <p>Note that the set \(\mathit{State}_S\) does not appear in the diagram, because it does not affect the systems that \(S\) interacts with.</p>
 
-<p>If the codomain of one lens matches the domain of another then we can compose them together.</p>
+<p>If the codomain of one lens matches the domain of another then we can compose them together:</p>
 
 <blockquote>
   <p><strong>Definition</strong></p>
@@ -1012,7 +1881,7 @@ Figure 1
   </ul>
 </blockquote>
 
-<p>We also have a parallel composition operator on lenses.</p>
+<p>We also have a parallel composition operator on lenses:</p>
 
 <blockquote>
   <p><strong>Definition</strong></p>
@@ -1546,8 +2415,8 @@ n &amp; \text{if } k = \ell
 <p>From this discussion, we extract some key features we would like to model.</p>
 <ul>
   <li>Robots that affect the physical world by making requests to an environment. The environment may or may not honor these requests at its discretion.</li>
-  <li>A specific type of request a Robot can make to the environment is <em>message sending</em> to another agent, as when the fuse box sends the “fuse box off” message to Roy</li>
-  <li>Agents receive messages from the environment and other agents; these message may affect their behavior. The environment can be viewed as a mediator, so that all messages received by robot \(B\) from robot \(A\) can be viewed as coming directly from the environment and indirectly from robot \(B\).</li>
+  <li>A specific type of request a Robot can make to the environment is <em>message sending</em> to another agent, as when the fuse box sends the “fuse box off” message to Roy.</li>
+  <li>Agents receive messages from the environment and other agents; these message may affect their behavior. The environment can be viewed as a mediator, so that all messages received by robot \(B\) from robot \(A\) can be viewed as coming directly from the environment and indirectly from robot \(A\).</li>
 </ul>
 
 <h1 id="computer-games-as-dynamical-systems">Computer games as dynamical systems</h1>
@@ -1559,14 +2428,14 @@ n &amp; \text{if } k = \ell
 <figcaption>Diagram 1</figcaption>
 </figure>
 
-<p>We can view the game’s state as encapsulated in the game stepper; nothing outside of the game stepper may modify its internal state. The game evolves over a sequence of discrete time steps. At each time step, the game stepper must compute two quantities.</p>
+<p>We can view the game’s state as encapsulated in the game stepper; nothing outside of the game stepper may modify its internal state. The game evolves over a sequence of discrete time steps. At each time step, the game stepper must compute two quantities:</p>
 
 <ul>
   <li>From the game’s current state, the game stepper must compute its output, a matrix of color values to display to the screen.</li>
   <li>The game stepper must also compute the game’s next state from its input and its current state.  Its input might be a mapping from key identifiers to booleans indicating whether each key is pressed. The game’s state might contain a matrix of physical locations, where each location contains an identifier denoting either a game character, a wall, or an empty space.</li>
 </ul>
 
-<p>Put differently, the game stepper is a pair of two functions</p>
+<p>Put differently, the game stepper is a pair of two functions:</p>
 
 \[\mathit{output} : \mathit{GameState} \to \mathit{Output}\]
 
@@ -1599,12 +2468,12 @@ A closed simulation is essentially just a special case of an open one, where bot
 
 <p>The idea here is that computing an output in the set \(1\) is equivalent to not computing an output at all, because choosing an element of a one-element set does not involve making a decision. Likewise an element of \((\ast, s)\) of \(1 \times \mathit{GameState}\) is equivalent to \(s\) since \(\ast\) is the only choice for the first component of the pair.</p>
 
-<p>A box doesn’t seem very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms its current state into output, and also transforms input and an internal state into a next internal state at each point in a sequence of time steps.</p>
+<p>A box isn’t very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms, at each point in a sequence of time steps, its current state into output and its input and internal state into the next internal state.</p>
 
-<p>What are the stateful subcomponents? As a first approximation, they are</p>
+<p>What are the stateful subcomponents? As a first approximation, they are:</p>
 
 <ul>
-  <li>The environment, whose state consists of the grid of available and occupied cells</li>
+  <li>The environment, whose state consists of the grid of available and occupied cells.</li>
   <li>The robots. The internal state of the fuse box may track whether it is on or off. The internal state of Roy may contain a program counter that determines which of the instructions such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> or <code class="language-plaintext highlighter-rouge">go EAST</code> he will perform at the next time step.</li>
 </ul>
 
@@ -1620,7 +2489,7 @@ A closed simulation is essentially just a special case of an open one, where bot
   <li>A robot may send a message to another robot, which represents information sent along some physical communication medium.</li>
 </ul>
 
-<p>In my next post, I will define a game stepper for tic-tac-toe, which resembles MegaZeux in a few different ways</p>
+<p>In my next post, I will define a game stepper for tic-tac-toe, which resembles MegaZeux in a few different ways:</p>
 
 <ul>
   <li>The environment is the game board.</li>
