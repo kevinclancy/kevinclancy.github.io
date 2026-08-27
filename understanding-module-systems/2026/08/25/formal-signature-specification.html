@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://kevinclancy.github.io/feed.xml" title="Kevin Clancy" />
+
+<meta name="google-site-verification" content="h95FdKfMe_sIUc78XvKO9eiblSziF0vQ_lcLfQeDQ0o" />
+<link rel="canonical" href="https://kevinclancy.github.io/understanding-module-systems/2026/08/25/formal-signature-specification.html" /></head>
+<body>
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header-classic">
+    <h1 class="post-title p-name" itemprop="name headline">2. Formal Signature Specification</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2026-08-25T09:00:00-07:00" itemprop="datePublished">
+        Aug 25, 2026
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>There are other ways to communicate a signature’s laws besides informal comments. One is to use the formal specification language Gospel. Another is to pair each signature with a test suite.</p>
+
+<h1 id="gospel">Gospel</h1>
+
+<p>The Gospel specification language is a research project. While it’s not clear to me if it’s ready to be used for large real-world projects, my experimentation with it has gone pretty well.</p>
+
+<h2 id="queue-example">Queue Example</h2>
+
+<p>Gospel can only be used to annotate signatures that occur in <code class="language-plaintext highlighter-rouge">.mli</code> files. We can adapt our functional queue signature to satisfy this requirement, creating a <code class="language-plaintext highlighter-rouge">queue.mli</code> file with the following content:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  (** The standard functional queue ADT *)
+
+  type 'a t
+  (** A functional queue whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty queue *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [q' = push q v] pushes element [v] onto queue [q] to
+    obtain [q']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(a, q') = pop q] Pops front [a] of the queue [q], yielding [q']
+
+      ## Requires
+
+      * [non_empty q]
+
+      ## Returns
+
+      * a:'a - The element popped from the front of [q]
+
+      * q':t - The queue resulting from popping the front off [q]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty q] Is queue [q] empty? *)
+</code></pre></div></div>
+
+<p>Now let’s rewrite the signature’s comments using Gospel</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(** The standard functional queue ADT *)
+
+type 'a t
+(** A functional queue whose elements have type ['a] *)
+(*@
+  model s: 'a sequence
+*)
+
+val empty : 'a t
+(*@
+  ensures empty.s = Sequence.empty
+*)
+
+val push : 'a t -&gt; 'a -&gt; 'a t
+(*@
+   q' = push q v
+   ensures q'.s = (Sequence.singleton v) ++ q.s
+*)
+
+val pop : 'a t -&gt; 'a * 'a t
+(*@
+  (v, q') = pop q
+  requires q.s &lt;&gt; Sequence.empty
+  ensures q'.s ++ (Sequence.singleton v) = q.s
+*)
+
+val is_empty : 'a t -&gt; bool
+(*@
+  b = is_empty q
+  ensures b &lt;-&gt; q.s = Sequence.empty
+*)
+</code></pre></div></div>
+
+<p>As we can see, Gospel allows us to attach a modelling value to each abstract datatype:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type 'a t
+(** A functional queue whose elements have type ['a] *)
+(*@
+  model s: 'a sequence
+*)
+</code></pre></div></div>
+
+<p>We may supply one or many fields to model an abstract type. (For example, a <em>bounded</em> queue may require both a field of type <code class="language-plaintext highlighter-rouge">sequence</code> like we have, and also a field of type <code class="language-plaintext highlighter-rouge">int</code> to represent the queue’s capacity.)
+Gospel provides a <a href="https://ocaml-gospel.github.io/gospel/gospel/Gospelstdlib/index.html#sequences">wide variety</a> of datatypes for us to use for model fields, including sequences, arrays, bags, sets, and references.</p>
+
+<p>The annotation for each val field first names all of the function’s arguments and results:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(v, q') = pop q
+</code></pre></div></div>
+
+<p>Then it lists a series of preconditions on lines beginning with the word <code class="language-plaintext highlighter-rouge">requires</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>requires q.s &lt;&gt; Sequence.empty
+</code></pre></div></div>
+
+<p>Then it lists a series of postconditions on lines beginning with the word <code class="language-plaintext highlighter-rouge">ensures</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ensures q'.s ++ (Sequence.singleton v) = q.s
+</code></pre></div></div>
+
+<p>We can type-check Gospel specifications by running <code class="language-plaintext highlighter-rouge">gospel check queue.mli</code>.</p>
+
+<p>Gospel has a few advantages over informal specifications. First, by virtue of being formal, it is unambiguous and readable. Different programmers may describe module behavior in comments using their own idiosyncratic ways of thinking. Other programmers reading the comments may therefore have difficulty interpreting them. There is no question of how to interpret a formal specification, so misunderstandings cannot arise.</p>
+
+<p>Second, formal specifications can be consumed by tools that either test or verify them. I will proceed to describe a few such tools.</p>
+
+<h2 id="ortac-wrapper">Ortac Wrapper</h2>
+
+<p>Ortac Wrapper generates a wrapped version of a Gospel-specified module, which monitors the implementation against the specification as it executes, raising an error as soon as a discrepancy is encountered.</p>
+
+<p>For each abstract datatype <code class="language-plaintext highlighter-rouge">t</code> and each model field its specification declares, the module implementor is required to write a <em>projection</em> function to project a value of type <code class="language-plaintext highlighter-rouge">t</code> to a value of the model field type. Such projection functions are annotated with a <code class="language-plaintext highlighter-rouge">projection_for</code> decorator:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val to_sequence : 'a t -&gt; 'a sequence [@@projection_for s]
+</code></pre></div></div>
+<p>Note that Ortac Wrapper is a behind the most recent release of Gospel; it does not support fields of type <code class="language-plaintext highlighter-rouge">sequence</code>, so <code class="language-plaintext highlighter-rouge">list</code> must be used instead.</p>
+
+<p>As long as the wrapped module doesn’t raise a monitoring error, then it conforms to the same specified signature as the unwrapped module. The wrapped module could therefore be used instead of the unwrapped one during testing and/or debug builds where performance isn’t important.</p>
+
+<h2 id="ortac-qcheck-stm-ortac-monolith">Ortac QCheck-STM, Ortac Monolith</h2>
+
+<p>The QCheck-STM and Monolith plugins both generate a test suite targeting a Gospel specification. QCheck-STM seems overly fussy, as it rejected the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s <code class="language-plaintext highlighter-rouge">pop</code> method because the result type has a <code class="language-plaintext highlighter-rouge">Queue.t</code> nested inside a pair.</p>
+
+<p>I didn’t spend much time experimenting with these tools, but
+the ability to automatically generate a test suite is extremely useful, so I should probably revisit them.</p>
+
+<h2 id="cameleer">Cameleer</h2>
+
+<p>Testing can prove the presence of errors, but not their absence. To do that, we need to perform formal reasoning. Cameleer uses an automated theorem prover to prove Gospel specifications correct. Unfortunately, it is not compatible with newer versions of OCaml, so I didn’t test it.</p>
+
+<h1 id="hegel">Hegel</h1>
+
+<p>Hegel is a property-based testing library. Instead of using Gospel for specification, we can test our signature’s laws using a hand-written Hegel test. The advantages to this approach are that first, hand-written testing is more likely to be able to express our signature’s laws, and second, Hegel seems more production ready than Gospel-related tools. The disadvantages are that hand-written tests are more likely to contain mistakes due to human error, and also that they are a less direct way of expressing properties and therefore potentially ambiguous.</p>
+
+<p>I asked Claude to generate a functor that takes a module matching the <code class="language-plaintext highlighter-rouge">Queue</code> signature as input and produces a module providing a Hegel test which tests that the input module satisfies the <code class="language-plaintext highlighter-rouge">Queue</code> laws.The generated functor body defines two tests. First, the first tests the queue laws:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  type state =
+    { q : int Q.t
+    ; model : int list
+    }
+
+  let push_rule =
+    Stateful.Rule.create ~name:"push" ~step:(fun tc st -&gt;
+      let v = draw tc (integers ~min_value:(-1000) ~max_value:1000 ()) in
+      { q = Q.push st.q v; model = v :: st.model })
+
+  let pop_rule =
+    Stateful.Rule.create ~name:"pop" ~step:(fun tc st -&gt;
+      assume tc (st.model &lt;&gt; []);
+      let v, q' = Q.pop st.q in
+      match split_last st.model with
+      | None -&gt; assert false
+      | Some (expected, rest) -&gt;
+        Alcotest.(check int) "pop returns the oldest element" expected v;
+        { q = q'; model = rest })
+
+  let is_empty_rule =
+    Stateful.Rule.create ~name:"is_empty" ~step:(fun _tc st -&gt;
+      Alcotest.(check bool)
+        "is_empty agrees with the model"
+        (st.model = [])
+        (Q.is_empty st.q);
+      st)
+
+  let%hegel_test queue_matches_model tc =
+    Stateful.run
+      ~init:{ q = Q.empty; model = [] }
+      ~rules:[ push_rule; pop_rule; is_empty_rule ]
+      ~sexp_of_state:(fun st -&gt; sexp_of_model st.model)
+      tc
+</code></pre></div></div>
+
+<p>This is what Hegel calls a <em>stateful</em> test. It performs a sequence of operations to a state. Each operation may assert correctness criteria on the state. Our Gospel specification already suggests the basic outline of the stateful test we want: define the state as a pair containing a <code class="language-plaintext highlighter-rouge">Queue.t</code> value and its model, creating one operation corresponding to each <code class="language-plaintext highlighter-rouge">Queue</code> operation, and when operations that “emit data” (the popped value, or <code class="language-plaintext highlighter-rouge">is_empty</code>’s boolean result), assert the equality of the data emitted from the <code class="language-plaintext highlighter-rouge">Queue.t</code> value and the model.</p>
+
+<p>The sequence of operations is generated randomly, but it’s able avoid (or filter out) operations that violate preconditions, using the <code class="language-plaintext highlighter-rouge">assume</code> function, as can be seen in the <code class="language-plaintext highlighter-rouge">pop_rule</code> rule.</p>
+
+<p>Claude also generated a test to check that the queue operations are <code class="language-plaintext highlighter-rouge">persistent</code>; that is, calling <code class="language-plaintext highlighter-rouge">push</code> leaves the argument queue unchanged, and furthermore leaves all of the “ancestor” queues it was derived from via older operations unchanged as well:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  type pstate =
+    { cur : int Q.t
+    ; cur_model : int list
+    ; olds : (int Q.t * int list) Stateful.Pool.t
+    }
+
+  let ppush =
+    Stateful.Rule.create ~name:"push" ~step:(fun tc st -&gt;
+      let v = draw tc (integers ~min_value:(-1000) ~max_value:1000 ()) in
+      (* remember the queue as it was BEFORE the push, with its model *)
+      Stateful.Pool.add st.olds (st.cur, st.cur_model);
+      { st with cur = Q.push st.cur v; cur_model = v :: st.cur_model })
+  ;;
+
+  let ppop =
+    Stateful.Rule.create ~name:"pop" ~step:(fun tc st -&gt;
+      assume tc (st.cur_model &lt;&gt; []);
+      Stateful.Pool.add st.olds (st.cur, st.cur_model);
+      let _, q' = Q.pop st.cur in
+      match split_last st.cur_model with
+      | None -&gt; assert false
+      | Some (_, rest) -&gt; { st with cur = q'; cur_model = rest })
+  ;;
+
+  let check_old =
+    Stateful.Rule.create ~name:"observe_an_older_queue" ~step:(fun tc st -&gt;
+      let q_old, model_old = draw_silent tc (Stateful.Pool.values_reusable st.olds) in
+      Alcotest.(check bool)
+        "an older queue kept its emptiness"
+        (model_old = [])
+        (Q.is_empty q_old);
+      (match split_last model_old with
+       | None -&gt; ()
+       | Some (expected, _) -&gt;
+         let v, _ = Q.pop q_old in
+         Alcotest.(check int) "an older queue kept its contents" expected v);
+      st)
+  ;;
+
+  let%hegel_test queue_is_persistent tc =
+    Stateful.run
+      ~init:{ cur = Q.empty; cur_model = []; olds = Stateful.Pool.create tc }
+      ~rules:[ ppush; ppop; check_old ]
+      ~sexp_of_state:(fun st -&gt; sexp_of_model st.cur_model)
+      tc
+  ;;
+</code></pre></div></div>
+
+<p>The model for this test includes a <em>pool</em> whose elements each pair an ancestor queue with the model matching that ancestor. The <code class="language-plaintext highlighter-rouge">Queue</code> signature’s state-altering operations <code class="language-plaintext highlighter-rouge">push</code> and <code class="language-plaintext highlighter-rouge">pop</code> are included as <code class="language-plaintext highlighter-rouge">ppush</code> and <code class="language-plaintext highlighter-rouge">ppop</code>, which not only perform state updates but also insert the “old” states into the pool. Finally, a new operation <code class="language-plaintext highlighter-rouge">check_old</code> ensures that the immediately observable behavior (popped elements and is_empty) of a randomly selected ancestor queue matches that of its model.</p>
+
+<p>When I ran these tests on the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct, they passed as expected. When I ran them on the <code class="language-plaintext highlighter-rouge">ListStack</code> struct, they failed, producing this error message:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>--- Failure: queue_matches_model (test/queue_test.ml:66) ---------------
+Falsified after 10 test cases (0 discarded):
+
+  state = ()
+  Step 1: push
+    draw_1 = 0
+  state = (0)
+  Step 2: push
+    draw_2 = 1
+  state = (1 0)
+  Step 3: pop
+ASSERT pop returns the oldest element
+
+Exception: Alcotest assertion failure
+File "test/queue_test.ml", line 55, character 8:
+FAIL pop returns the oldest element
+
+   Expected: `0'
+   Received: `1'
+</code></pre></div></div>
+
+<p>It lists the shortest sequence of operation it can find that trips an assertion. It also displays all of the intermediate states and random data it generates along the way. After pushing two elements and then popping, we see that the stack popped the newest element, when according to the model it should have popped the oldest.</p>
+
+<p>Hegel is polished, expressive, and concise, and compared to Gospel it’s not <em>that</em> much more verbose. All in all, it’s not a bad tool.</p>
+
+<h1 id="artificial-intelligence">Artificial Intelligence</h1>
+
+<p>Instead of checking signature conformance using testing or formal verification, why not try ask an AI coding tool to check it for us? This certainly requires less labor on our part. Normally I would ask Claude Code to perform a task like this, but out of curiosity, I decided to use the free Grok web interface. I provided it with the original, informal queue signature:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Queue = sig
+  (** The standard functional queue ADT *)
+
+  type 'a t
+  (** A functional queue whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty queue *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [q' = push q v] pushes element [v] onto the back of queue [q] to
+    obtain [q']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(a, q') = pop q] Pops front [a] of the queue [q], yielding [q']
+
+      ## Requires
+
+      * [not (is_empty q)]
+
+      ## Returns
+
+      * a:'a - The element popped from the front of [q]
+
+      * q':'a t - The queue resulting from popping the front off [q]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty q] Is queue [q] empty? *)
+
+  (* LAW:
+    The sequence underlying the queue named "empty" (defined above) is the empty sequence
+  *)
+
+  (* LAW:
+
+    If s is the sequence of elements of type 'a underlying a queue q then
+    [is_empty q] is true iff s is the empty sequence
+
+  *)
+
+  (* LAW:
+
+     If s is the sequence of elements underlying a queue q,
+     then the sequence underlying [push q a] is s ++ [a] (a appended to the end of s)
+
+  *)
+
+  (* LAW:
+
+     If [a] ++ s (element a prepended to the sequence s) is the sequence of elements underlying
+     a queue q, then [pop q] = (a, q'), where the sequence underlying queue q' is s
+  *)
+end
+</code></pre></div></div>
+<p>And a disguised version of the ListStack struct:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module ListQueue = struct
+  type 'a t = 'a list
+
+  let empty = []
+
+  let is_empty s = match s with [] -&gt; true | _ -&gt; false
+
+  let push s v = v :: s
+
+  let pop s =
+    match s with
+    | [] -&gt; invalid_arg "pop: empty queue"
+    | a :: s' -&gt; (a, s')
+end
+</code></pre></div></div>
+
+<p>Here is Grok’s answer:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>No (not correctly / not as an ADT).
+Type-wise, ListQueue matches the signature: the type 'a t and the four values have compatible types, so an OCaml compiler would accept module LQ : Queue = ListQueue.
+Semantically it does not implement the specified queue ADT, because it violates the documented laws:
+
+The laws require FIFO behaviour: push q a must append a to the end of the underlying sequence (s ++ [a]), and pop must remove from the front.
+The implementation does the opposite:
+push s v = v :: s prepends, and pop takes the head.
+Consequently the structure is a stack (LIFO), not a queue.
+After a sequence of pushes the order of elements is reversed relative to what the laws demand, so the “LAW” comments for push and pop are false.
+
+(The empty/is_empty laws happen to hold, but that is not enough.)
+A correct pure-list implementation of the given signature would need to append on push (or maintain the list in reverse order and reverse on pop, or use the classic two-list representation). The given ListQueue does none of those things.
+</code></pre></div></div>
+
+<p>Not bad. But to be fair, this was one of the easiest challenges I could give it. It would be interesting to try this on less stereotypical signatures some time, or to create a type checker that dispatches semantic checking tasks to an LLM.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>While natural language comments can be frustratingly vague, a signature’s laws aren’t doomed to be stuck in this paradigm. We can specify the laws using the Gospel specification language, or through Hegel tests. Furthermore, there are formal verification, testing, and AI tools that can help us gain confidence that a struct actually satisfies a signatures laws–or demonstrate why it fails to satisfy them!</p>
+
+<p>In my next post, I plan to discuss two things:</p>
+
+<ul>
+  <li>How and why OCaml programs are structured as networks of struct definitions.</li>
+  <li>How the operations that a struct provides may perform side effects such as state updates, and what the implications of that are.</li>
+</ul>
+
+<p>Stay tuned.</p>
+
+  </div><a class="u-url" href="/understanding-module-systems/2026/08/25/formal-signature-specification.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <ul class="contact-list">
+          
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p></p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
