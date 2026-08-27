@@ -1,4 +1,357 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-08-25T14:55:34-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">1. Modules are like Vending Machines</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html" rel="alternate" type="text/html" title="1. Modules are like Vending Machines" /><published>2026-08-23T09:00:00-07:00</published><updated>2026-08-23T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html"><![CDATA[<p>Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-08-27T16:32:44-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">Formal Signature Specification</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/25/formal-signature-specification.html" rel="alternate" type="text/html" title="Formal Signature Specification" /><published>2026-08-25T09:00:00-07:00</published><updated>2026-08-25T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/25/formal-signature-specification</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/25/formal-signature-specification.html"><![CDATA[<p>There are other ways to communicate a signature’s laws besides informal comments. One is to use the formal specification language Gospel. Another is to pair each signature with a test suite.</p>
+
+<h1 id="gospel">Gospel</h1>
+
+<p>The Gospel specification language is a research project. While it’s not clear to me if it’s ready to be used for large real-world projects, my experimentation with it has gone pretty well.</p>
+
+<h2 id="queue-example">Queue Example</h2>
+
+<p>Gospel can only be used to annotate signatures that occur in <code class="language-plaintext highlighter-rouge">.mli</code> files. We can adapt our functional queue signature to satisfy this requirement, creating a <code class="language-plaintext highlighter-rouge">queue.mli</code> file with the following content:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  (** The standard functional queue ADT *)
+
+  type 'a t
+  (** A functional queue whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty queue *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [q' = push q v] pushes element [v] onto queue [q] to
+    obtain [q']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(a, q') = pop q] Pops front [a] of the queue [q], yielding [q']
+
+      ## Requires
+
+      * [non_empty q]
+
+      ## Returns
+
+      * a:'a - The element popped from the front of [q]
+
+      * q':t - The queue resulting from popping the front off [q]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty q] Is queue [q] empty? *)
+</code></pre></div></div>
+
+<p>Now let’s rewrite the signature’s comments using Gospel</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(** The standard functional queue ADT *)
+
+type 'a t
+(** A functional queue whose elements have type ['a] *)
+(*@
+  model s: 'a sequence
+*)
+
+val empty : 'a t
+(*@
+  ensures empty.s = Sequence.empty
+*)
+
+val push : 'a t -&gt; 'a -&gt; 'a t
+(*@
+   q' = push q v
+   ensures q'.s = (Sequence.singleton v) ++ q.s
+*)
+
+val pop : 'a t -&gt; 'a * 'a t
+(*@
+  (v, q') = pop q
+  requires q.s &lt;&gt; Sequence.empty
+  ensures q'.s ++ (Sequence.singleton v) = q.s
+*)
+
+val is_empty : 'a t -&gt; bool
+(*@
+  b = is_empty q
+  ensures b &lt;-&gt; q.s = Sequence.empty
+*)
+</code></pre></div></div>
+
+<p>As we can see, Gospel allows us to attach a modelling value to each abstract datatype:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type 'a t
+(** A functional queue whose elements have type ['a] *)
+(*@
+  model s: 'a sequence
+*)
+</code></pre></div></div>
+
+<p>We may supply one or many fields to model an abstract type. (For example, a <em>bounded</em> queue may require both a field of type <code class="language-plaintext highlighter-rouge">sequence</code> like we have, and also a field of type <code class="language-plaintext highlighter-rouge">int</code> to represent the queue’s capacity.)
+Gospel provides a <a href="https://ocaml-gospel.github.io/gospel/gospel/Gospelstdlib/index.html#sequences">wide variety</a> of datatypes for us to use for model fields, including sequences, arrays, bags, sets, and references.</p>
+
+<p>The annotation for each val field first names all of the function’s arguments and results:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(v, q') = pop q
+</code></pre></div></div>
+
+<p>Then it lists a series of preconditions on lines beginning with the word <code class="language-plaintext highlighter-rouge">requires</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>requires q.s &lt;&gt; Sequence.empty
+</code></pre></div></div>
+
+<p>Then it lists a series of postconditions on lines beginning with the word <code class="language-plaintext highlighter-rouge">ensures</code></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ensures q'.s ++ (Sequence.singleton v) = q.s
+</code></pre></div></div>
+
+<p>We can type-check Gospel specifications by running <code class="language-plaintext highlighter-rouge">gospel check queue.mli</code>.</p>
+
+<p>Gospel has a few advantages over informal specifications. First, by virtue of being formal, it is unambiguous and readable. Different programmers may describe module behavior in comments using their own idiosyncratic ways of thinking. Other programmers reading the comments may therefore have difficulty interpreting them. There is no question of how to interpret a formal specification, so misunderstandings cannot arise.</p>
+
+<p>Second, formal specifications can be consumed by tools that either test or verify them. I will proceed to describe a few such tools.</p>
+
+<h2 id="ortac-wrapper">Ortac Wrapper</h2>
+
+<p>Ortac Wrapper generates a wrapped version of a Gospel-specified module, which monitors the implementation against the specification as it executes, raising an error as soon as a discrepancy is encountered.</p>
+
+<p>For each abstract datatype <code class="language-plaintext highlighter-rouge">t</code> and each model field its specification declares, the module implementor is required to write a <em>projection</em> function to project a value of type <code class="language-plaintext highlighter-rouge">t</code> to a value of the model field type. Such projection functions are annotated with a <code class="language-plaintext highlighter-rouge">projection_for</code> decorator:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val to_sequence : 'a t -&gt; 'a sequence [@@projection_for s]
+</code></pre></div></div>
+<p>Note that Ortac Wrapper is a behind the most recent release of Gospel; it does not support fields of type <code class="language-plaintext highlighter-rouge">sequence</code>, so <code class="language-plaintext highlighter-rouge">list</code> must be used instead.</p>
+
+<p>As long as the wrapped module doesn’t raise a monitoring error, then it conforms to the same specified signature as the unwrapped module. The wrapped module could therefore be used instead of the unwrapped one during testing and/or debug builds where performance isn’t important.</p>
+
+<h2 id="ortac-qcheck-stm-ortac-monolith">Ortac QCheck-STM, Ortac Monolith</h2>
+
+<p>The QCheck-STM and Monolith plugins both generate a test suite targeting a Gospel specification. QCheck-STM seems overly fussy, as it rejected the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s <code class="language-plaintext highlighter-rouge">pop</code> method because the result type has a <code class="language-plaintext highlighter-rouge">Queue.t</code> nested inside a pair.</p>
+
+<p>I didn’t spend much time experimenting with these tools, but
+the ability to automatically generate a test suite is extremely useful, so I should probably revisit them.</p>
+
+<h2 id="cameleer">Cameleer</h2>
+
+<p>Testing can prove the presence of errors, but not their absence. To do that, we need to perform formal reasoning. Cameleer uses an automated theorem prover to prove Gospel specifications correct. Unfortunately, it is not compatible with newer versions of OCaml, so I didn’t test it.</p>
+
+<h1 id="hegel">Hegel</h1>
+
+<p>Hegel is a property-based testing library. Instead of using Gospel for specification, we can test our signature’s laws using a hand-written Hegel test. The advantages to this approach are that first, hand-written testing is more likely to be able to express our signature’s laws, and second, Hegel seems more production ready than Gospel-related tools. The disadvantages are that hand-written tests are more likely to contain mistakes due to human error, and also that they are a less direct way of expressing properties and therefore potentially ambiguous.</p>
+
+<p>I asked Claude to generate a functor that takes a module matching the <code class="language-plaintext highlighter-rouge">Queue</code> signature as input and produces a module providing a Hegel test which tests that the input module satisfies the <code class="language-plaintext highlighter-rouge">Queue</code> laws.The generated functor body defines two tests. First, the first tests the queue laws:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  type state =
+    { q : int Q.t
+    ; model : int list
+    }
+
+  let push_rule =
+    Stateful.Rule.create ~name:"push" ~step:(fun tc st -&gt;
+      let v = draw tc (integers ~min_value:(-1000) ~max_value:1000 ()) in
+      { q = Q.push st.q v; model = v :: st.model })
+
+  let pop_rule =
+    Stateful.Rule.create ~name:"pop" ~step:(fun tc st -&gt;
+      assume tc (st.model &lt;&gt; []);
+      let v, q' = Q.pop st.q in
+      match split_last st.model with
+      | None -&gt; assert false
+      | Some (expected, rest) -&gt;
+        Alcotest.(check int) "pop returns the oldest element" expected v;
+        { q = q'; model = rest })
+
+  let is_empty_rule =
+    Stateful.Rule.create ~name:"is_empty" ~step:(fun _tc st -&gt;
+      Alcotest.(check bool)
+        "is_empty agrees with the model"
+        (st.model = [])
+        (Q.is_empty st.q);
+      st)
+
+  let%hegel_test queue_matches_model tc =
+    Stateful.run
+      ~init:{ q = Q.empty; model = [] }
+      ~rules:[ push_rule; pop_rule; is_empty_rule ]
+      ~sexp_of_state:(fun st -&gt; sexp_of_model st.model)
+      tc
+</code></pre></div></div>
+
+<p>This is what Hegel calls a <em>stateful</em> test. It performs a sequence of operations to a state. Each operation may assert correctness criteria on the state. Our Gospel specification already suggests the basic outline of the stateful test we want: define the state as a pair containing a <code class="language-plaintext highlighter-rouge">Queue.t</code> value and its model, creating one operation corresponding to each <code class="language-plaintext highlighter-rouge">Queue</code> operation, and when operations that “emit data” (the popped value, or <code class="language-plaintext highlighter-rouge">is_empty</code>’s boolean result), assert the equality of the data emitted from the <code class="language-plaintext highlighter-rouge">Queue.t</code> value and the model.</p>
+
+<p>The sequence of operations is generated randomly, but it’s able avoid (or filter out) operations that violate preconditions, using the <code class="language-plaintext highlighter-rouge">assume</code> function, as can be seen in the <code class="language-plaintext highlighter-rouge">pop_rule</code> rule.</p>
+
+<p>Claude also generated a test to check that the queue operations are <code class="language-plaintext highlighter-rouge">persistent</code>; that is, calling <code class="language-plaintext highlighter-rouge">push</code> leaves the argument queue unchanged, and furthermore leaves all of the “ancestor” queues it was derived from via older operations unchanged as well:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  type pstate =
+    { cur : int Q.t
+    ; cur_model : int list
+    ; olds : (int Q.t * int list) Stateful.Pool.t
+    }
+
+  let ppush =
+    Stateful.Rule.create ~name:"push" ~step:(fun tc st -&gt;
+      let v = draw tc (integers ~min_value:(-1000) ~max_value:1000 ()) in
+      (* remember the queue as it was BEFORE the push, with its model *)
+      Stateful.Pool.add st.olds (st.cur, st.cur_model);
+      { st with cur = Q.push st.cur v; cur_model = v :: st.cur_model })
+  ;;
+
+  let ppop =
+    Stateful.Rule.create ~name:"pop" ~step:(fun tc st -&gt;
+      assume tc (st.cur_model &lt;&gt; []);
+      Stateful.Pool.add st.olds (st.cur, st.cur_model);
+      let _, q' = Q.pop st.cur in
+      match split_last st.cur_model with
+      | None -&gt; assert false
+      | Some (_, rest) -&gt; { st with cur = q'; cur_model = rest })
+  ;;
+
+  let check_old =
+    Stateful.Rule.create ~name:"observe_an_older_queue" ~step:(fun tc st -&gt;
+      let q_old, model_old = draw_silent tc (Stateful.Pool.values_reusable st.olds) in
+      Alcotest.(check bool)
+        "an older queue kept its emptiness"
+        (model_old = [])
+        (Q.is_empty q_old);
+      (match split_last model_old with
+       | None -&gt; ()
+       | Some (expected, _) -&gt;
+         let v, _ = Q.pop q_old in
+         Alcotest.(check int) "an older queue kept its contents" expected v);
+      st)
+  ;;
+
+  let%hegel_test queue_is_persistent tc =
+    Stateful.run
+      ~init:{ cur = Q.empty; cur_model = []; olds = Stateful.Pool.create tc }
+      ~rules:[ ppush; ppop; check_old ]
+      ~sexp_of_state:(fun st -&gt; sexp_of_model st.cur_model)
+      tc
+  ;;
+</code></pre></div></div>
+
+<p>The model for this test includes a <em>pool</em> whose elements each pair an ancestor queue with the model matching that ancestor. The <code class="language-plaintext highlighter-rouge">Queue</code> signature’s state-altering operations <code class="language-plaintext highlighter-rouge">push</code> and <code class="language-plaintext highlighter-rouge">pop</code> are included as <code class="language-plaintext highlighter-rouge">ppush</code> and <code class="language-plaintext highlighter-rouge">ppop</code>, which not only perform state updates but also insert the “old” states into the pool. Finally, a new operation <code class="language-plaintext highlighter-rouge">check_old</code> ensures that the immediately observable behavior (popped elements and is_empty) of a randomly selected ancestor queue matches that of its model.</p>
+
+<p>When I ran these tests on the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct, they passed as expected. When I ran them on the <code class="language-plaintext highlighter-rouge">ListStack</code> struct, they failed, producing this error message:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>--- Failure: queue_matches_model (test/queue_test.ml:66) ---------------
+Falsified after 10 test cases (0 discarded):
+
+  state = ()
+  Step 1: push
+    draw_1 = 0
+  state = (0)
+  Step 2: push
+    draw_2 = 1
+  state = (1 0)
+  Step 3: pop
+ASSERT pop returns the oldest element
+
+Exception: Alcotest assertion failure
+File "test/queue_test.ml", line 55, character 8:
+FAIL pop returns the oldest element
+
+   Expected: `0'
+   Received: `1'
+</code></pre></div></div>
+
+<p>It lists the shortest sequence of operation it can find that trips an assertion. It also displays all of the intermediate states and random data it generates along the way. After pushing two elements and then popping, we see that the stack popped the newest element, when according to the model it should have popped the oldest.</p>
+
+<p>Hegel is polished, expressive, and concise, and compared to Gospel it’s not <em>that</em> much more verbose. All in all, it’s not a bad tool.</p>
+
+<h1 id="artificial-intelligence">Artificial Intelligence</h1>
+
+<p>Instead of checking signature conformance using testing or formal verification, why not try ask an AI coding tool to check it for us? This certainly requires less labor on our part. Normally I would ask Claude Code to perform a task like this, but out of curiosity, I decided to use the free Grok web interface. I provided it with the original, informal queue signature:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Queue = sig
+  (** The standard functional queue ADT *)
+
+  type 'a t
+  (** A functional queue whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty queue *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [q' = push q v] pushes element [v] onto the back of queue [q] to
+    obtain [q']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(a, q') = pop q] Pops front [a] of the queue [q], yielding [q']
+
+      ## Requires
+
+      * [not (is_empty q)]
+
+      ## Returns
+
+      * a:'a - The element popped from the front of [q]
+
+      * q':'a t - The queue resulting from popping the front off [q]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty q] Is queue [q] empty? *)
+
+  (* LAW:
+    The sequence underlying the queue named "empty" (defined above) is the empty sequence
+  *)
+
+  (* LAW:
+
+    If s is the sequence of elements of type 'a underlying a queue q then
+    [is_empty q] is true iff s is the empty sequence
+
+  *)
+
+  (* LAW:
+
+     If s is the sequence of elements underlying a queue q,
+     then the sequence underlying [push q a] is s ++ [a] (a appended to the end of s)
+
+  *)
+
+  (* LAW:
+
+     If [a] ++ s (element a prepended to the sequence s) is the sequence of elements underlying
+     a queue q, then [pop q] = (a, q'), where the sequence underlying queue q' is s
+  *)
+end
+</code></pre></div></div>
+<p>And a disguised version of the ListStack struct:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module ListQueue = struct
+  type 'a t = 'a list
+
+  let empty = []
+
+  let is_empty s = match s with [] -&gt; true | _ -&gt; false
+
+  let push s v = v :: s
+
+  let pop s =
+    match s with
+    | [] -&gt; invalid_arg "pop: empty queue"
+    | a :: s' -&gt; (a, s')
+end
+</code></pre></div></div>
+
+<p>Here is Grok’s answer:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>No (not correctly / not as an ADT).
+Type-wise, ListQueue matches the signature: the type 'a t and the four values have compatible types, so an OCaml compiler would accept module LQ : Queue = ListQueue.
+Semantically it does not implement the specified queue ADT, because it violates the documented laws:
+
+The laws require FIFO behaviour: push q a must append a to the end of the underlying sequence (s ++ [a]), and pop must remove from the front.
+The implementation does the opposite:
+push s v = v :: s prepends, and pop takes the head.
+Consequently the structure is a stack (LIFO), not a queue.
+After a sequence of pushes the order of elements is reversed relative to what the laws demand, so the “LAW” comments for push and pop are false.
+
+(The empty/is_empty laws happen to hold, but that is not enough.)
+A correct pure-list implementation of the given signature would need to append on push (or maintain the list in reverse order and reverse on pop, or use the classic two-list representation). The given ListQueue does none of those things.
+</code></pre></div></div>
+
+<p>Not bad. But to be fair, this was one of the easiest challenges I could give it. It would be interesting to try this on less stereotypical signatures some time, or to create a type checker that dispatches semantic checking tasks to an LLM.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>While natural language comments can be frustratingly vague, a signature’s laws aren’t doomed to be stuck in this paradigm. We can specify the laws using the Gospel specification language, or through Hegel tests. Furthermore, there are formal verification, testing, and AI tools that can help us gain confidence that a struct actually satisfies a signatures laws–or demonstrate why it fails to satisfy them!</p>
+
+<p>In my next post, I plan to discuss two things:</p>
+
+<ul>
+  <li>How and why OCaml programs are structured as networks of struct definitions.</li>
+  <li>How the operations that a struct provides may perform side effects such as state updates, and what the implications of that are.</li>
+</ul>
+
+<p>Stay tuned.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[There are other ways to communicate a signature’s laws besides informal comments. One is to use the formal specification language Gospel. Another is to pair each signature with a test suite.]]></summary></entry><entry><title type="html">1. Modules are like Vending Machines</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html" rel="alternate" type="text/html" title="1. Modules are like Vending Machines" /><published>2026-08-23T09:00:00-07:00</published><updated>2026-08-23T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html"><![CDATA[<p>Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>age_map.insert("joe", 20)
 age_map.insert("bob", 30)
 </code></pre></div></div>
@@ -304,7 +657,7 @@ end
 
   let pop s =
     match s with
-    | [] -&gt; invalid_arg "pop: empty stack"
+    | [] -&gt; invalid_arg "pop: empty queue"
     | a :: s' -&gt; (a, s')
 end
 
@@ -475,399 +828,7 @@ end
 
 <p>Coin insertion, for example, requires a coin and a vending machine as input, and produces a modified vending machine as output. The consumer knows that if she inserts a coin and then selects a product, she will probably receive a soda. It is not enough for the machine to merely provide the three operations listed above; it must obey laws that are mutually understood by the machine’s creator and the consumer (its signature). For example, the consumer knows that if she performs “coin insertion” and then performs “coin return” immediately afterward, the machine should emit the inserted coin. However, the consumer does not care about where her coin is stored in between, the shape and volume of its container, etc. These details are hidden from the consumer to make her life easier.</p>
 
-<p>So far, we have used comments to express a signature’s laws. In my next post, I will explore more formal techniques for doing so.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code age_map.insert("joe", 20) age_map.insert("bob", 30) and understands that next time that their program encounters the expression age_map.get("joe") it will return the last value passed in as the second argument in age_map.insert("joe", ____), namely 20 if no other calls to insert are made.]]></summary></entry><entry><title type="html">The Language</title><link href="https://kevinclancy.github.io/modelling-computer-games/2026/06/15/the-language.html" rel="alternate" type="text/html" title="The Language" /><published>2026-06-15T09:00:00-07:00</published><updated>2026-06-15T09:00:00-07:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2026/06/15/the-language</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2026/06/15/the-language.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
-\(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
-
-<h1 id="introduction">Introduction</h1>
-
-<p>In this post, I will present a language for defining scripts that define tic-tac-toe players, as described in <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a>. Eventually, I’d like to repurpose this into a language for describing megazeux robots.</p>
-
-<p>I will define an interpretation that maps each program of this language to a dynamical system</p>
-
-\[\vrt{\mathsf{State}}{\mathsf{State}} \leftrightarrows \vrt{1 + \mathsf{Board}}{1 + \mathsf{Loc}}\]
-
-<h1 id="examples">Examples</h1>
-
-<p>Recall that we define the set of board positions as</p>
-
-\[\mathsf{Loc} \defeq \mathbf{3} \times \mathbf{3}\]
-
-<p>The following examples are scripts assumed to drive player 0 rather than player 1. The board set is defined as \(\{ 0, 1, 2 \}^{\mathsf{Loc}}\), where \(0\) is used for player \(0\)’s pieces, \(1\) is used for player \(1\)’s pieces, and \(2\) is used for empty cells.</p>
-
-<p>From player \(0\)’s perspective, the game advances periodically, repeating the following phases infinitely:</p>
-
-<ol>
-  <li>Player \(0\) sends the “empty signal” \((0, \ast)\) to the environment while receiving the current board.</li>
-  <li>Player \(0\) sends its move to the environment while receiving the “empty signal” \((0, \ast)\).</li>
-  <li>Player \(0\) sends an empty signal and receives an empty signal while the environment submits the current board to player \(1\).</li>
-  <li>Player \(0\) sends an empty signal and receives an empty signal while player \(1\) submits its move to the environment.</li>
-</ol>
-
-<p>The following example script tries placing a \(0\) at each location from top-left to bottom-right in succession. The command <code class="language-plaintext highlighter-rouge">get input from yield K1 (ind%3, ind/3)</code> submits the board position <code class="language-plaintext highlighter-rouge">(ind%3, ind/3)</code> to place a \(0\), waiting until the next time step to resume control. Upon resuming control and receiving an input, we check that the input is the left injection *, signalling a precondition violation using the <code class="language-plaintext highlighter-rouge">fail</code> command otherwise.</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var ind = 0 in
-var num_board_cells = 9 in
-while true do
-  get input from yield K0 *;
-  match input with
-  | K0 * -&gt; fail;
-  | K1 board -&gt; ();
-  get input from yield K1 (ind % 3, ind / 3);
-  match input with
-  | K0 * -&gt; ()
-  | K1 board -&gt; fail;
-  get input from yield K0 *;
-  match input with
-  | K0 * -&gt; ()
-  | K1 board -&gt; fail;
-  get input from yield K0 *;
-  match input with
-  | K0 * -&gt; ()
-  | K1 board -&gt; fail;
-  ind := (ind + 1)%num_board_cells;
-end
-</code></pre></div></div>
-
-<p>The next script improves the previous one by only attempting to place a \(0\) at unoccupied cells.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var ind = 0 in
-var num_board_cells = 9 in
-while true do
-  get input from yield K0 *;
-  let board =
-    match input with
-    | K0 * -&gt; fail
-    | K1 board -&gt; board
-  in
-  while (board (ind%3, ind/3)) != 2 do
-    ind := (ind + 1)%num_board_cells;
-  end;
-  get input from yield K1 (ind % 3, ind / 3);
-  match input with
-  | K0 * -&gt; ()
-  | K1 board -&gt; fail;
-  get input from yield K0 *;
-  match input with
-  | K0 * -&gt; ()
-  | K1 board -&gt; fail;
-  get input from yield K0 *;
-  match input with
-  | K0 * -&gt; ()
-  | K1 board -&gt; fail;
-end
-</code></pre></div></div>
-
-<h1 id="syntax">Syntax</h1>
-
-<h1 id="domains">Domains</h1>
-
-<p>We define the set \(\Sigma\) of <em>states</em> as the set of maps from variable names to values.</p>
-
-<p>Let \(I\) and \(O\) be sets considered as discrete predomains. We consider \(I\) to be the set of our process’s inputs and we consider \(O\) to be the set of our process’s outputs.
-We define the domain \(\Omega_{I,O}\) of “results” to contain all trees of input/output behaviors that a process may exhibit, more formally, an element \(\omega \in \Omega_{I,O}\) can be:</p>
-
-<ul>
-  <li>The behavior \(\bot\) of processes that loop indefinitely without producing any output or receiving any input</li>
-  <li>The behavior \(\langle o, \lambda i. \alpha_i \rangle\) of processes that produce the output \(o \in O\), then receive input \(i \in I\) before either transitioning to a behavior \(\omega_i\) if \(\alpha_i = K_1 \omega_i\) for some behavior \(\omega_i\) or halting abnormally if \(\alpha_i = K_0 \ast\)</li>
-</ul>
-
-<p>More formally, \(\Omega\) is a domain with the following isomorphism.</p>
-
-\[\Omega \cong (O \times (I \to (\Omega + 1)))_\bot\]
-
-<p>OOPS!
-Using domains as an ambient category is a weird idea: a dynamical system’s output wire doesn’t provide a complete value to the environment, but instead partial information, or a thunk which may or may not diverge. Let’s use a language with provably productive scripts instead.</p>
-
-<p>From the above isomorphism, we can obtain a lens</p>
-
-\[\vrt{f^\sharp}{f} : \vrt{\Omega}{\Omega} \leftrightarrows \vrt{I}{O}\]
-
-<p>which reinterprets \(\Omega\) as the state space of a dynamical system. Write \(\mathsf{unfold} : \Omega \to (O \times (I \to (\Omega + 1)))_\bot\) for the forward direction of the isomorphism. Given a state \(\omega \in \Omega\), either \(\mathsf{unfold}(\omega) = \bot\) (the process is diverging), or \(\mathsf{unfold}(\omega) = \langle o, k \rangle\) for some output \(o \in O\) and continuation \(k : I \to (\Omega + 1)\).</p>
-
-<p>The <strong>passforward</strong> \(f : \Omega \to O\) reads off the output the process exposes at its current state:</p>
-
-\[f(\omega) \defeq \begin{cases} o &amp; \text{if } \mathsf{unfold}(\omega) = \langle o, k \rangle \\ \ast &amp; \text{if } \mathsf{unfold}(\omega) = \bot \end{cases}\]
-
-<p>Here the diverging case \(\bot\) has no output to expose; since \(O = 1 + \mathsf{Loc}\) we send it to the “empty signal” \(K_0 \ast\), treating a silent, non-productive process as one that exposes nothing.</p>
-
-<p>The <strong>passback</strong> \(f^\sharp : \Omega \times I \to (\Omega + 1)\) feeds an input to the current state and produces either a successor state or an abnormal halt:</p>
-
-\[f^\sharp(\omega, i) \defeq \begin{cases} k(i) &amp; \text{if } \mathsf{unfold}(\omega) = \langle o, k \rangle \\ K_0 \ast &amp; \text{if } \mathsf{unfold}(\omega) = \bot \end{cases}\]
-
-<p>That is, when the process is productive we apply its continuation \(k\) to the input \(i\), yielding \(K1~\omega_i\) (the successor behavior) or \(K0~\ast\) (an abnormal halt) exactly as recorded in \(\Omega\). When the process is diverging, no input can be consumed, so the step halts abnormally.</p>
-
-<p>Together, \(\vrt{f^\sharp}{f}\) is a partial lens of type \(\vrt{\Omega}{\Omega} \leftrightarrows \vrt{I}{O}\), and pairing it with an initial result \(\omega_0 \in \Omega\) yields the partial dynamical system denoted by a program.</p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)]]></summary></entry><entry><title type="html">The Semantics of Lens Logic</title><link href="https://kevinclancy.github.io/modelling-computer-games/2026/05/03/semantics-of-lens-logic.html" rel="alternate" type="text/html" title="The Semantics of Lens Logic" /><published>2026-05-03T09:00:00-07:00</published><updated>2026-05-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2026/05/03/semantics-of-lens-logic</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2026/05/03/semantics-of-lens-logic.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
-\(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
-
-<h1 id="introduction">Introduction</h1>
-
-<p>A subset \(A \subseteq X\) can be read as a property of elements of \(X\): an element belongs to \(A\) if and only if it has the property. For example, the set \(\mathsf{even} = \{0, 2, 4, 6, \ldots\} \subseteq \mathbb N\) is the property “is an even natural number”, and \(2 \in \mathsf{even}\) records the fact that \(2\) has it.</p>
-
-<p>Under this reading, set-theoretic operations correspond to logical ones. Union is “or”: a natural number is even or odd if it lies in \(\mathsf{even} \cup \mathsf{odd} = \{0, 2, 4, \ldots\} \cup \{1, 3, 5, \ldots\}\). Intersection is “and”; complement is “not”; the empty set is falsehood; the whole set \(X\) is truth.</p>
-
-<p>Above, we’ve used sets to model logic formulas and set-theoretic operations to model logical operations. This modelling is useful partly because we understand it intuitively. It helps us understand why the building blocks of logic have the algebraic properties they do. Furthermore, a formal correspondence between set theoretic semantics and logic allows us to justify the logic as sound.</p>
-
-<p>I’m searching for a logical system to reason about dynamical systems and lenses. I’m not sure what such a logic would look like, and I haven’t spent much time thinking about it. In this post, as a first step toward finding such a logic, I’ll attempt to develop its underlying set theoretic semantics.</p>
-
-<p>I will focus on partial systems, and the tic-tac-toe system from <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a> in particular.</p>
-
-<h1 id="preliminary-notions">Preliminary notions</h1>
-
-<p>Before we start, we establish some preliminary concepts. Namely, we formalize semantic notions for the sorts of systems that can be placed inside and outside an arena, respectively.</p>
-
-<blockquote>
-  <p><strong>Definition</strong></p>
-
-  <p>A <strong>semantic partial system</strong>, or <strong>semantic system</strong> for short, with input set \(A\) and output set \(B\) is a triple \(p \defeq (S, s_0 \in S, \bar{p}~: S \to (1 + S)^A \times B)\), where \(S\) is a set whose elements are the states the system can take on, \(s_0 \in S\) is the initial state, and the function \(\bar{p}\) maps each state \(s\) to a pair \((f, b)\), where \(b \in B\) is the output the system exposes at state \(s\), and \(f\) is the system’s update function: for each input \(a \in A\), \(f(a)\) either “fails”, if \(f(a) = \kappa_1 \ast\), or produces a successor state \(s'\) if \(f(a) = \kappa_2 s'\). We write \(\mathsf{Sys}_{A, B}\) for the collection of all semantic systems with input set \(A\) and output set \(B\).</p>
-</blockquote>
-
-<p>Note that a semantic partial system is essentially a partial dynamical system paired with an initial state, as the function \(\bar{p} : S \to (1 + S)^A \times B\) can be thought of as the pair of functions of types \(S \to B\) and \(S \to (1 + S)^A\), the latter of which can be uncurried to \(S \times A \to (1 + S)\).</p>
-
-<h1 id="predicates-on-arenas">Predicates on arenas</h1>
-
-<h2 id="inner-and-outer-systems">Inner and outer systems</h2>
-
-<blockquote>
-  <p><strong>Definition</strong></p>
-
-  <p>An <strong>inner system</strong> \(p\) on an arena \(\vrt{A}{B}\) is a semantic system of the form \((S, s_0 \in S, \bar{p} : S \to (1 + S)^A \times B)\). An <strong>outer system</strong> on \(\vrt{A}{B}\) is a semantic system of the form \((S, s_0 \in S, \bar{p} : S \to (1 + S)^B \times A)\).</p>
-</blockquote>
-
-<p>An arena \(\vrt{A}{B}\) can be thought of as a boundary between two semantic systems. An inner system \(p = (S, s_0, \bar{p} : S \to (1 + S)^A \times B)\) and an outer system \(q = (T, t_0, \bar{q} : T \to (1 + T)^B \times A)\). (Note the reversal of \(A\) and \(B\).) It witnesses a sequence of time steps. A time step with inner state \(s\) and outer state \(t\) consists of two phases:</p>
-
-<ol>
-  <li>
-    <p>The element \(b \defeq \bar{p}(s);\pi_2 \in B\) flows from the inner system to the arena while simultaneously, the element \(a \defeq \bar{q}(t);\pi_2\) flows from the outer system to the arena.</p>
-  </li>
-  <li>
-    <p>A new inner system state \(s'\) is computed as \(\kappa_2 s' = (\bar{p}(s);\pi_1)(a)\) and simultaneously a new outer system state \(t'\) is computed as \(\kappa_2 t' = (\bar{q}(t);\pi_1)(b)\). Alternatively, if either \((\bar{p}(s);\pi_1)(a) = \kappa_1 \ast\) or \((\bar{q}(t);\pi_1)(b) = \kappa_1 \ast\) then an error has occurred, and so the outer and inner system both grind to a halt; this isn’t supposed to happen.</p>
-  </li>
-</ol>
-
-<p>We use a set by selecting an element. A predicate on a set \(X\) is a subset of \(X\) that provides us partial information about a use of \(X\) by constraining the set of possible elements to select.</p>
-
-<p>Analogously, a useful notion of a predicate on an arena might provide partial information about a usage of an arena. But just how are arenas used? There are a few candidates for how to use an arena \(\vrt{A}{B}\), among them are:</p>
-
-<ol>
-  <li>
-    <p>Selecting a semantic system \(p \defeq (S, s_0 \in S, \bar{p} : S \to (1 + S)^A \times B)\) to place inside the boundary mediated by the arena.</p>
-  </li>
-  <li>
-    <p>Selecting a semantic system \(q \defeq (T, t_0 \in T, \bar{q} : T \to (1 + T)^B \times A)\) to place outside the boundary mediated by the arena.</p>
-  </li>
-</ol>
-
-<p>We develop a semantics in which both placements — inner and outer — give rise to predicate notions, and these interact via lens-mediated structure.</p>
-
-<p>As a first attempt, we might define our predicate notions as follows:</p>
-
-<blockquote>
-  <p><strong>Preliminary definition</strong></p>
-
-  <p>An <strong>inner predicate</strong> \(P\) on an arena \(\vrt{A}{B}\) is a set of inner systems on \(\vrt{A}{B}\). An <strong>outer predicate</strong> \(Q\) on an arena \(\vrt{A}{B}\) is a set of outer systems on \(\vrt{A}{B}\).</p>
-</blockquote>
-
-<p>But this definition is problematic. An obvious predicate in \(\vrt{A}{B}\) is \(\mathsf{true}\), also called \(\top\): the collection of all possible inner systems on \(\vrt{A}{B}\). This collection, however, is so big that it is unwieldy. Since each triple in the collection contains a set as its first component, we have at least one inner system for each non-empty set. This implies that the collection of inner systems is “too large” to be a set.</p>
-
-<h2 id="system-behaviors">System behaviors</h2>
-
-<p>A better approach is to prohibit our logic from making any statements about a system’s internal state. The \(S\) component of an inner system \((S, s_0, \bar{p} : S \to (1 + S)^A \times B)\) can be thought of as its representation: the set of the system’s possible internal states. Instead of quantifying over all possible representations, we choose a single representation \(Z\) whose elements directly convey the <em>behavior</em> of the system:</p>
-
-<p>Letting, \(A^*\) denote the set of all finite sequences of elements of \(A\), and letting \(\langle a_1, a_2, \ldots, a_n \rangle\) denote the member of \(A^*\) whose elements are, in order, \(a_1, a_2, \ldots a_n\), we define:</p>
-
-\[Z_{A,B} \defeq \{ f \in (1 + B)^{A^*} \mid (\forall \sigma \in A^*.~f(\sigma) = \kappa_1 \ast \Rightarrow \forall \sigma' \in A^* f(\sigma \cdot \sigma') = \kappa_1 \ast)  \wedge f(\langle \rangle) \neq \kappa_1 \ast \}\]
-
-<p>\(f \in Z_{A,B}\) represents a system such that, for \(\sigma \in A^*\),</p>
-
-<ul>
-  <li>If \(f(\sigma) = \kappa_2 b\) then the system produces output \(b\) after receiving the sequence of inputs \(\sigma\).</li>
-  <li>If \(f(\sigma) = \kappa_1 \ast\) then the system halts due to a precondition violation after reading some prefix of the sequence of inputs \(\sigma\) (possibly the entire sequence).</li>
-</ul>
-
-<p>With the above points in mind, the two constraints in the definition of \(Z_{A,B}\) can be understood as follows:</p>
-
-<p>The first constraint</p>
-
-\[(\forall \sigma \in A^*.~f(\sigma) = \kappa_1 \ast \Rightarrow \forall \sigma' \in A^*.~f(\sigma \cdot \sigma') = \kappa_1 \ast)\]
-
-<p>can be understood to mean that once our system halts due to a precondition violation, it cannot produce any outputs after receiving further inputs. The second constraint</p>
-
-\[f(\langle \rangle) \neq \kappa_1 \ast\]
-
-<p>can be understood to mean that no precondition can be violated before the system has received any inputs. We summarize the above discussion with the following definition:</p>
-
-<blockquote>
-  <p><strong>Definition</strong></p>
-
-  <p>The set \(Z_{A,B}\) defined above is called the set of <strong>inner behaviors</strong> on the arena \(\vrt{A}{B}\).</p>
-</blockquote>
-
-<blockquote>
-  <p><strong>Definition</strong></p>
-
-  <p>A subset of \(Z_{A,B}\) is called an <strong>inner predicate</strong> on the arena \(\vrt{A}{B}\).</p>
-</blockquote>
-
-<h2 id="behaviors-represent-classes-of-systems">Behaviors represent classes of systems</h2>
-
-<p>Any element \(f \in Z_\vrt{A}{B}\) can serve as the initial state of an inner system \((Z_{A,B}, f, \zeta : Z_{A,B} \to (1 + Z_{A,B})^A \times B)\).</p>
-
-<p>TODO: define and explain the final coalgebra</p>
-
-<h1 id="a-logic-on-inner-predicates">A logic on inner predicates</h1>
-
-<p>Now we explore the design of our logic. First, we want the ability to constrain the set of inputs our inner systems expect at specific times, as well as constrain the set of outputs our inner systems produce. A constraint on a set like \(A\) is essentially a subset \(X \subseteq A\); thus, our logic will contain a sublogic for expressing subsets of the input and output sets \(A\) and \(B\). Such logics are not novel; this sublogic, formulas could denote subsets and logical operators such as \(- \wedge -\) and \(- \vee -\) could correspond to set-theoretic operators such as \(- \cap -\) and \(- \cup -\). We elide the definition of this sublogic for now, but use subscripted symbols such as \(\varphi_A, \psi_A\) as metavariables for formulas expressing subsets of \(A\), and likewise use \(\varphi_B, \psi_B\) for formulas expressing subsets of \(B\). As an abuse of notation, we write \(a \in \varphi_A\) to mean that \(a\) is an element of the set denoted by \(\varphi_A\).</p>
-
-<p>The metavariable \(\upsilon\) is used for logic formulas describing sets of inner behaviors on \(\vrt{A}{B}\). A first pass at its syntax might look as follows:</p>
-
-\[\upsilon ::= [\varphi_A](\upsilon) \mid \downarrow \varphi_B \mid \upsilon_1 \wedge \upsilon_2 \mid \upsilon_1 \vee \upsilon_2\]
-
-<p>Roughly, the formula \([\varphi_A](\upsilon)\) denotes the set of all behaviors \(f\) such that:</p>
-
-<ul>
-  <li>We have \(\zeta(f) = (h, b)\)</li>
-  <li>\(b\) is any element of \(B\)</li>
-  <li>For every \(a \in \varphi_A\), \(h(a) = \kappa_2 f'\) for some \(f' \in Z_{A,B}\)</li>
-  <li>We have \(f' \in \upsilon\)</li>
-</ul>
-
-<p>And the formula \(\downarrow \varphi_B\) denotes the set of all behaviors \(f\) such that \(f(\langle \rangle) \in \varphi_B\).</p>
-
-<h1 id="transforming-arena-predicates">Transforming arena predicates</h1>
-
-<p>Fable wrote this section.</p>
-
-<p><a href="#transforming-arena-predicates">#transforming-arena-predicates</a></p>
-
-<p>Given an arena \(\vrt{A}{B}\), we now know two kinds of predicates on it: inner predicates, which constrain what may be placed inside the boundary it mediates, and outer predicates, which constrain what may be placed outside. But predicates stranded on individual arenas only take us so far. The whole point of our framework is that lenses relate arenas to one another, so a semantics of lens logic should explain how predicates travel along lenses.</p>
-
-<p>We have a familiar prototype to imitate. A function \(h : X \to Y\) induces two operations on ordinary predicates. The <strong>direct image</strong> operation transports a predicate on \(X\) forward along \(h\):</p>
-
-\[h_\ast\, P \defeq \{ h(x) \mid x \in P \}\]
-
-<p>and the <strong>inverse image</strong> operation transports a predicate on \(Y\) backward along \(h\):</p>
-
-\[h^\ast\, Q \defeq \{ x \in X \mid h(x) \in Q \}\]
-
-<p>A partial lens is not a function between arenas — an arena is a pair of sets rather than a set, and a lens passes information in two directions at once — so it is not immediately clear how to imitate this prototype. The key observation is that a partial lens induces a function, not between its domain and codomain arenas themselves, but between the collections of inner systems inhabiting them. Direct and inverse image along that induced function then come for free.</p>
-
-<h2 id="pushing-inner-systems-forward">Pushing inner systems forward</h2>
-
-<p><a href="#pushing-inner-systems-forward">#pushing-inner-systems-forward</a></p>
-
-<p>Throughout this section, fix a partial lens</p>
-
-\[\ell \defeq \vrt{f^\sharp}{f} : \vrt{A}{B} \leftrightarrows \vrt{C}{D}\]
-
-<p>so that its passforward and passback functions have types \(f : B \to D\) and \(f^\sharp : B \times C \to 1 + A\).</p>
-
-<p>Suppose we place an inner system \(p\) on \(\vrt{A}{B}\) and then fit the lens \(\ell\) around it like a shell. Viewed from outside the shell, the assembly behaves as an inner system on \(\vrt{C}{D}\). At each time step it exposes an output in \(D\), obtained by translating \(p\)’s output \(b \in B\) downstream through \(f\). It receives an input \(c \in C\), which is translated upstream through \(f^\sharp(b, c)\) before being delivered to \(p\). And it can fail in two ways: the translation itself may fail — that is, \(f^\sharp(b, c) = \kappa_1 \ast\), a precondition violation belonging to the lens — or the translation may succeed with some \(a \in A\) on which \(p\)’s own update function fails. Formalizing this picture:</p>
-
-<blockquote>
-  <p><strong>Definition</strong></p>
-
-  <p>Let \(p \defeq (S, s_0, \bar{p})\) be an inner system on \(\vrt{A}{B}\). The <strong>pushforward</strong> of \(p\) along \(\ell\), written \(\ell_\ast\, p\), is the inner system \((S, s_0, \bar{q})\) on \(\vrt{C}{D}\) defined as follows: for each state \(s \in S\), letting \((u, b) \defeq \bar{p}(s)\),</p>
-
-\[\bar{q}(s) \defeq (v, f(b))\]
-
-  <p>where for each \(c \in C\)</p>
-
-\[v(c) \defeq \begin{cases}
-\kappa_1 \ast &amp; \text{if } f^\sharp(b, c) = \kappa_1 \ast \\
-u(a) &amp; \text{if } f^\sharp(b, c) = \kappa_2\, a
-\end{cases}\]
-</blockquote>
-
-<p>Only the boundary behaviour changes: the state set and initial state pass through untouched, because the lens is a stateless adapter. Note also how two distinct failure modes are folded into one, just as they were when we composed partial lenses in <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a>: a precondition violation anywhere in the pipeline halts everything.</p>
-
-<p>Pushforward lets us redeem the promise made in the echo box example. Consider a partial dynamical system — a partial lens \(\vrt{f^\sharp}{f} : \vrt{\mathsf{State}}{\mathsf{State}} \leftrightarrows \vrt{\mathsf{In}}{\mathsf{Out}}\) — together with a chosen initial state \(s_0 \in \mathsf{State}\). Pushing the echo box forward along it, we compute, for each \(s \in \mathsf{State}\):</p>
-
-\[\overline{\left(\vrt{f^\sharp}{f}_{\!\ast}\; \mathsf{echo}^{s_0}_{\mathsf{State}}\right)}(s) = \left(f^\sharp(s, {-}),\; f(s)\right)\]
-
-<p>since the echo box’s update function never fails and returns whatever state it is handed, so that the second case in the definition of \(v\) collapses to \(f^\sharp(s, c)\) itself. This is exactly the semantic system that intuition demands the pair \((\vrt{f^\sharp}{f}, s_0)\) denote: at state \(s\) it exposes the output \(f(s)\), and it evolves — or fails — according to \(f^\sharp\). In slogan form, <em>a dynamical system is a lens wrapped around an echo box</em>, and pushforward is what “wrapped around” means. For instance, the tic-tac-toe environment of <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a>, started from the state \((\mathit{ReceiveFrom}(0), b_0)\) where \(b_0\) is the empty board, denotes the inner system</p>
-
-\[\vrt{\mathit{nextState}_{\mathit{Environment}}}{\mathit{output}_{\mathit{Environment}}}_{\!\ast}\; \mathsf{echo}^{(\mathit{ReceiveFrom}(0),\, b_0)}_{\mathit{State}_{\mathit{Environment}}}\]
-
-<p>on the arena \(\vrt{1 + \mathit{Loc}}{(1 + \mathit{Board}) \times \mathbf{3}}\).</p>
-
-<p>Pushforward also interacts well with lens composition. Write \(\mathsf{id} : \vrt{A}{B} \leftrightarrows \vrt{A}{B}\) for the identity partial lens, whose passforward is the identity function on \(B\) and whose passback is \((b, a) \mapsto \kappa_2\, a\).</p>
-
-<blockquote>
-  <p><strong>Proposition</strong></p>
-
-  <p>Pushforward is functorial. That is, for every inner system \(p\) on \(\vrt{A}{B}\) and all partial lenses \(\ell : \vrt{A}{B} \leftrightarrows \vrt{C}{D}\) and \(m : \vrt{C}{D} \leftrightarrows \vrt{E}{F}\), we have</p>
-
-\[\mathsf{id}_\ast\, p = p \qquad \text{and} \qquad (m \circ \ell)_\ast\, p = m_\ast\, (\ell_\ast\, p)\]
-</blockquote>
-
-<p>Both equations follow by unfolding definitions. The second deserves a moment of attention: its two sides fail in exactly the same circumstances, because the composite passback defined in <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a> signals a violation exactly when either constituent passback does. The bookkeeping we did when composing partial lenses is precisely what makes pushforward respect composition. Practically speaking, functoriality means it doesn’t matter whether we wrap a system in several adapters one at a time or fuse the adapters into a single lens first.</p>
-
-<h2 id="direct-and-inverse-image">Direct and inverse image</h2>
-
-<p><a href="#direct-and-inverse-image">#direct-and-inverse-image</a></p>
-
-<p>With pushforward in hand, our partial lens \(\ell\) induces a function</p>
-
-\[\ell_\ast : \mathsf{Sys}_{A, B} \to \mathsf{Sys}_{C, D}\]
-
-<p>from the inner systems on its domain arena to the inner systems on its codomain arena. Inner predicates are subsets of these collections, so we may transport them along \(\ell_\ast\) exactly as in the prototype at the top of this section.</p>
-
-<blockquote>
-  <p><strong>Definition</strong></p>
-
-  <p>Let \(P\) be an inner predicate on \(\vrt{A}{B}\) and let \(Q\) be an inner predicate on \(\vrt{C}{D}\). The <strong>direct image</strong> of \(P\) along \(\ell\) is the inner predicate on \(\vrt{C}{D}\) defined as</p>
-
-\[\ell_\ast\, P \defeq \{ \ell_\ast\, p \mid p \in P \}\]
-
-  <p>and the <strong>inverse image</strong> of \(Q\) along \(\ell\) is the inner predicate on \(\vrt{A}{B}\) defined as</p>
-
-\[\ell^\ast\, Q \defeq \{ p \in \mathsf{Sys}_{A, B} \mid \ell_\ast\, p \in Q \}\]
-</blockquote>
-
-<p>We overload \(\ell_\ast\) to denote both the pushforward of a single system and the direct image of a predicate; the argument always disambiguates. Functoriality of pushforward immediately gives \((m \circ \ell)_\ast\, P = m_\ast (\ell_\ast\, P)\) and \((m \circ \ell)^\ast\, Q = \ell^\ast (m^\ast\, Q)\) — note how inverse image reverses the order of composition.</p>
-
-<p>Each operation has a natural reading. The direct image \(\ell_\ast\, P\) holds of exactly those systems obtainable by wrapping some \(P\)-system in \(\ell\): it is the most precise claim we can make about the outside of the shell knowing only that \(P\) holds inside. Dually, the inverse image \(\ell^\ast\, Q\) holds of a system just when wrapping it in \(\ell\) produces a \(Q\)-system: it is the least demanding condition we can impose inside the shell that guarantees \(Q\) outside. Readers with a program verification background may recognize a strongest postcondition and a weakest precondition here, with the lens playing the role of the program.</p>
-
-<h2 id="a-galois-connection">A Galois connection</h2>
-
-<p><a href="#a-galois-connection">#a-galois-connection</a></p>
-
-<p>“Most precise” and “least demanding” are two descriptions of a single relationship.</p>
-
-<blockquote>
-  <p><strong>Proposition</strong></p>
-
-  <p>For every inner predicate \(P\) on \(\vrt{A}{B}\) and every inner predicate \(Q\) on \(\vrt{C}{D}\),</p>
-
-\[\ell_\ast\, P \subseteq Q \quad \text{ if and only if } \quad P \subseteq \ell^\ast\, Q\]
-</blockquote>
-
-<p>Both sides assert the same thing: that \(\ell_\ast\, p \in Q\) for every \(p \in P\). A pair of monotone maps related by an equivalence of this shape is called a <strong>Galois connection</strong>; direct image is its <em>lower adjoint</em> and inverse image its <em>upper adjoint</em>. Two standard consequences, obtained by instantiating the equivalence at \(Q \defeq \ell_\ast\, P\) and \(P \defeq \ell^\ast\, Q\) respectively, are</p>
-
-\[P \subseteq \ell^\ast (\ell_\ast\, P) \qquad \qquad \ell_\ast\, (\ell^\ast\, Q) \subseteq Q\]
-
-<p>Once we have a logic with lens modalities, we expect this equivalence to reappear as a two-way proof rule for moving a lens from one side of an entailment to the other.</p>
-
-<p>The introduction proposed union, intersection, and complement as the semantic counterparts of “or”, “and”, and “not”. Our two predicate transformers treat these connectives very differently:</p>
-
-<ul>
-  <li>Inverse image, being a preimage, commutes with <em>all</em> of them: \(\ell^\ast (Q_1 \cap Q_2) = \ell^\ast\, Q_1 \cap \ell^\ast\, Q_2\), and likewise for unions, complements, the empty predicate, and the total predicate. In logical terms, \(\ell^\ast\) behaves like a substitution, distributing freely through the propositional structure of any formula it is applied to.</li>
-  <li>Direct image preserves unions and the empty predicate — a lower adjoint preserves all joins — but in general neither intersections nor complements. For intersections we have only the inclusion \(\ell_\ast (P_1 \cap P_2) \subseteq \ell_\ast\, P_1 \cap \ell_\ast\, P_2\), which can be strict: a system on \(\vrt{C}{D}\) may arise both as the pushforward of a member of \(P_1\) and as the pushforward of a <em>different</em> member of \(P_2\) without arising from any member of \(P_1 \cap P_2\).
-The lopsided behaviour of direct image is not a defect; it is the signature of an existential. For an ordinary function \(h\), direct image is the semantic \(\exists\), and it participates in a triple of adjoints \(h_\ast \dashv h^\ast \dashv \forall_h\) whose rightmost member is the semantic \(\forall\). The analogous operation exists in our setting too:</li>
-</ul>
-
-\[\forall_\ell\, P \defeq \{ q \in \mathsf{Sys}_{C, D} \mid \text{for all } p \in \mathsf{Sys}_{A, B}, \text{ if } \ell_\ast\, p = q \text{ then } p \in P \}\]
-
-<p>We won’t need \(\forall_\ell\) for a while, but its presence is an early hint that when we eventually design the logic’s syntax, lenses should give rise to both diamond-like and box-like modalities.</p>
-
-<h2 id="what-about-outer-predicates">What about outer predicates?</h2>
-
-<p><a href="#what-about-outer-predicates">#what-about-outer-predicates</a></p>
-
-<p>Everything in this section so far concerns inner predicates, and one might expect a mirror-image story for outer predicates: surely a partial lens \(\ell : \vrt{A}{B} \leftrightarrows \vrt{C}{D}\) should transform an outer system on \(\vrt{C}{D}\) into an outer system on \(\vrt{A}{B}\), by fitting the shell around the <em>hole</em> rather than around the occupant?</p>
-
-<p>Surprisingly, it should not — at least not in this formalism. Consider an outer system \(q \defeq (T, t_0, \bar{q} : T \to (1 + T)^D \times C)\) on \(\vrt{C}{D}\) and attempt to construct from it an outer system on \(\vrt{A}{B}\). Such a system must expose, at each of its states, an output in \(A\). But the only means \(\ell\) provides for producing an element of \(A\) is the passback \(f^\sharp(b, c)\), whose first argument is the current output of the inner system — a value that, in the two-phase time step of <a href="#predicates-on-arenas">Predicates on arenas</a>, is produced simultaneously with, and independently of, the outer system’s own output. An outer system must compute its output from its own state alone, so the construction is stuck. (It goes through only in the special case where \(f^\sharp\) ignores its first argument.)</p>
-
-<p>Lenses therefore act on the inhabitants of arenas asymmetrically: inner systems push forward, but outer systems do not pull back. Rather than fight this asymmetry, we will let inner and outer predicates interact through the time-step protocol itself, via a satisfaction relation between the occupants of the two sides of an arena — the missing ingredient needed to make precise the “condition \(Q\) on outer systems” from the echo box example. Defining that relation is our next task.</p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)]]></summary></entry><entry><title type="html">Loose Ends and Future Directions</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html" rel="alternate" type="text/html" title="Loose Ends and Future Directions" /><published>2025-11-18T08:00:00-08:00</published><updated>2025-11-18T08:00:00-08:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+<p>So far, we have used comments to express a signature’s laws. In my next post, I will explore more formal techniques for doing so.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code age_map.insert("joe", 20) age_map.insert("bob", 30) and understands that next time that their program encounters the expression age_map.get("joe") it will return the last value passed in as the second argument in age_map.insert("joe", ____), namely 20 if no other calls to insert are made.]]></summary></entry><entry><title type="html">Loose Ends and Future Directions</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html" rel="alternate" type="text/html" title="Loose Ends and Future Directions" /><published>2025-11-18T08:00:00-08:00</published><updated>2025-11-18T08:00:00-08:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
 \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
 
 <h1 id="brain-dump">Brain Dump</h1>

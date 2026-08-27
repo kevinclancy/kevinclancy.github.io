@@ -331,7 +331,7 @@ end
 
   let pop s =
     match s with
-    | [] -&gt; invalid_arg "pop: empty stack"
+    | [] -&gt; invalid_arg "pop: empty queue"
     | a :: s' -&gt; (a, s')
 end
 
