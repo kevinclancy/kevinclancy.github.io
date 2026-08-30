@@ -1,0 +1,20 @@
+digraph modules {
+  rankdir=TB;
+  bgcolor="transparent";
+  node [shape=box, style="rounded,filled", fillcolor="#f5f5f5",
+        color="#333333", fontcolor="#111111",
+        fontname="Helvetica", fontsize=14,
+        width=1.4, height=0.5, margin="0.18,0.10"];
+  edge [color="#333333", arrowsize=0.8, penwidth=1.2];
+
+  HappyChild;
+  Main;
+  NumCounter;
+  Shoes;
+
+  NumCounter -> HappyChild;
+  Shoes      -> HappyChild;
+  HappyChild -> Main;
+
+  { rank=same; NumCounter; Shoes; }
+}
