@@ -139,6 +139,8 @@ end
   <li>For each val declaration in the signature, the struct must have a concrete value definition (a let binding) whose type matches the declaration’s.</li>
 </ul>
 
+<p>Furthermore, the operations defined by the concrete value definitions must obey the signature’s laws.</p>
+
 <p>Here is an example implementation of the Queue signature:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module ListQueue = struct
   type 'a t = 'a list
@@ -467,7 +469,7 @@ end
 end
 </code></pre></div></div>
 
-<p>If only we had some “module function” construct that transforms module arguments into result modules, we could invoke it multiple times to produce different JobBag modules, all of which implement the <code class="language-plaintext highlighter-rouge">JobBag</code> signature but which have different push/pop behaviors (one with FIFO behavior, one with LIFO behavior, etc.).</p>
+<p>If only we had some “module function” construct that transforms module arguments into module results, we could invoke it multiple times to produce different JobBag modules, all of which implement the <code class="language-plaintext highlighter-rouge">JobBag</code> signature but which have different push/pop behaviors (one with FIFO behavior, one with LIFO behavior, etc.).</p>
 
 <p>Such “module functions” exist in OCaml. They are called <em>functors</em>. A functor <code class="language-plaintext highlighter-rouge">JB</code> for producing <code class="language-plaintext highlighter-rouge">JobBag</code> implementations might appear as follows.</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module JB (B : PushPopBag) : JobBag = struct
