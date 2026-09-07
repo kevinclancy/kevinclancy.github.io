@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://kevinclancy.github.io/feed.xml" title="Kevin Clancy" />
+
+<meta name="google-site-verification" content="h95FdKfMe_sIUc78XvKO9eiblSziF0vQ_lcLfQeDQ0o" />
+<link rel="canonical" href="https://kevinclancy.github.io/understanding-module-systems/2026/09/01/translucency-and-signature-subsumption.html" /></head>
+<body>
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header-classic">
+    <h1 class="post-title p-name" itemprop="name headline">4. Translucency, Signature Subsumption, and Sharing Constraints</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2026-09-01T09:00:00-07:00" itemprop="datePublished">
+        Sep 1, 2026
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h1 id="translucency">Translucency</h1>
+
+<p>Previously, I defined signatures as a declarations of three types of components:</p>
+<ul>
+  <li>Data types defining the sorts of entities that can be manipulated</li>
+  <li>Operations to be performed on the entities</li>
+  <li>Laws constraining what behaviors the signature’s clients may observe when invoking a sequence of its operations</li>
+</ul>
+
+<p>But I presented a limited view of the first type of component: datatypes. They were all opaque names, signifying the existence of some datatype without defining its representation. In other words, they were abstract types, such as <code class="language-plaintext highlighter-rouge">t</code> in the leading <code class="language-plaintext highlighter-rouge">AgeMap</code> example:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type AgeMap = sig
+  type t
+  val insert : t -&gt; string -&gt; int -&gt; unit
+  val get : t -&gt; string -&gt; int
+  ...
+end
+</code></pre></div></div>
+
+<p>However, in addition to these <em>opaque</em> type declarations, OCaml signatures may also contain <em>transparent</em> type declarations:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type AgeMap = sig
+  type t
+  (** A map from names to ages *)
+
+  type name = string
+  (** The type of names used by the age map *)
+
+  val insert : t -&gt; name -&gt; int -&gt; unit
+  val get : t -&gt; name -&gt; int
+
+  ...
+end
+</code></pre></div></div>
+
+<p>A transparent type declaration like <code class="language-plaintext highlighter-rouge">name</code> above defines exactly how the datatype is represented. In this case, the transparent declaration indicates to clients of the <code class="language-plaintext highlighter-rouge">AgeMap</code> signature that any struct implementing AgeMap implements <code class="language-plaintext highlighter-rouge">name</code> using <code class="language-plaintext highlighter-rouge">string</code>. Clients can therefore use values of type <code class="language-plaintext highlighter-rouge">string</code> where values of type <code class="language-plaintext highlighter-rouge">AgeMap.name</code> are expected, e.g. given a value <code class="language-plaintext highlighter-rouge">v</code> of type <code class="language-plaintext highlighter-rouge">AgeMap.t</code> a client of the <code class="language-plaintext highlighter-rouge">AgeMap</code> signature can perform the function application <code class="language-plaintext highlighter-rouge">AgeMap.insert v "Ralph" 31</code>.</p>
+
+<p>The combination of opaque and transparent type declarations is often called <em>translucency</em>. At first, it may seem superficial; above, <code class="language-plaintext highlighter-rouge">name</code> simply serves as an alias for the type <code class="language-plaintext highlighter-rouge">string</code>. But at a practical level, the aliases may name complex datatypes that become unwieldy to type out multiple times across a signature. Furthermore, the right-hand side of a transparent type may be a complex type expression whose component types include both abstract types declared within the same signature, and concrete types visible from outside the signature, for example:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type KVMap = sig
+  type key
+  type value
+  type entry = key * value
+  ...
+end
+</code></pre></div></div>
+
+<p>There are yet more fundamental reasons to include transparent type declarations, which I will proceed to discuss.</p>
+
+<h1 id="signature-subsumption">Signature Subsumption</h1>
+
+<p>Suppose we have a module M sealed with signature S. If T is a signature with “fewer requirements” than S, we should be able to pass M into contexts where modules of signature T are expected. When this is the case, we say that S is subsumed by T and write S &lt;: T.</p>
+
+<p>A signature includes various types of requirements any structs considered to implement it:</p>
+
+<ol>
+  <li>For an opaque or transparent declaration of a type named t, the struct is required to have a type component named t.</li>
+  <li>For a transparent type declaration of a type named t as the type \(\tau\), the struct must have a type component named t defined as \(\tau\).</li>
+  <li>For a value declaration “val x : \(\tau\)”, the struct must have a value binding named x whose type is inferred or ascribed as \(\tau\).</li>
+  <li>And <em>informally</em>, the value declarations are required to satisfy all laws included in the signature.</li>
+</ol>
+
+<p>This suggests an algorithm for checking that S &lt;: T is true.</p>
+
+<ol>
+  <li>For each opaque declaration “type t” in T, check that S declares a type named t which is either opaque (“type t”) or transparently defined as any type \(\tau\) (“type t = \(\tau\)”).</li>
+  <li>For each transparent declaration “type t = \(\tau\)” in T, check that S declares “type t = \(\tau\)”.</li>
+  <li>For each declaration “val x : \(\tau\)” in T, check that S has a declaration “val x : \(\tau\)”.</li>
+  <li>Check that the conjunction of the laws of S imply the conjunction of the laws of T.</li>
+</ol>
+
+<p>Points (1)-(3) are handled by the OCaml type checker, but point (4) is beyond its scope. Also note that when S &lt;: T, S may contain type and value components whose names do not match the names of any type and value components of T.</p>
+
+<h1 id="sharing-constraints">Sharing Constraints</h1>
+
+<p>So far, we’ve seen one signature constructor form:</p>
+
+\[\mathsf{sig~...~end}\]
+
+<p>Above, \(\mathsf{...}\) is a placeholder for a list of the signature’s components.</p>
+
+<p>The <em>sharing constraint</em> is another useful signature constructor. It has the following form:</p>
+
+\[\mathsf{S~with~type~t} = \tau\]
+
+<p>Above, \(\mathsf S\) must be a signature that has an opaque type component named t and \(\tau\) may be an arbitrary type expression. This constructor is considered ill formed whenever either \(\mathsf S\) has no type component t or S has a <em>transparent</em> type component t. Thus, whenever the signature \(\mathsf{S~with~type~t} = \tau\) is well formed, we know that \(\mathsf S &lt;: (\mathsf{S~with~type~t} = \tau)\).</p>
+
+<p>Here is an example usage of sharing constraints. Recall the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> signature from <a href="/understanding-module-systems/2026/08/23/introduction.html">my first post</a>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
+  (** An undirected graph of location nodes, only some of which are traversable.
+      This graph is static, in that traversability and adjacency do not change over time.
+  *)
+
+  type node
+  (** A node in a graph *)
+
+  val compare_node : node -&gt; node -&gt; int
+  (** [compare_node n m] Returns 0 iff node [n] equals node [m] *)
+
+  val adjacent_nodes : node -&gt; node list
+  (** [adjacent_nodes n] All traversable nodes adjacent to node [n] *)
+
+  (* LAW:
+     The relation Eq defined such that
+
+     n Eq m &lt;=&gt; (compare_node n m = 0)
+
+     is an equivalence relation (reflexive, symmetric, and transitive)
+  *)
+
+  (* LAW:
+     The relation Lt defined such that
+
+     n Lt m &lt;=&gt; (compare_node n m &lt; 0)
+
+     is a strict total order (transitive, irreflexive, and trichotomy w.r.t. Eq)
+  *)
+
+  (* LAW:
+    n Eq m =&gt; (adjacent_nodes n = adjacent_nodes m)
+  *)
+end
+</code></pre></div></div>
+
+<p>Consider the following graph:</p>
+<figure>
+<img src="/assets/images/translucency-and-signature-subsumption/example-graph.png" style="margin-top: 30px; margin-bottom: 30px" />
+</figure>
+
+<p>A struct implementing <code class="language-plaintext highlighter-rouge">TraverseGraph</code>, using <code class="language-plaintext highlighter-rouge">int</code> as the <code class="language-plaintext highlighter-rouge">node</code> type and providing the above graph follows:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module MyGraph : (TraverseGraph with type node = int) = struct
+  type node = int
+  let compare_node (a : int) (b : int) = a - b
+  let adjacent_nodes (n : int) =
+    match n with
+    | 0 -&gt; [1 ; 2]
+    | 1 -&gt; [0 ; 2 ; 3]
+    | 2 -&gt; [0 ; 1]
+    | 3 -&gt; [1]
+    | _ -&gt;
+      failwith "invalid node"
+end
+</code></pre></div></div>
+
+<p>Then we can pass the struct into our BFS function and print its result:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let () =
+  let opt_path = shortest_path (module MyGraph) (module Queue) 0 2 in
+  match opt_path with
+  | Some(path) -&gt;
+    List.iter (fun n -&gt; Printf.printf "%d\n" n) path
+  | None -&gt;
+    Printf.printf "no path\n"
+</code></pre></div></div>
+
+<p>which prints the following output:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>0
+2
+</code></pre></div></div>
+<p>Sealing <code class="language-plaintext highlighter-rouge">MyGraph</code> with \(\mathsf{TraverseGraph}~\mathsf{with}~\mathsf{type}~\mathsf{node} = \mathsf{int}\) ensures that if they type checker succeeds then <code class="language-plaintext highlighter-rouge">MyGraph</code> <em>can</em> be sealed with \(\mathsf{TraverseGraph}\) in the future without <em>initially</em> sealing off <code class="language-plaintext highlighter-rouge">node</code> with an abstract type.</p>
+
+<p>If we had sealed <code class="language-plaintext highlighter-rouge">MyGraph</code> using <code class="language-plaintext highlighter-rouge">TraverseGraph</code> instead of the sharing constrained version, we would not have been able to call <code class="language-plaintext highlighter-rouge">shortest_path</code>, because there would have been no way to obtain any elements of type <code class="language-plaintext highlighter-rouge">MyGraph.node</code>. In fact, sealing directly with <code class="language-plaintext highlighter-rouge">TraverseGraph</code> would leave us with a totally useless module: with no way to obtain an element of type <code class="language-plaintext highlighter-rouge">MyGraph.node</code>, neither of the operations <code class="language-plaintext highlighter-rouge">adjacenct_nodes</code> nor <code class="language-plaintext highlighter-rouge">compare_node</code> can be called.</p>
+
+<p>This example has demonstrated just <em>one</em> way to use a type sharing constraint. There are multiple others that we will see shortly in the following posts.</p>
+
+<h2 id="different-kinds-of-opaque-declarations">Different Kinds of Opaque Declarations</h2>
+
+<p>Recall the <code class="language-plaintext highlighter-rouge">Queue</code> signature from <a href="/understanding-module-systems/2026/08/23/introduction.html">the first post</a>, which I’ll reproduce below:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Queue = sig
+  (** The standard functional queue ADT *)
+
+  type 'a t
+  (** A functional queue whose elements have type ['a] *)
+
+  val empty : 'a t
+  (** An empty queue *)
+
+  val push : 'a t -&gt; 'a -&gt; 'a t
+  (**
+    [q' = push q v] pushes element [v] onto the back of queue [q] to
+    obtain [q']
+  *)
+
+  val pop : 'a t -&gt; 'a * 'a t
+  (** [(a, q') = pop q] Pops front [a] of the queue [q], yielding [q']
+
+      ## Requires
+
+      * [not (is_empty q)]
+
+      ## Returns
+
+      * a:'a - The element popped from the front of [q]
+
+      * q':'a t - The queue resulting from popping the front off [q]
+  *)
+
+  val is_empty : 'a t -&gt; bool
+  (** [is_empty q] Is queue [q] empty? *)
+
+  (* LAW:
+    The sequence underlying the queue named "empty" (defined above) is the empty sequence
+  *)
+
+  (* LAW:
+
+    If s is the sequence of elements of type 'a underlying a queue q then
+    [is_empty q] is true iff s is the empty sequence
+
+  *)
+
+  (* LAW:
+
+     If s is the sequence of elements underlying a queue q,
+     then the sequence underlying [push q a] is s ++ [a] (a appended to the end of s)
+
+  *)
+
+  (* LAW:
+
+     If [a] ++ s (element a prepended to the sequence s) is the sequence of elements underlying
+     a queue q, then [pop q] = (a, q'), where the sequence underlying queue q' is s
+  *)
+end
+</code></pre></div></div>
+
+<p>It declares an opaque family of types <code class="language-plaintext highlighter-rouge">'a t</code>. These opaque types are fundamentally different than the the opaque type <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code>, in the sense that they are intended to hide their concrete representations. These type declarations occur in signatures that seal structs immediately once they’ve been created. On the other hand, the <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code> declares a placeholder for a type drawn from some outside context; its intended use involves submsumption and/or sharing constraints.</p>
+
+<p>Earlier, I claimed “modules are like vending machines”, in the sense that they provide laws governing their interactions, isolating us from a complex internal representation. The signature \(\mathsf{TraverseGraph}~\mathsf{with}~\mathsf{type}~\mathsf{node}=\mathsf{int}\), on the other hand, doesn’t isolate us from anything. Yet it still has laws that govern our interaction with it. So in this sense, it may be viewed as a degenerate vending machine that provides operations on existing datatypes without encapsulating any new datatypes of its own. Then, subsuming into <code class="language-plaintext highlighter-rouge">TraverseGraph</code> (as when we apply the <code class="language-plaintext highlighter-rouge">shortest_path</code> function) allows us to temporarily view <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code> type as abstract in a local context.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>OCaml signatures may contain both opaque type declarations, which hide a structs’ type components behind abstractions, and transparent type declarations, which expose structs’ type components in full to their clients. Transparent type declarations can be subsumed into opaque type declarations local contexts via signature subsumption. Sharing constraints allow us to strengthen a signature by replacing an opaque type component with a transparent one.</p>
+
+<p>I will demonstrate all these concepts in the next post, which introduces <em>functors</em>, which are essentially functions from modules to modules, implementing vending machines in terms of vending machines.</p>
+
+  </div><a class="u-url" href="/understanding-module-systems/2026/09/01/translucency-and-signature-subsumption.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <ul class="contact-list">
+          
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p></p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
