@@ -107,7 +107,7 @@ end
 
 \[\mathsf{S~with~type~t} = \tau\]
 
-<p>Above, \(\mathsf S\) must be a signature that has an opaque type component named t and \(\tau\) may be an arbitrary type expression. This constructor is considered ill formed whenever either \(\mathsf S\) has no type component t or S has a <em>transparent</em> type component t. Thus, whenever the signature \(\mathsf{S~with~type~t} = \tau\) is well formed, we know that \(\mathsf S &lt;: (\mathsf{S~with~type~t} = \tau)\).</p>
+<p>Above, \(\mathsf S\) must be a signature that has an opaque type component named t and \(\tau\) may be an arbitrary type expression. This constructor is considered ill formed whenever either \(\mathsf S\) has no type component t or S has a <em>transparent</em> type component t. Thus, whenever the signature \(\mathsf{S~with~type~t} = \tau\) is well formed, we know that \((\mathsf{S~with~type~t} = \tau) &lt;: \mathsf S\).</p>
 
 <p>Here is an example usage of sharing constraints. Recall the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> signature from <a href="/understanding-module-systems/2026/08/23/introduction.html">my first post</a>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
