@@ -275,6 +275,10 @@ end
            (member (insert set v) v) = true
   *)
 
+  (* LAW: for all (v : Item.t) (w : Item.t) and (set : t),
+           (Item.eq v w) =&gt; (member set v) = (member set w)
+  *)
+
   (* LAW: for all (v : Item.t), (w : Item.t), and (set : t) with (Item.eq v w) = false,
            (member (insert set v) w) = (member set w)
   *)

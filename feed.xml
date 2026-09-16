@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-14T22:27:54-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-15T21:13:36-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
 
 <h1 id="nested-modules-and-signatures">Nested Modules and Signatures</h1>
 
@@ -246,6 +246,10 @@ end
 
   (* LAW: for all (v : Item.t) and (set : t),
            (member (insert set v) v) = true
+  *)
+
+  (* LAW: for all (v : Item.t) (w : Item.t) and (set : t),
+           (Item.eq v w) =&gt; (member set v) = (member set w)
   *)
 
   (* LAW: for all (v : Item.t), (w : Item.t), and (set : t) with (Item.eq v w) = false,
@@ -1234,10 +1238,11 @@ val get : t -&gt; string -&gt; int
 <p>Above, <code class="language-plaintext highlighter-rouge">t</code> is the type of age maps, which the value <code class="language-plaintext highlighter-rouge">age_map</code> belongs to. And <code class="language-plaintext highlighter-rouge">unit</code> is the type of the empty tuple; it’s returned by functions that are called only for their side effects.</p>
 
 <p>In addition, the signature should also contain a behavior specification. Intuitively, it would list behavioral equations such as the following:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>forall (map:t) (name:string) (age:int) (age2:int) (age3:int).
-   (insert map name age) &amp;&amp;
-   ((not (insert map name age2)) Until (age3 = get map name)) =&gt;
-   age3 = age
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(* LAW:
+     insert map name age;
+     ... any code that does not insert into m under [name] ...
+     assert (get map name = age)
+*)
 </code></pre></div></div>
 
 <p>Above is a “pseudocode specification”, in that it doesn’t conform to any formally defined specification language that I know of. It says that if we insert <code class="language-plaintext highlighter-rouge">(name,age)</code> into the map and then do not insert any other age corresponding to <code class="language-plaintext highlighter-rouge">name</code> before calling <code class="language-plaintext highlighter-rouge">get map name</code>, then <code class="language-plaintext highlighter-rouge">get map name</code> should return <code class="language-plaintext highlighter-rouge">age</code>. More concisely, an entry inserted into the map stays there unless we override it.</p>
@@ -1370,7 +1375,7 @@ module Q : Queue = ListQueue
 <p>In addition to access to the Queue datatype, the BFS algorithm requires access to the nodes and edges of a graph. For this, we define another signature:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
-  (** An undirected graph of location nodes, only some of which are traversable.
+  (** An directed graph of location nodes, only some of which are traversable.
       This graph is static, in that traversability and adjacency do not change over time.
   *)
 
@@ -1400,7 +1405,13 @@ module Q : Queue = ListQueue
   *)
 
   (* LAW:
-    n Eq m =&gt; (adjacent_nodes n = adjacent_nodes m)
+    Write [x ∈≡ l] for "some y in list l has x Eq y".
+
+    If n Eq m, then for every node x,
+      x ∈≡ (adjacent_nodes n)  iff  x ∈≡ (adjacent_nodes m)
+
+    i.e. Eq-equivalent nodes have the same neighbors, up to Eq,
+    ignoring order and duplicates.
   *)
 end
 </code></pre></div></div>
@@ -1630,8 +1641,7 @@ end
 
   (* LAW:
 
-     If c is the bag of elements underlying a push-pop bag b, then [pop b] = (a, b'), where the bag underlying push-pop bag b' is (c - a),
-     i.e. c with one occurrence of a removed.
+     If c is the bag of elements underlying a non-empty push-pop bag b, then [pop b] = (a, b'), where a occurs in c and the bag underlying push-pop bag b' is (c - a), i.e. c with one occurrence of a removed.
   *)
 end
 </code></pre></div></div>
