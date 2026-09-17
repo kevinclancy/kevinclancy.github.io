@@ -29,9 +29,9 @@
 
 <p>In OCaml, it may be necessary to initialize a module before it is used. A counter module, for example, may need to allocate an integer reference storing the starting value.</p>
 
-<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>.  To ensure that every module is initialized before it is used, we stipulate that the module dependency graph not contain cycles. (For the most part; OCaml supports recursive modules, but they are the exception to the rule.) This is overly conservative, since a module may depend on another without needing it for initialization. However, it seems to work well enough in practice.</p>
+<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>. The OCaml compiler rejects cyclic dependency graphs, which conveniently guarantees that every module is initialized before it is used.</p>
 
-<p>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Each module adds complexity on top of the modules it depends on, both by combining multiple modules, and by combining their abstract datatypes and operations in complex ways. It compensates for the additional complexity by sealing: hiding its new datatype definitions behind abstract types of its own, and defining laws that govern the way its operations interact with those datatypes.</p>
+<p>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Internally, each module is more complex than the ones it depends on, since it combines their datatypes and operations in new ways. Externally, it can be simpler: by sealing, it hides its new representations behind abstract types of its own and states laws governing its operations, so that clients work in its vocabulary alone rather than in the vocabularies of everything beneath it.</p>
 
 <h1 id="the-happy-child-program">The Happy Child Program</h1>
 
@@ -183,7 +183,7 @@ let get_next (counter : t) : int =
   HappyChild.show_off ()
 </code></pre></div></div>
 
-<p>OCaml’s build system Dune culls out any modules that do not transitively depend on <code class="language-plaintext highlighter-rouge">Main</code> and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
+<p>OCaml’s build system Dune culls out any modules that <code class="language-plaintext highlighter-rouge">Main</code> does not transitively depend on and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
 <figure>
 <img src="/assets/images/building-a-program-from-modules/module-dag.png" style="margin-top: 30px; margin-bottom: 30px" />
 </figure>
@@ -194,7 +194,7 @@ Shoes
 HappyChild
 Main
 </code></pre></div></div>
-<p>Execution then initializes each module from top to bottom, where modules are initialized by normalizing the right-hand-sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
+<p>Execution then initializes each module from top to bottom, where modules are initialized by evaluating the right-hand-sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
 
 <p>I’m not sure if I like that initialization of independent modules is ordered alphabetically. That seems chaotic. It may be better to require the programmer to provide an initialization list themselves. But that’s not how Dune handles things.</p>
 

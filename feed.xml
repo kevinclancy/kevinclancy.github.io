@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-15T21:13:36-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-17T13:45:39-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
 
 <h1 id="nested-modules-and-signatures">Nested Modules and Signatures</h1>
 
@@ -283,7 +283,7 @@ end
     item :: set
 end : (Set with module Item = Eq))
 </code></pre></div></div>
-<p>What we have above is the first variant of a nested module definition discussed previously: <code class="language-plaintext highlighter-rouge">module X = M</code>, where <code class="language-plaintext highlighter-rouge">X</code> is <code class="language-plaintext highlighter-rouge">Set</code> and the right-hand side <code class="language-plaintext highlighter-rouge">M</code> is a kind of module expression we have not yet seen. It is a <em>functor</em>, which has the form <code class="language-plaintext highlighter-rouge">functor (X : S) -&gt; M</code>. A functor is essentially a module-level function that, when applied to a module argument of signature <code class="language-plaintext highlighter-rouge">S</code> named <code class="language-plaintext highlighter-rouge">X</code>, produces the result of evaluating module expression <code class="language-plaintext highlighter-rouge">M</code> which is in general defined in terms of <code class="language-plaintext highlighter-rouge">X</code>. In the above example, <code class="language-plaintext highlighter-rouge">M</code> is a <em>sealing</em> operation of the form <code class="language-plaintext highlighter-rouge">N : (Set with module Item = Eq)</code>. It seals the module <code class="language-plaintext highlighter-rouge">N</code> with the signature <code class="language-plaintext highlighter-rouge">Set with module Item = Eq</code>.</p>
+<p>What we have above is the first variant of a nested module definition discussed previously: <code class="language-plaintext highlighter-rouge">module X = M</code>, where <code class="language-plaintext highlighter-rouge">X</code> is <code class="language-plaintext highlighter-rouge">MakeSet</code> and the right-hand side <code class="language-plaintext highlighter-rouge">M</code> is a kind of module expression we have not yet seen. It is a <em>functor</em>, which has the form <code class="language-plaintext highlighter-rouge">functor (X : S) -&gt; M</code>. A functor is essentially a module-level function that, when applied to a module argument of signature <code class="language-plaintext highlighter-rouge">S</code> named <code class="language-plaintext highlighter-rouge">X</code>, produces the result of evaluating module expression <code class="language-plaintext highlighter-rouge">M</code> which is in general defined in terms of <code class="language-plaintext highlighter-rouge">X</code>. In the above example, <code class="language-plaintext highlighter-rouge">M</code> is a <em>sealing</em> operation of the form <code class="language-plaintext highlighter-rouge">N : (Set with module Item = Eq)</code>. It seals the module <code class="language-plaintext highlighter-rouge">N</code> with the signature <code class="language-plaintext highlighter-rouge">Set with module Item = Eq</code>.</p>
 
 <p>The more readable syntactic sugar for nested functor definitions of the form <code class="language-plaintext highlighter-rouge">module Y = functor (X:S) -&gt; (M:T)</code>, where <code class="language-plaintext highlighter-rouge">X</code> and <code class="language-plaintext highlighter-rouge">Y</code> are module names, <code class="language-plaintext highlighter-rouge">M</code> is a module expressions, and <code class="language-plaintext highlighter-rouge">S</code> and <code class="language-plaintext highlighter-rouge">T</code> are signatures is <code class="language-plaintext highlighter-rouge">module Y (X : S) : T = N</code>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module MakeSet (Eq : Equatable) : (Set with module Item = Eq) = struct
@@ -329,7 +329,7 @@ end
 end
 </code></pre></div></div>
 
-<p>To construct an IntSet module, we apply <code class="language-plaintext highlighter-rouge">MakeSet</code> to <code class="language-plaintext highlighter-rouge">IntEquatable</code> and bind the result to a nested module identifier. The module expression for functor application is <code class="language-plaintext highlighter-rouge">F(M)</code>, where <code class="language-plaintext highlighter-rouge">F</code> is the functor and <code class="language-plaintext highlighter-rouge">M</code> is the argument module. Therefore, we apply <code class="language-plaintext highlighter-rouge">Set</code> to <code class="language-plaintext highlighter-rouge">IntEquatable</code> in a nested module definition of the form <code class="language-plaintext highlighter-rouge">module X : S = F(M)</code> as follows:</p>
+<p>To construct an IntSet module, we apply <code class="language-plaintext highlighter-rouge">MakeSet</code> to <code class="language-plaintext highlighter-rouge">IntEquatable</code> and bind the result to a nested module identifier. The module expression for functor application is <code class="language-plaintext highlighter-rouge">F(M)</code>, where <code class="language-plaintext highlighter-rouge">F</code> is the functor and <code class="language-plaintext highlighter-rouge">M</code> is the argument module. Therefore, we apply <code class="language-plaintext highlighter-rouge">MakeSet</code> to <code class="language-plaintext highlighter-rouge">IntEquatable</code> in a nested module definition of the form <code class="language-plaintext highlighter-rouge">module X : S = F(M)</code> as follows:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module IntSet : (Set with module Item = IntEquatable) = MakeSet(IntEquatable)
 </code></pre></div></div>
 
@@ -503,7 +503,7 @@ end
 
 <p>Then we can pass the struct into our BFS function and print its result:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let () =
-  let opt_path = shortest_path (module MyGraph) (module Queue) 0 2 in
+  let opt_path = shortest_path (module MyGraph) 0 2 in
   match opt_path with
   | Some(path) -&gt;
     List.iter (fun n -&gt; Printf.printf "%d\n" n) path
@@ -594,9 +594,9 @@ end
 
 <p>In OCaml, it may be necessary to initialize a module before it is used. A counter module, for example, may need to allocate an integer reference storing the starting value.</p>
 
-<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>.  To ensure that every module is initialized before it is used, we stipulate that the module dependency graph not contain cycles. (For the most part; OCaml supports recursive modules, but they are the exception to the rule.) This is overly conservative, since a module may depend on another without needing it for initialization. However, it seems to work well enough in practice.</p>
+<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>. The OCaml compiler rejects cyclic dependency graphs, which conveniently guarantees that every module is initialized before it is used.</p>
 
-<p>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Each module adds complexity on top of the modules it depends on, both by combining multiple modules, and by combining their abstract datatypes and operations in complex ways. It compensates for the additional complexity by sealing: hiding its new datatype definitions behind abstract types of its own, and defining laws that govern the way its operations interact with those datatypes.</p>
+<p>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Internally, each module is more complex than the ones it depends on, since it combines their datatypes and operations in new ways. Externally, it can be simpler: by sealing, it hides its new representations behind abstract types of its own and states laws governing its operations, so that clients work in its vocabulary alone rather than in the vocabularies of everything beneath it.</p>
 
 <h1 id="the-happy-child-program">The Happy Child Program</h1>
 
@@ -748,7 +748,7 @@ let get_next (counter : t) : int =
   HappyChild.show_off ()
 </code></pre></div></div>
 
-<p>OCaml’s build system Dune culls out any modules that do not transitively depend on <code class="language-plaintext highlighter-rouge">Main</code> and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
+<p>OCaml’s build system Dune culls out any modules that <code class="language-plaintext highlighter-rouge">Main</code> does not transitively depend on and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
 <figure>
 <img src="/assets/images/building-a-program-from-modules/module-dag.png" style="margin-top: 30px; margin-bottom: 30px" />
 </figure>
@@ -759,7 +759,7 @@ Shoes
 HappyChild
 Main
 </code></pre></div></div>
-<p>Execution then initializes each module from top to bottom, where modules are initialized by normalizing the right-hand-sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
+<p>Execution then initializes each module from top to bottom, where modules are initialized by evaluating the right-hand-sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
 
 <p>I’m not sure if I like that initialization of independent modules is ordered alphabetically. That seems chaotic. It may be better to require the programmer to provide an initialization list themselves. But that’s not how Dune handles things.</p>
 
@@ -1567,15 +1567,15 @@ end
 
 module JQ : JobQueue = struct
    type t = {
-      task_queue : (unit -&gt; unit) Q.t ;
+      mutable task_queue : (unit -&gt; unit) Q.t ;
       (** A queue of "tasks", which are functions taking no input and producing no result *)
 
-      last_executed : time ;
+      mutable last_executed : time ;
       (** The time that the queue last executed a task *)
 
       execution_period : time_delta
-      (** The time minimum time required between executing distinct tasks *)
-   } ref
+      (** The minimum time required between executing distinct tasks *)
+   }
 
    let try_task = ... implementation goes here ...
 
@@ -1668,16 +1668,16 @@ end
 
 <p>Such “module functions” exist in OCaml. They are called <em>functors</em>. A functor <code class="language-plaintext highlighter-rouge">JB</code> for producing <code class="language-plaintext highlighter-rouge">JobBag</code> implementations might appear as follows.</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module JB (B : PushPopBag) : JobBag = struct
-   type t = r{
-      task_bag : (unit -&gt; unit) B.t ;
+   type t = {
+      mutable task_bag : (unit -&gt; unit) B.t ;
       (** A bag of "tasks", which are functions taking no input and producing no result *)
 
-      last_executed : time ;
+      mutable last_executed : time ;
       (** The time that the queue last executed a task *)
 
       execution_period : time_delta
-      (** The time minimum time required between executing distinct tasks *)
-   } ref
+      (** The minimum time required between executing distinct tasks *)
+   }
 
    let try_task = ... implementation goes here ...
 

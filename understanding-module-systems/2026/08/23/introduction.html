@@ -378,15 +378,15 @@ end
 
 module JQ : JobQueue = struct
    type t = {
-      task_queue : (unit -&gt; unit) Q.t ;
+      mutable task_queue : (unit -&gt; unit) Q.t ;
       (** A queue of "tasks", which are functions taking no input and producing no result *)
 
-      last_executed : time ;
+      mutable last_executed : time ;
       (** The time that the queue last executed a task *)
 
       execution_period : time_delta
-      (** The time minimum time required between executing distinct tasks *)
-   } ref
+      (** The minimum time required between executing distinct tasks *)
+   }
 
    let try_task = ... implementation goes here ...
 
@@ -479,16 +479,16 @@ end
 
 <p>Such “module functions” exist in OCaml. They are called <em>functors</em>. A functor <code class="language-plaintext highlighter-rouge">JB</code> for producing <code class="language-plaintext highlighter-rouge">JobBag</code> implementations might appear as follows.</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module JB (B : PushPopBag) : JobBag = struct
-   type t = r{
-      task_bag : (unit -&gt; unit) B.t ;
+   type t = {
+      mutable task_bag : (unit -&gt; unit) B.t ;
       (** A bag of "tasks", which are functions taking no input and producing no result *)
 
-      last_executed : time ;
+      mutable last_executed : time ;
       (** The time that the queue last executed a task *)
 
       execution_period : time_delta
-      (** The time minimum time required between executing distinct tasks *)
-   } ref
+      (** The minimum time required between executing distinct tasks *)
+   }
 
    let try_task = ... implementation goes here ...
 
