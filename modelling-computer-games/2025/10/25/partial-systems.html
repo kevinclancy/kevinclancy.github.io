@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
-  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Kevin Clancy" />
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://kevinclancy.github.io/feed.xml" title="Kevin Clancy" />
 
 <meta name="google-site-verification" content="h95FdKfMe_sIUc78XvKO9eiblSziF0vQ_lcLfQeDQ0o" />
-<link rel="canonical" href="http://localhost:4000/modelling-computer-games/2025/10/25/partial-systems.html" /></head>
+<link rel="canonical" href="https://kevinclancy.github.io/modelling-computer-games/2025/10/25/partial-systems.html" /></head>
 <body>
 
     <main class="page-content" aria-label="Content">
@@ -228,7 +228,7 @@ robot fuse_box {
 
 <p>A game engine may very reasonably execute multiple robot scripts in sequence on a single frame, but having the second robot receive messages sent by the first robot on the same frame is problematic. Not only does it violate our intuition that all robots are executing “at the same time” on a single frame, but it creates a hidden rule where a message sent from one robot to another may or may not arrive until the next frame depending on which robot was processed first.</p>
 
-<p>If two robots transmit messages along the same channel on the same frame, which message do the channel’s subscribers process first? Since both messages are considered to be sent “at the same time,” our game system is too coarse-grained to answer this question. Our model should therefore non-deterministically permit any ordering. However, our current dynamical system formalism doesn’t support non-determinism.</p>
+<p>If two robots transmit messages along the same channel on the same frame, which message do the channel’s subscribers process first? Since both messages are considered to be sent “at the same time”, our game system is too coarse-grained to answer this question. Our model should therefore non-deterministically permit any ordering. However, our current dynamical system formalism doesn’t support non-determinism.</p>
 
 <p>The next blog post will correct this by extending the formalism with non-deterministic state transitions. It will also present a basic model of MegaZeux where all robots operate concurrently at every frame. We won’t have time to model message channels in that post, but by introducing non-determinism into the MegaZeux model, we will establish the foundation needed to add message passing in a subsequent post.</p>
 
