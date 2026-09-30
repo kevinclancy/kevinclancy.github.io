@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-29T20:20:50-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-29T22:43:59-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
 
 <h1 id="nested-modules-and-signatures">Nested Modules and Signatures</h1>
 
@@ -2421,8 +2421,8 @@ Figure 5
 <p>The idea is that we have engineered our dynamical system such that none of the above three scenarios ever arises given that our initial state is valid. The set of conditions which are true for exactly those state/input pairs expected by our lens are called the lens’s <em>preconditions</em>. Unexpected state/input pairs such as the three listed above are called <em>precondition violations</em>. The environment system’s preconditions are</p>
 
 <ul>
-  <li>Locations \((1,\ell)\) must only be provided as the first component of the input when in a \(\mathit{ReceiveFrom}\) state</li>
-  <li>An “Empty input” \((0, \ast)\) must only be provided as the first component of the input when in a \(\mathit{SubmitTo}\) state</li>
+  <li>Locations \((1,\ell)\) must only be provided as the input when in a \(\mathit{ReceiveFrom}\) state</li>
+  <li>An “Empty input” \((0, \ast)\) must only be provided as the input when in a \(\mathit{SubmitTo}\) state</li>
   <li>The system must never be in \(\mathit{IllegalState}\)</li>
 </ul>
 
@@ -2457,7 +2457,7 @@ Figure 5
 
 \[\vrt{\mathit{nextState}}{\mathit{output}} : \vrt{\mathit{State}}{\mathit{State}} \leftrightarrows \vrt{\mathit{In}}{\mathit{Out}}\]
 
-  <p>That is, a partial dynamical system is a lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
+  <p>That is, a partial dynamical system is a partial lens whose domain is an arena of the form \(\vrt{\mathit{State}}{\mathit{State}}\) for some set \(\mathit{State}\).</p>
 </blockquote>
 
 <p>Taking this definition apart, we can see that a partial dynamical system is a pair of two functions:</p>
