@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
-  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://kevinclancy.github.io/feed.xml" title="Kevin Clancy" />
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Kevin Clancy" />
 
 <meta name="google-site-verification" content="h95FdKfMe_sIUc78XvKO9eiblSziF0vQ_lcLfQeDQ0o" />
-<link rel="canonical" href="https://kevinclancy.github.io/modelling-computer-games/2025/11/04/modelling-megazeux.html" /><meta name="keywords" content="categorical systems theory, game engine design, MegaZeux, systems theory, game development, math"></head>
+<link rel="canonical" href="http://localhost:4000/modelling-computer-games/2025/11/04/modelling-megazeux.html" /><meta name="keywords" content="categorical systems theory, game engine design, MegaZeux, systems theory, game development, math"></head>
 <body>
 
     <main class="page-content" aria-label="Content">
@@ -315,7 +315,7 @@ r(i) &amp; \text{otherwise}
 
 <p>For each robot identifier \(i \in \mathbf{n}\), we write \(\mathit{Robot}_i\) for the partial possibilistic system corresponding to robot \(i\).</p>
 
-<p>We posit the existence of a set \(\Sigma_i\) containing the <em>mental state</em> of robot \(i\). An element of \(\Sigma_i\) might contain a program counter for the script robot \(i\) is currently running, and it might contain private data members as well. For distinct \(i,j \in \mathbf{n}\) the sets \(\Sigma_i\) and \(\Sigma_j\) are not required to be equal and are typically distinct.</p>
+<p>We posit the existence of a set \(\Sigma_i\) whose elements are <em>mental states</em> of robot \(i\). An element of \(\Sigma_i\) might contain a program counter for the script robot \(i\) is currently running, and it might contain private data members as well. For distinct \(i,j \in \mathbf{n}\) the sets \(\Sigma_i\) and \(\Sigma_j\) are not required to be equal and are typically distinct.</p>
 
 <p>In addition to mental state, the state of robot \(i\) also contains <em>administrative state</em>. The administrative state \(S\), which is uniform across all robots, synchronizes the robot with the environment and stages actions to transmit to the environment.</p>
 
