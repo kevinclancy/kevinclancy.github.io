@@ -111,7 +111,7 @@ end
 
 <p>Here is an example usage of sharing constraints. Recall the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> signature from <a href="/understanding-module-systems/2026/08/23/introduction.html">my first post</a>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
-  (** An undirected graph of location nodes, only some of which are traversable.
+  (** A directed graph.
       This graph is static, in that traversability and adjacency do not change over time.
   *)
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-09-29T22:48:56-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-10-22T16:04:38-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
 
 <h1 id="nested-modules-and-signatures">Nested Modules and Signatures</h1>
 
@@ -446,7 +446,7 @@ end
 
 <p>Here is an example usage of sharing constraints. Recall the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> signature from <a href="/understanding-module-systems/2026/08/23/introduction.html">my first post</a>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
-  (** An undirected graph of location nodes, only some of which are traversable.
+  (** A directed graph.
       This graph is static, in that traversability and adjacency do not change over time.
   *)
 
@@ -1215,14 +1215,14 @@ A correct pure-list implementation of the given signature would need to append o
 </ul>
 
 <p>Stay tuned.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[There are other ways to communicate a signature’s laws besides informal comments. One is to use the formal specification language Gospel. Another is to pair each signature with a test suite.]]></summary></entry><entry><title type="html">1. Modules are like Vending Machines</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html" rel="alternate" type="text/html" title="1. Modules are like Vending Machines" /><published>2026-08-23T09:00:00-07:00</published><updated>2026-08-23T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/23/introduction.html"><![CDATA[<p>Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>age_map.insert("joe", 20)
-age_map.insert("bob", 30)
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>insert age_map "joe" 20
+insert age_map "bob" 30
 </code></pre></div></div>
-<p>and understands that next time that their program encounters the expression <code class="language-plaintext highlighter-rouge">age_map.get("joe")</code> it will return the last value passed in as the second argument in <code class="language-plaintext highlighter-rouge">age_map.insert("joe", ____)</code>, namely <code class="language-plaintext highlighter-rouge">20</code> if no other calls to <code class="language-plaintext highlighter-rouge">insert</code> are made.</p>
+<p>and understands that next time the expression <code class="language-plaintext highlighter-rouge">get age_map "joe"</code> is evaluated, it will return the last value passed in as the third argument in <code class="language-plaintext highlighter-rouge">insert age_map "joe" ____</code>, namely <code class="language-plaintext highlighter-rouge">20</code> if no other calls to <code class="language-plaintext highlighter-rouge">insert</code> are made.</p>
 
-<p>What the programmer does <em>not</em> need to understand is <em>why</em> invoking <code class="language-plaintext highlighter-rouge">age_map.get</code> reliably recalls <code class="language-plaintext highlighter-rouge">20</code>. The real reason is that <code class="language-plaintext highlighter-rouge">age_map</code> refers to a piece of data that is structured in a specific way that records associations. It may be implemented in terms of a hash table, or possibly a balanced binary tree. But those details are a distraction when trying to reason about real-world entities and high level business logic.</p>
+<p>What the programmer does <em>not</em> need to understand is <em>why</em> invoking <code class="language-plaintext highlighter-rouge">get age_map "joe"</code> reliably recalls <code class="language-plaintext highlighter-rouge">20</code>. The reason why is that <code class="language-plaintext highlighter-rouge">age_map</code> refers to a piece of data that is structured in a specific way that records associations; perhaps it is structured as a hash table or a balanced binary tree. But this detail is a distraction when trying to reason about real-world entities and high level business logic.</p>
 
-<p><em>Module systems</em> are a language feature that allow us to hide data representations such as hash tables and binary trees by “covering” them with constructs called <em>signatures</em>, which consist of the following components:</p>
+<p><em>Module systems</em> are a language feature that allow us to hide data representations such as hash tables and binary trees by “covering” them with constructs called <em>signatures</em>. A signature consists of the following components:</p>
 
 <ul>
   <li>A set of data types defining the sorts of entities that can be manipulated.</li>
@@ -1235,7 +1235,7 @@ age_map.insert("bob", 30)
 val insert : t -&gt; string -&gt; int -&gt; unit
 val get : t -&gt; string -&gt; int
 </code></pre></div></div>
-<p>Above, <code class="language-plaintext highlighter-rouge">t</code> is the type of age maps, which the value <code class="language-plaintext highlighter-rouge">age_map</code> belongs to. And <code class="language-plaintext highlighter-rouge">unit</code> is the type of the empty tuple; it’s returned by functions that are called only for their side effects.</p>
+<p>Above, <code class="language-plaintext highlighter-rouge">t</code> is the type of age maps, to which the value <code class="language-plaintext highlighter-rouge">age_map</code> belongs. And <code class="language-plaintext highlighter-rouge">unit</code> is the type of the empty tuple; it’s returned by functions that are called only for their side effects.</p>
 
 <p>In addition, the signature should also contain a behavior specification. Intuitively, it would list behavioral equations such as the following:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(* LAW:
@@ -1245,11 +1245,11 @@ val get : t -&gt; string -&gt; int
 *)
 </code></pre></div></div>
 
-<p>Above is a “pseudocode specification”, in that it doesn’t conform to any formally defined specification language that I know of. It says that if we insert <code class="language-plaintext highlighter-rouge">(name,age)</code> into the map and then do not insert any other age corresponding to <code class="language-plaintext highlighter-rouge">name</code> before calling <code class="language-plaintext highlighter-rouge">get map name</code>, then <code class="language-plaintext highlighter-rouge">get map name</code> should return <code class="language-plaintext highlighter-rouge">age</code>. More concisely, an entry inserted into the map stays there unless we override it.</p>
+<p>Above is a “pseudocode specification”, in that it doesn’t conform to a formally defined specification language. It says that if we insert an association of <code class="language-plaintext highlighter-rouge">name</code> with <code class="language-plaintext highlighter-rouge">age</code> into the map and then do not insert any other association of <code class="language-plaintext highlighter-rouge">name</code> before calling <code class="language-plaintext highlighter-rouge">get map name</code>, then <code class="language-plaintext highlighter-rouge">get map name</code> should return <code class="language-plaintext highlighter-rouge">age</code>. More concisely, an entry inserted into the map stays there unless we override it.</p>
 
 <p>The reason the above specification is pseudo-code rather than formal is that there is no widely used specification language for module signatures. Some have been developed; the most modern one that I know of is Gospel for OCaml. However, it’s not clear that any are production ready. There are a variety of reasons why signature specifications aren’t built in to modern module systems. Among them, deciding conformance to such specifications is undecidable.</p>
 
-<p>Nonetheless, it should be obvious that specifications are a fundamental aspect of signatures. In modern software, they’re present informally, as careful comments and field names which, like “map”, reference commonly understood concepts. It’s a mistake to explain module systems without acknowledging this, in the same way that it’s a mistake to explain functions without acknowledging that they may have preconditions and postconditions that are more precise than a type system can express.</p>
+<p>Nonetheless, it should be obvious that specifications are a fundamental aspect of signatures. In modern software, they’re present informally, as careful comments and field names which, like “insert”, reference commonly understood concepts. It’s a mistake to explain module systems without acknowledging this, in the same way that it’s a mistake to explain functions without acknowledging that they may have preconditions and postconditions that are more precise than a type system can express.</p>
 
 <h1 id="example---functional-queues">Example - Functional Queues</h1>
 
@@ -1318,14 +1318,14 @@ end
 
 <p>This signature describes <em>functional</em> queues in particular, meaning that each of the operations leave their argument queues intact. For example, <code class="language-plaintext highlighter-rouge">push q v</code> returns a new queue that behaves as <code class="language-plaintext highlighter-rouge">q</code> but with an additional element <code class="language-plaintext highlighter-rouge">v</code> pushed to its back; at the same time, we still have access to <code class="language-plaintext highlighter-rouge">q</code> even after calling <code class="language-plaintext highlighter-rouge">push</code> and binding its result to a variable <code class="language-plaintext highlighter-rouge">q'</code>.</p>
 
-<p>This signature can be thought of as a <em>vocabulary</em>, declaring <em>types</em> that classify the objects or entities of the vocabulary (or “values” in programming terminology), as well as declaring <em>operations</em> that can be used to manipulate the entities. Above, we can see that OCaml’s type declarations start with the keyword <code class="language-plaintext highlighter-rouge">type</code> and that its operation declarations start with the keyword <code class="language-plaintext highlighter-rouge">val</code>. However, importantly, the signature should also define <em>laws</em> constraining how the operations behave across multiple calls. Since OCaml has no built-in capacity to express such laws, I’ve included the laws as comments that begin with the text “LAW”. Note that the laws are somewhat redundant with respect to the comments that have already been attached to values. In practice, laws typically are inferred from the val fields names and the comments attached to them, not from standalone comments labelled with “LAW”.</p>
+<p>This signature can be thought of as a <em>vocabulary</em>, declaring <em>types</em> that classify the objects or entities of the vocabulary, as well as declaring <em>operations</em> that can be used to manipulate the entities. Above, we can see that OCaml’s type declarations start with the keyword <code class="language-plaintext highlighter-rouge">type</code> and that its operation declarations start with the keyword <code class="language-plaintext highlighter-rouge">val</code>. However, importantly, the signature should also define <em>laws</em> constraining how the operations behave across multiple calls. Since OCaml has no built-in capacity to express such laws, I’ve included the laws as comments that begin with the text “LAW”. Note that the laws are somewhat redundant with respect to the comments that have already been attached to values. In practice, laws typically are inferred from the val fields names and the comments attached to them, not from standalone comments labelled with “LAW”.</p>
 
 <h2 id="implementing-signatures-using-structs">Implementing Signatures using Structs</h2>
 
 <p>While the signature describes how functional queues can be used, we cannot provide access to functional queues until we have <em>implemented</em> the signature by defining a struct. A struct can be thought of as a list of definitions of two kinds:</p>
 
 <ul>
-  <li>For each type declaration in the signature, the struct must have a matching concrete type definition.</li>
+  <li>For each type declaration (or type family declaration) in the signature, the struct must have a matching concrete type definition (or type family definition).</li>
   <li>For each val declaration in the signature, the struct must have a concrete value definition (a let binding) whose type matches the declaration’s.</li>
 </ul>
 
@@ -1353,7 +1353,7 @@ module Q : Queue = ListQueue
 
 <p>It provides a family of concrete representations <code class="language-plaintext highlighter-rouge">'a list</code> for the abstract type family <code class="language-plaintext highlighter-rouge">'a t</code>. Then, it provides concrete values implementing each of the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s values.</p>
 
-<p>The <code class="language-plaintext highlighter-rouge">: Queue</code> on the bottom line seals the <code class="language-plaintext highlighter-rouge">Queue</code> signature over the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct. This first checks that the types of the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct’s let bindings match the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s val declarations. Then, it “creates a barrier” so that any client making use of <code class="language-plaintext highlighter-rouge">Q</code> cannot treat a value of type <code class="language-plaintext highlighter-rouge">'a Q.t</code> as a value of type <code class="language-plaintext highlighter-rouge">'a list</code> by pattern matching it into a cons cell or a nil list. Instead, all its clients can do is manipulate values of type <code class="language-plaintext highlighter-rouge">'a Q.t</code> using the vocabulary provided by <code class="language-plaintext highlighter-rouge">Queue</code>: namely, the <code class="language-plaintext highlighter-rouge">empty</code> value and the <code class="language-plaintext highlighter-rouge">push</code>, <code class="language-plaintext highlighter-rouge">pop</code>, and <code class="language-plaintext highlighter-rouge">is_empty</code> operations.</p>
+<p>The <code class="language-plaintext highlighter-rouge">: Queue</code> on the bottom line seals the <code class="language-plaintext highlighter-rouge">Queue</code> signature over the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct, producing a module named <code class="language-plaintext highlighter-rouge">Q</code>. This first checks that the types of the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct’s let bindings match the <code class="language-plaintext highlighter-rouge">Queue</code> signature’s val declarations and that the <code class="language-plaintext highlighter-rouge">ListQueue</code> struct’s type definitions match the signature’s type declarations. Then, it “creates a barrier” so that any client making use of <code class="language-plaintext highlighter-rouge">Q</code> cannot treat a value of type <code class="language-plaintext highlighter-rouge">'a Q.t</code> as a value of type <code class="language-plaintext highlighter-rouge">'a list</code> by pattern matching it into a cons cell or a nil list. Instead, the only thing clients of <code class="language-plaintext highlighter-rouge">Q</code> can do is manipulate values of type <code class="language-plaintext highlighter-rouge">'a Q.t</code> using the vocabulary provided by <code class="language-plaintext highlighter-rouge">Queue</code>: namely, the <code class="language-plaintext highlighter-rouge">empty</code> value and the <code class="language-plaintext highlighter-rouge">push</code>, <code class="language-plaintext highlighter-rouge">pop</code>, and <code class="language-plaintext highlighter-rouge">is_empty</code> operations.</p>
 
 <p>Note that the struct <code class="language-plaintext highlighter-rouge">ListQueue</code> is not an efficient queue implementation, because its <code class="language-plaintext highlighter-rouge">push</code> operation is O(n). A benefit of sealing is that when replacing the current implementation struct with a more efficient one, we need only check that the new implementation satisfies the <code class="language-plaintext highlighter-rouge">Queue</code> signature once. We do not need to check whether each individual client of <code class="language-plaintext highlighter-rouge">Q</code> is compatible with the new implementation.</p>
 
@@ -1361,22 +1361,22 @@ module Q : Queue = ListQueue
 
 <p>Once a struct has been sealed, we’ve obtained the “final product” of module systems: a “vocabulary” comprising a set of opaque types paired with a set of operations that can be performed on them, obeying a set of laws defined by the signature. The only thing left is to use this vocabulary. There are essentially two ways to do this:</p>
 
-<ul>
-  <li>1 - Use the sealed module to implement a function.</li>
-  <li>2 - Use the sealed module to construct another (higher level) sealed module.</li>
-</ul>
+<ol>
+  <li>Use the sealed module to implement a function.</li>
+  <li>Use the sealed module to construct another (higher level) sealed module.</li>
+</ol>
 
 <h2 id="using-modules-to-implement-functions">Using modules to implement functions</h2>
 
 <p>Here, I will demonstrate type 1 in depth.</p>
 
-<p>One of the most well-known applications of the Queue abstract datatype is to implement the standard “breadth-first search” (or “BFS” for short) algorithm. This algorithm takes the node <code class="language-plaintext highlighter-rouge">source</code> of a graph as input and computes the shortest path from source to every other node in the graph.</p>
+<p>One of the most well-known applications of the Queue abstract datatype is the standard “breadth-first search” (or “BFS” for short) algorithm. This algorithm takes the node <code class="language-plaintext highlighter-rouge">source</code> of a graph as input and computes the shortest path from source to every other node in the graph.</p>
 
 <p>In addition to access to the Queue datatype, the BFS algorithm requires access to the nodes and edges of a graph. For this, we define another signature:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
-  (** An directed graph of location nodes, only some of which are traversable.
-      This graph is static, in that traversability and adjacency do not change over time.
+  (** A directed graph.
+      This graph is static, in that adjacency does not change over time.
   *)
 
   type node
@@ -1386,7 +1386,7 @@ module Q : Queue = ListQueue
   (** [compare_node n m] Returns 0 iff node [n] equals node [m] *)
 
   val adjacent_nodes : node -&gt; node list
-  (** [adjacent_nodes n] All traversable nodes adjacent to node [n] *)
+  (** [adjacent_nodes n] All nodes adjacent to node [n] *)
 
   (* LAW:
      The relation Eq defined such that
@@ -1510,7 +1510,7 @@ end
   construct_path dest []
 </code></pre></div></div>
 
-<p>Note that while the above function takes the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> module as an argument <code class="language-plaintext highlighter-rouge">T</code>, the <code class="language-plaintext highlighter-rouge">Queue</code> module is referenced via a module identifier <code class="language-plaintext highlighter-rouge">Q</code> in context, as a “global”. The reason for the distinction is that any two modules implementing the <code class="language-plaintext highlighter-rouge">Queue</code> signature are observationally indistinguishable, so we only need one implementation in our program. On the other hand, different <code class="language-plaintext highlighter-rouge">TraverseGraph</code> implementations may have distinct set of nodes and edges, and so distinct calls to <code class="language-plaintext highlighter-rouge">shortest_path</code> can take distinct <code class="language-plaintext highlighter-rouge">T</code> modules implementing <code class="language-plaintext highlighter-rouge">TraverseGraph</code> as arguments.</p>
+<p>Note that while the above function takes the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> module as an argument <code class="language-plaintext highlighter-rouge">T</code>, the <code class="language-plaintext highlighter-rouge">Queue</code> module is referenced via a module identifier <code class="language-plaintext highlighter-rouge">Q</code> in context, as a “global”. The reason for the distinction is that any two modules implementing the <code class="language-plaintext highlighter-rouge">Queue</code> signature are observationally indistinguishable (ignoring performance differences), so we only need one implementation in our program. On the other hand, different <code class="language-plaintext highlighter-rouge">TraverseGraph</code> implementations may have distinct set of nodes and edges, and so distinct calls to <code class="language-plaintext highlighter-rouge">shortest_path</code> can take distinct <code class="language-plaintext highlighter-rouge">T</code> modules implementing <code class="language-plaintext highlighter-rouge">TraverseGraph</code> as arguments.</p>
 
 <h2 id="faulty-sealing">Faulty sealing</h2>
 
@@ -1540,7 +1540,7 @@ module Q : Queue = ListStack
 
 <h1 id="using-modules-to-implement-modules">Using modules to implement modules</h1>
 
-<h2 id="implementing-modules-uing-global-modules">Implementing modules uing global modules</h2>
+<h2 id="implementing-modules-using-global-modules">Implementing modules using global modules</h2>
 
 <p>A long running process could implement a batch scheduler that executes tasks submitted from an external source at a regular interval. For fairness, we want to perform the earliest submitted tasks first, so we store them in a queue data structure.</p>
 
@@ -1587,7 +1587,7 @@ end
 
 <h2 id="implementing-modules-using-parameter-modules">Implementing modules using parameter modules</h2>
 
-<p>Here <code class="language-plaintext highlighter-rouge">JQ</code> is defined in reference to <code class="language-plaintext highlighter-rouge">Q</code>, a specific implementation of the <code class="language-plaintext highlighter-rouge">Queue</code> signature. Because <code class="language-plaintext highlighter-rouge">Queue</code> provides a full specification of a module’s behavior, there is no reason we would need to use multiple distinct <code class="language-plaintext highlighter-rouge">Queue</code> implementatations in the same program. However, we could weaken the <code class="language-plaintext highlighter-rouge">Queue</code> signature into a more general signature <code class="language-plaintext highlighter-rouge">PushPopBag</code> that does not enforce any ordering, satisfied by both the queue struct and the stack struct, as well as an implementation which allows <code class="language-plaintext highlighter-rouge">pop</code> to produce a randomly chosen element from the set.</p>
+<p>Above, <code class="language-plaintext highlighter-rouge">JQ</code> is defined in reference to <code class="language-plaintext highlighter-rouge">Q</code>, a specific implementation of the <code class="language-plaintext highlighter-rouge">Queue</code> signature. Because <code class="language-plaintext highlighter-rouge">Queue</code> provides a full specification of a module’s behavior (ignoring performance characteristics), there is no reason we would need to use multiple distinct <code class="language-plaintext highlighter-rouge">Queue</code> implementations in the same program. However, we could weaken the <code class="language-plaintext highlighter-rouge">Queue</code> signature into a more general signature <code class="language-plaintext highlighter-rouge">PushPopBag</code> that does not enforce any pop ordering, and which is satisfied by both the queue struct and the stack struct, as well as an implementation which allows <code class="language-plaintext highlighter-rouge">pop</code> to produce a randomly chosen element from the set.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type PushPopBag = sig
   (** A bag which we can insert and delete elements from *)
@@ -1600,8 +1600,7 @@ end
 
   val push : 'a t -&gt; 'a -&gt; 'a t
   (**
-    [b' = push b v] pushes element [v] into the bag [b] to
-    obtain [b']
+    [b' = push b v] pushes element [v] into the bag [b], yielding [b']
   *)
 
   val pop : 'a t -&gt; 'a * 'a t
@@ -1635,7 +1634,7 @@ end
   (* LAW:
 
      If c is the bag of elements underlying a push-pop bag b,
-     then the bag underlying [push b a] is c + a (a inserted into c)
+     then the bag underlying [push b a] is c + a (an occurrence of a inserted into c)
 
   *)
 
@@ -1697,9 +1696,9 @@ end
   <li>Coin return</li>
 </ul>
 
-<p>Coin insertion, for example, requires a coin and a vending machine as input, and produces a modified vending machine as output. The consumer knows that if she inserts a coin and then selects a product, she will probably receive a soda. It is not enough for the machine to merely provide the three operations listed above; it must obey laws (its signature’s laws) that are mutually understood by the machine’s creator and its consumer. For example, the consumer knows that if she performs “coin insertion” and then performs “coin return” immediately afterward, the machine should emit the inserted coin. However, the consumer does not care about where her coin is stored in between, the shape and volume of its container, etc. These details are hidden from the consumer to make her life easier.</p>
+<p>Coin insertion, for example, requires a coin and a vending machine as input, and produces a modified vending machine as output. The consumer knows that if she inserts a coin and then selects a product, she will probably receive a soda. It is not enough for the machine to merely provide the three operations listed above; it must obey laws (its signature’s laws) that are mutually understood by the machine’s creator and its consumer. For example, the consumer knows that if she performs “coin insertion” and then performs “coin return” immediately afterward, the machine should emit the inserted coin. However, the consumer does not care about where her coin is stored in between the two operations, the shape and volume of its container, etc. These details are hidden from the consumer to make her life easier.</p>
 
-<p>So far, we have used comments to express a signature’s laws. In my next post, I will explore more formal techniques for doing so.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code age_map.insert("joe", 20) age_map.insert("bob", 30) and understands that next time that their program encounters the expression age_map.get("joe") it will return the last value passed in as the second argument in age_map.insert("joe", ____), namely 20 if no other calls to insert are made.]]></summary></entry><entry><title type="html">Loose Ends and Future Directions</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html" rel="alternate" type="text/html" title="Loose Ends and Future Directions" /><published>2025-11-18T08:00:00-08:00</published><updated>2025-11-18T08:00:00-08:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
+<p>So far, we have used comments to express a signature’s laws. In my next post, I will explore more formal techniques for doing so.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Programmers often use dictionary datatypes to track associations between entities. A programmer types the following code insert age_map "joe" 20 insert age_map "bob" 30 and understands that next time the expression get age_map "joe" is evaluated, it will return the last value passed in as the third argument in insert age_map "joe" ____, namely 20 if no other calls to insert are made.]]></summary></entry><entry><title type="html">Loose Ends and Future Directions</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html" rel="alternate" type="text/html" title="Loose Ends and Future Directions" /><published>2025-11-18T08:00:00-08:00</published><updated>2025-11-18T08:00:00-08:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/11/18/loose-ends.html"><![CDATA[<p>\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\)
 \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\)</p>
 
 <h1 id="brain-dump">Brain Dump</h1>
