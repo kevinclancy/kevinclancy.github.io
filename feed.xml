@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-10-22T16:04:38-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-10-23T19:47:42-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
 
 <h1 id="nested-modules-and-signatures">Nested Modules and Signatures</h1>
 
@@ -369,7 +369,7 @@ end
   <li>Laws constraining what behaviors the signature’s clients may observe when invoking a sequence of its operations</li>
 </ul>
 
-<p>But I presented a limited view of the first type of component: datatypes. They were all opaque names, signifying the existence of some datatype without defining its representation. In other words, they were abstract types, such as <code class="language-plaintext highlighter-rouge">t</code> in the leading <code class="language-plaintext highlighter-rouge">AgeMap</code> example:</p>
+<p>But I presented a limited view of the first type of component: datatypes. They were presented as opaque names, signifying the existence of datatypes without defining their representations: in other words, abstract types. An example of such an abstract type component is the <code class="language-plaintext highlighter-rouge">t</code> component of the <code class="language-plaintext highlighter-rouge">AgeMap</code> example from the first post:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type AgeMap = sig
   type t
   val insert : t -&gt; string -&gt; int -&gt; unit
@@ -378,7 +378,7 @@ end
 end
 </code></pre></div></div>
 
-<p>However, in addition to these <em>opaque</em> type declarations, OCaml signatures may also contain <em>transparent</em> type declarations:</p>
+<p>However, in addition to these <em>opaque</em> type declarations, OCaml signatures may also contain <em>transparent</em> type declarations, such as <code class="language-plaintext highlighter-rouge">name</code> below:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type AgeMap = sig
   type t
   (** A map from names to ages *)
@@ -393,11 +393,12 @@ end
 end
 </code></pre></div></div>
 
-<p>A transparent type declaration like <code class="language-plaintext highlighter-rouge">name</code> above defines exactly how the datatype is represented. In this case, the transparent declaration indicates to clients of the <code class="language-plaintext highlighter-rouge">AgeMap</code> signature that any struct implementing AgeMap implements <code class="language-plaintext highlighter-rouge">name</code> using <code class="language-plaintext highlighter-rouge">string</code>. Clients can therefore use values of type <code class="language-plaintext highlighter-rouge">string</code> where values of type <code class="language-plaintext highlighter-rouge">AgeMap.name</code> are expected, e.g. given a value <code class="language-plaintext highlighter-rouge">v</code> of type <code class="language-plaintext highlighter-rouge">AgeMap.t</code> a client of the <code class="language-plaintext highlighter-rouge">AgeMap</code> signature can perform the function application <code class="language-plaintext highlighter-rouge">AgeMap.insert v "Ralph" 31</code>.</p>
+<p>A transparent type declaration like <code class="language-plaintext highlighter-rouge">name</code> defines exactly how the datatype is represented. In this case, the transparent declaration indicates to clients of the <code class="language-plaintext highlighter-rouge">AgeMap</code> signature that any struct implementing AgeMap implements <code class="language-plaintext highlighter-rouge">name</code> using <code class="language-plaintext highlighter-rouge">string</code>. Clients can therefore use values of type <code class="language-plaintext highlighter-rouge">string</code> where values of type <code class="language-plaintext highlighter-rouge">AgeMap.name</code> are expected, e.g. given a value <code class="language-plaintext highlighter-rouge">v</code> of type <code class="language-plaintext highlighter-rouge">AgeMap.t</code> a client of a module <code class="language-plaintext highlighter-rouge">M</code> implementing the <code class="language-plaintext highlighter-rouge">AgeMap</code> signature can perform the function application <code class="language-plaintext highlighter-rouge">M.insert age_map "Ralph" 31</code>.</p>
 
 <p>The combination of opaque and transparent type declarations is often called <em>translucency</em>. At first, it may seem superficial; above, <code class="language-plaintext highlighter-rouge">name</code> simply serves as an alias for the type <code class="language-plaintext highlighter-rouge">string</code>. But at a practical level, the aliases may name complex datatypes that become unwieldy to type out multiple times across a signature. Furthermore, the right-hand side of a transparent type may be a complex type expression whose component types include both abstract types declared within the same signature, and concrete types visible from outside the signature, for example:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type KVMap = sig
-  type key
+  type t
+  type key = string
   type value
   type entry = key * value
   ...
@@ -408,27 +409,57 @@ end
 
 <h1 id="signature-subsumption">Signature Subsumption</h1>
 
-<p>Suppose we have a module M sealed with signature S. If T is a signature with “fewer requirements” than S, we should be able to pass M into contexts where modules of signature T are expected. When this is the case, we say that S is subsumed by T and write S &lt;: T.</p>
+<p>Suppose we have a module M sealed with signature S. If T is a signature stipulating “fewer requirements” than S, we should be able to pass M into contexts where modules of signature T are expected. When this is the case, we say that S is subsumed by T and write S &lt;: T.</p>
 
-<p>A signature includes various types of requirements any structs considered to implement it:</p>
+<p>As a first approximation, a signature imposes various types of requirements on the structs considered to implement it:</p>
 
 <ol>
-  <li>For an opaque or transparent declaration of a type named t, the struct is required to have a type component named t.</li>
-  <li>For a transparent type declaration of a type named t as the type \(\tau\), the struct must have a type component named t defined as \(\tau\).</li>
+  <li>For an opaque declaration of a type named t, the struct is required to have a type component named t.</li>
+  <li>For a transparent declaration of a type named t as the type \(\tau\), the struct must have a type component named t defined as \(\tau\).</li>
   <li>For a value declaration “val x : \(\tau\)”, the struct must have a value binding named x whose type is inferred or ascribed as \(\tau\).</li>
   <li>And <em>informally</em>, the value declarations are required to satisfy all laws included in the signature.</li>
 </ol>
 
+<p>However, this is an oversimplification. It overlooks the dependencies between type declarations and value fields. For example, consider checking that the below struct <code class="language-plaintext highlighter-rouge">FooImpl</code> implements the signature <code class="language-plaintext highlighter-rouge">Foo</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Foo = sig
+  type t
+  type s = t * int
+  val bar : s -&gt; unit
+end
+
+module FooImpl : Foo = struct
+  type t = int
+  type s = int * int
+  let bar (arg1 : int * t) = ()
+end
+</code></pre></div></div>
+
+<p>First, to check that \(\mathtt{FooImpl}\) satisfies the requirement of possessing \(\mathtt{type~t}\) declared in \(\mathtt{Foo}\), we note that \(\mathtt{FooImpl}\) does indeed contain the definition of a type field named \(\mathtt{t}\): \(\mathtt{type~t} = \mathtt{int}\). Next, we check that the transparent type declaration \(\mathtt{type~s} = \mathtt{t} * \mathtt{int}\) is satisfied by the \(\mathtt{FooImpl}\) struct. However, \(\mathtt{FooImpl}\) has \(\mathtt{type~s} = \mathtt{int} * \mathtt{int}\), which does not match \(\mathtt{Foo}\)’s \(\mathtt{type~s} = \mathtt{t} * \mathtt{int}\) verbatim; instead, \(\mathtt{int} * \mathtt{int}\) is <em>equivalent</em> to \(\mathtt{t} * \mathtt{int}\) under a <em>type equation context</em>, established by checking the \(\mathtt{type~t}\) declaration, containing the sole equation \(\mathtt{t} = \mathtt{int}\). Likewise, we must check that the \(\mathtt{bar}\) field of \(\mathtt{FooImpl}\)’s inferred type \(\mathtt{int} * \mathtt{t} \to \mathtt{unit}\) is equivalent to \(\mathtt{s} \to \mathtt{unit}\) under a context consisting of the two equations \(\mathtt{t} = \mathtt{int}\) and \(\mathtt{s} = \mathtt{int} * \mathtt{int}\).</p>
+
 <p>This suggests an algorithm for checking that S &lt;: T is true.</p>
 
 <ol>
-  <li>For each opaque declaration “type t” in T, check that S declares a type named t which is either opaque (“type t”) or transparently defined as any type \(\tau\) (“type t = \(\tau\)”).</li>
-  <li>For each transparent declaration “type t = \(\tau\)” in T, check that S declares “type t = \(\tau\)”.</li>
-  <li>For each declaration “val x : \(\tau\)” in T, check that S has a declaration “val x : \(\tau\)”.</li>
+  <li>For each opaque declaration “type t” in T, check that S declares a type named t which is either opaque (“type t”) or transparently defined as any type \(\tau\) (\(\mathtt{type~t} = \tau\)); in the latter case, insert the equation \(\mathtt{t} = \tau\) into the context before processing subsequent declarations.</li>
+  <li>For each transparent declaration \(\mathtt{type~t} = \tau\) in T, check that S declares \(\mathtt{type~t} = \tau'\), where \(\tau'\) is equivalent to \(\tau\) under the current context. Insert \(\mathtt{t} = \tau\) into the context before processing subsequent declarations.</li>
+  <li>For each declaration \(\mathtt{val~x} : \tau\) in T, check that S has a declaration \(\mathtt{val~x} : \tau'\), where \(\tau\) is equivalent to \(\tau'\) under the current context.</li>
   <li>Check that the conjunction of the laws of S imply the conjunction of the laws of T.</li>
 </ol>
 
 <p>Points (1)-(3) are handled by the OCaml type checker, but point (4) is beyond its scope. Also note that when S &lt;: T, S may contain type and value components whose names do not match the names of any type and value components of T.</p>
+
+<p>As a final note, signature subsumption checking should be robust to the order that independent type declarations are listed in. In particular, the following signatures should mutually subsume each other:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type S = sig
+  type t
+  type s
+end
+
+module type T = sig
+  type s
+  type t
+end
+</code></pre></div></div>
+
+<p>All this is to say that checking signature subsumption is rather complex and technical. The <em>intuition</em> behind it, however, is simple: S &lt;: T means “T imposes a weaker requirement on the structs that implement it than S does” or, equivalently, “any struct that implements S also implements T”.</p>
 
 <h1 id="sharing-constraints">Sharing Constraints</h1>
 
@@ -442,7 +473,7 @@ end
 
 \[\mathsf{S~with~type~t} = \tau\]
 
-<p>Above, \(\mathsf S\) must be a signature that has an opaque type component named t and \(\tau\) may be an arbitrary type expression. This constructor is considered ill formed whenever either \(\mathsf S\) has no type component t or S has a <em>transparent</em> type component t. Thus, whenever the signature \(\mathsf{S~with~type~t} = \tau\) is well formed, we know that \((\mathsf{S~with~type~t} = \tau) &lt;: \mathsf S\).</p>
+<p>Above, \(\mathsf S\) must be a signature that has an opaque type component named t and \(\tau\) may be an arbitrary type expression. This constructor is considered ill formed whenever either \(\mathsf S\) has no type component t or S has a transparent type component t. Thus, whenever the signature \(\mathsf{S~with~type~t} = \tau\) is well formed, we know that \((\mathsf{S~with~type~t} = \tau) &lt;: \mathsf S\).</p>
 
 <p>Here is an example usage of sharing constraints. Recall the <code class="language-plaintext highlighter-rouge">TraverseGraph</code> signature from <a href="/understanding-module-systems/2026/08/23/introduction.html">my first post</a>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type TraverseGraph = sig
@@ -517,7 +548,7 @@ end
 </code></pre></div></div>
 <p>Sealing <code class="language-plaintext highlighter-rouge">MyGraph</code> with \(\mathsf{TraverseGraph}~\mathsf{with}~\mathsf{type}~\mathsf{node} = \mathsf{int}\) ensures that if they type checker succeeds then <code class="language-plaintext highlighter-rouge">MyGraph</code> <em>can</em> be sealed with \(\mathsf{TraverseGraph}\) in the future without <em>initially</em> sealing off <code class="language-plaintext highlighter-rouge">node</code> with an abstract type.</p>
 
-<p>If we had sealed <code class="language-plaintext highlighter-rouge">MyGraph</code> using <code class="language-plaintext highlighter-rouge">TraverseGraph</code> instead of the sharing constrained version, we would not have been able to call <code class="language-plaintext highlighter-rouge">shortest_path</code>, because there would have been no way to obtain any elements of type <code class="language-plaintext highlighter-rouge">MyGraph.node</code>. In fact, sealing directly with <code class="language-plaintext highlighter-rouge">TraverseGraph</code> would leave us with a totally useless module: with no way to obtain an element of type <code class="language-plaintext highlighter-rouge">MyGraph.node</code>, neither of the operations <code class="language-plaintext highlighter-rouge">adjacenct_nodes</code> nor <code class="language-plaintext highlighter-rouge">compare_node</code> can be called.</p>
+<p>If we had sealed <code class="language-plaintext highlighter-rouge">MyGraph</code> using <code class="language-plaintext highlighter-rouge">TraverseGraph</code> instead of the sharing constrained version, we would not have been able to call <code class="language-plaintext highlighter-rouge">shortest_path</code>, because there would have been no way to obtain any elements of type <code class="language-plaintext highlighter-rouge">MyGraph.node</code>. In fact, sealing directly with <code class="language-plaintext highlighter-rouge">TraverseGraph</code> would leave us with a totally useless module: with no way to obtain an element of type <code class="language-plaintext highlighter-rouge">MyGraph.node</code>, neither of the operations <code class="language-plaintext highlighter-rouge">adjacenct_nodes</code> nor <code class="language-plaintext highlighter-rouge">compare_node</code> could be called.</p>
 
 <p>This example has demonstrated just <em>one</em> way to use a type sharing constraint. There are multiple others that we will see shortly in the following posts.</p>
 
@@ -535,8 +566,7 @@ end
 
   val push : 'a t -&gt; 'a -&gt; 'a t
   (**
-    [q' = push q v] pushes element [v] onto the back of queue [q] to
-    obtain [q']
+    [q' = push q v] pushes element [v] onto the back of queue [q], yielding [q']
   *)
 
   val pop : 'a t -&gt; 'a * 'a t
@@ -582,19 +612,19 @@ end
 end
 </code></pre></div></div>
 
-<p>It declares an opaque family of types <code class="language-plaintext highlighter-rouge">'a t</code>. These opaque types are fundamentally different than the the opaque type <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code>, in the sense that they are intended to hide their concrete representations. These type declarations occur in signatures that seal structs immediately once they’ve been created. On the other hand, the <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code> declares a placeholder for a type drawn from some outside context; its intended use involves submsumption and/or sharing constraints.</p>
+<p>It declares an opaque family of types <code class="language-plaintext highlighter-rouge">'a t</code>. These opaque types are fundamentally different than the opaque type <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code>, in the sense that they are intended to hide their concrete representations. These type declarations occur in signatures that seal structs immediately when the structs are created. On the other hand, the <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code> declares a placeholder for a type drawn from some outside context; its intended use involves submsumption and/or sharing constraints.</p>
 
 <p>Earlier, I claimed “modules are like vending machines”, in the sense that they provide laws governing their interactions, isolating us from complex internal representations. The signature \(\mathsf{TraverseGraph}~\mathsf{with}~\mathsf{type}~\mathsf{node}=\mathsf{int}\), on the other hand, doesn’t isolate us from anything. Yet it still has laws that govern our interaction with it. So in this sense, it may be viewed as a degenerate vending machine that provides operations on existing datatypes without encapsulating any new datatypes of its own. Then, subsuming into <code class="language-plaintext highlighter-rouge">TraverseGraph</code> (as when we apply the <code class="language-plaintext highlighter-rouge">shortest_path</code> function) allows us to temporarily view <code class="language-plaintext highlighter-rouge">TraverseGraph.node</code> type as abstract in a local context.</p>
 
 <h1 id="conclusion">Conclusion</h1>
 
-<p>OCaml signatures may contain both opaque type declarations, which hide a structs’ type components behind abstractions, and transparent type declarations, which expose structs’ type components in full to their clients. Transparent type declarations can be subsumed into opaque type declarations local contexts via signature subsumption. Sharing constraints allow us to strengthen a signature by replacing an opaque type component with a transparent one.</p>
+<p>OCaml signatures may contain both opaque type declarations, which hide structs’ type components behind abstractions, and transparent type declarations, which expose structs’ type components in full to their clients. Transparent type declarations can be subsumed into opaque type declarations local contexts via signature subsumption. Sharing constraints allow us to strengthen a signature by replacing an opaque type component with a transparent one.</p>
 
-<p>I will demonstrate all these concepts in the next post, which introduces <em>functors</em>, which are essentially functions from modules to modules, implementing vending machines in terms of vending machines.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Translucency]]></summary></entry><entry><title type="html">3. Building a Program from Modules</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/28/building-a-program-from-modules.html" rel="alternate" type="text/html" title="3. Building a Program from Modules" /><published>2026-08-28T09:00:00-07:00</published><updated>2026-08-28T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/28/building-a-program-from-modules</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/28/building-a-program-from-modules.html"><![CDATA[<p>We run a program by invoking a “main” procedure, either because we want to retrieve its outputs, or because we desire the interactive behavior or side effects that we expect it to perform. But this procedure may need to instantiate values and perform operations on them; for this, we use modules. The modules used by our main procedure may themselves be implemented in terms of other “lower level” modules.</p>
+<p>I will demonstrate all these concepts more in the next post, which introduces <em>functors</em>. A functor is essentially a function from modules to modules. Intuitively, it implements vending machines in terms of vending machines.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Translucency]]></summary></entry><entry><title type="html">3. Building a Program from Modules</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/08/28/building-a-program-from-modules.html" rel="alternate" type="text/html" title="3. Building a Program from Modules" /><published>2026-08-28T09:00:00-07:00</published><updated>2026-08-28T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/08/28/building-a-program-from-modules</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/08/28/building-a-program-from-modules.html"><![CDATA[<p>We run a program by invoking a “main” procedure, either because we want to retrieve its outputs, or because we desire the interactive behavior or side effects that we expect it to perform. But this procedure may need to instantiate values and perform operations on them; for this, we use modules. The modules used by our main procedure may themselves be implemented in terms of other “lower level” modules.</p>
 
 <p>In OCaml, it may be necessary to initialize a module before it is used. A counter module, for example, may need to allocate an integer reference storing the starting value.</p>
 
-<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>. The OCaml compiler rejects cyclic dependency graphs, which conveniently guarantees that every module is initialized before it is used.</p>
+<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>. The OCaml compiler rejects cyclic top-level module dependency graphs, which guarantees that every module is initialized before it is used.</p>
 
 <p>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Internally, each module is more complex than the ones it depends on, since it combines their datatypes and operations in new ways. Externally, it can be simpler: by sealing, it hides its new representations behind abstract types of its own and states laws governing its operations, so that clients work in its vocabulary alone rather than in the vocabularies of everything beneath it.</p>
 
@@ -607,7 +637,7 @@ end
 <p>Consider this signature:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val tie : unit -&gt; unit
 (** Tie shoes
-    Preconditions: check_tied () = false *)
+    Precondition: check_tied () = false *)
 
 val untie : unit -&gt; unit
 (** Untie shoes
@@ -655,9 +685,9 @@ let untie () =
   shoe_state := Untied
 </code></pre></div></div>
 
-<p>OCaml initializes modules by normalizing each of the expressions on the right-hand side of its let bindings to values. It processes the let bindings from top to bottom. <code class="language-plaintext highlighter-rouge">shoe_state</code> is bound to the expression <code class="language-plaintext highlighter-rouge">ref Untied</code>, which executes by allocating a reference cell and storing the value <code class="language-plaintext highlighter-rouge">Untied</code> in the reference cell. However, <code class="language-plaintext highlighter-rouge">check_tied</code>, <code class="language-plaintext highlighter-rouge">tie</code>, and <code class="language-plaintext highlighter-rouge">untie</code> are function abstractions, so they are already in normal form.</p>
+<p>OCaml initializes a module by normalizing each of the expressions on the right-hand side of its let bindings to values. It processes the let bindings from top to bottom. <code class="language-plaintext highlighter-rouge">shoe_state</code> is bound to the expression <code class="language-plaintext highlighter-rouge">ref Untied</code>, which executes by allocating a reference cell and storing the value <code class="language-plaintext highlighter-rouge">Untied</code> in the reference cell. However, <code class="language-plaintext highlighter-rouge">check_tied</code>, <code class="language-plaintext highlighter-rouge">tie</code>, and <code class="language-plaintext highlighter-rouge">untie</code> are function abstractions, so they are already in normal form.</p>
 
-<p>Unlike the modules defined in previous posts, this module’s <code class="language-plaintext highlighter-rouge">tie</code> and <code class="language-plaintext highlighter-rouge">untie</code> operations perform side effects. Since they only perform effects on a single piece of global state (the allocated reference cell), it would be extremely easy for two different modules to interfere with each other’s usage of <code class="language-plaintext highlighter-rouge">Shoes</code>, so creating modules like this is ill-advised; the remedy for this will be presented later.</p>
+<p>Unlike the modules defined in previous posts, this module’s <code class="language-plaintext highlighter-rouge">tie</code> and <code class="language-plaintext highlighter-rouge">untie</code> operations perform side effects. Since they only perform effects on a single piece of global state (the allocated reference cell), it would be extremely easy for two different modules to interfere with each other’s usage of <code class="language-plaintext highlighter-rouge">Shoes</code>. Therefore, creating modules like this is ill-advised; a better alternative to this will be presented later.</p>
 
 <h2 id="the-happy-child-module-take-1">The Happy Child Module, Take 1</h2>
 
@@ -666,7 +696,7 @@ let untie () =
 (** Brag about skills via standard output *)
 </code></pre></div></div>
 
-<p>Here is its implementation</p>
+<p>Here is its implementation:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let show_off () =
   (match Shoes.check_tied () with
   | false -&gt;
@@ -719,7 +749,7 @@ let get_next (counter : t) : int =
   ret
 </code></pre></div></div>
 
-<p>Unlike <code class="language-plaintext highlighter-rouge">Shoes</code>, this struct’s fields consist solely of function abstractions, so no initialization is performed. Its operations do perform mutable state updates, but the state is mediated by values of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code>: reference cells hidden behind an abstract type. These values are created by the calls to the <code class="language-plaintext highlighter-rouge">create</code> operation. Even though <code class="language-plaintext highlighter-rouge">NumCounter</code> is globally accessible, each client can keep its own value of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code> private so that other modules can’t interfere with its state.</p>
+<p>Unlike <code class="language-plaintext highlighter-rouge">Shoes</code>, this struct’s value fields consist solely of function abstractions, so no initialization is performed. Its operations do perform mutable state updates, but the state is mediated by values of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code>: reference cells hidden behind an abstract type. These values are created by the calls to the <code class="language-plaintext highlighter-rouge">create</code> operation. Even though <code class="language-plaintext highlighter-rouge">NumCounter</code> is globally accessible, each client can keep its own value of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code> private so that other modules can’t interfere with its state.</p>
 
 <h2 id="the-happy-child-module-take-2">The Happy Child Module, Take 2</h2>
 
@@ -748,7 +778,7 @@ let get_next (counter : t) : int =
   HappyChild.show_off ()
 </code></pre></div></div>
 
-<p>OCaml’s build system Dune culls out any modules that <code class="language-plaintext highlighter-rouge">Main</code> does not transitively depend on and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
+<p>Dune culls out any modules that <code class="language-plaintext highlighter-rouge">Main</code> does not transitively depend on and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
 <figure>
 <img src="/assets/images/building-a-program-from-modules/module-dag.png" style="margin-top: 30px; margin-bottom: 30px" />
 </figure>
@@ -759,7 +789,7 @@ Shoes
 HappyChild
 Main
 </code></pre></div></div>
-<p>Execution then initializes each module from top to bottom, where modules are initialized by evaluating the right-hand-sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
+<p>Execution then initializes each module from top to bottom, where a module is initialized by evaluating the right-hand sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
 
 <p>I’m not sure if I like that initialization of independent modules is ordered alphabetically. That seems chaotic. It may be better to require the programmer to provide an initialization list themselves. But that’s not how Dune handles things.</p>
 
@@ -784,9 +814,9 @@ let get_next () : char option =
     None
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">AlphabetIter</code> initializes itself by creating a <code class="language-plaintext highlighter-rouge">NumCounter.t</code> value called <code class="language-plaintext highlighter-rouge">counter</code>. This is used to offset the ascii codes for alphabetic characters starting at <code class="language-plaintext highlighter-rouge">A</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">AlphabetIter</code> initializes itself by creating a <code class="language-plaintext highlighter-rouge">NumCounter.t</code> value called <code class="language-plaintext highlighter-rouge">counter</code>. This is used to offset the ASCII codes for alphabetic characters starting at <code class="language-plaintext highlighter-rouge">A</code>.</p>
 
-<p>Unlike the <code class="language-plaintext highlighter-rouge">NumCounter</code> module, which serves as a “factory” that has no initialized mutable state, but allocates new pieces of mutable state each time <code class="language-plaintext highlighter-rouge">create</code> is called, the <code class="language-plaintext highlighter-rouge">AlphabetIter</code> module serves as an “object”, allocating a single piece of mutable state during its initialization, similar to the <code class="language-plaintext highlighter-rouge">Shoes</code> module. As explained in the <code class="language-plaintext highlighter-rouge">Shoes</code> section, making top-level modules object-style modules that own mutable state is often a bad idea, as its various client modules have no effective way of coordinating their state updates.</p>
+<p>Unlike the <code class="language-plaintext highlighter-rouge">NumCounter</code> module, which serves as a “factory” that has no initialized mutable state but allocates new pieces of mutable state each time <code class="language-plaintext highlighter-rouge">create</code> is called, the <code class="language-plaintext highlighter-rouge">AlphabetIter</code> module serves as an “object”. It allocates a single piece of mutable state during its initialization, similar to the <code class="language-plaintext highlighter-rouge">Shoes</code> module. As explained in the <code class="language-plaintext highlighter-rouge">Shoes</code> section, making top-level modules object-style modules that own mutable state is often a bad idea, as their various client modules have no effective way of coordinating their state updates.</p>
 
 <p>We update <code class="language-plaintext highlighter-rouge">HappyChild</code> to use <code class="language-plaintext highlighter-rouge">AlphabetIter</code>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let show_off () =
@@ -813,13 +843,13 @@ let get_next () : char option =
   Printf.fprintf stdout "%c\n" (Option.get (AlphabetIter.get_next ()))
 </code></pre></div></div>
 
-<p>The reason <code class="language-plaintext highlighter-rouge">AlphabetIter</code> has been included in this post is because of the way it affects the module dependency graph:</p>
+<p>The reason <code class="language-plaintext highlighter-rouge">AlphabetIter</code> has been included in this post is the way it affects the module dependency graph:</p>
 <figure>
 <img src="/assets/images/building-a-program-from-modules/module-dag-alphabet.png" style="margin-top: 30px; margin-bottom: 30px" />
 </figure>
 
 <p>This shows that a module dependency graph need not be a tree, but can be any directed acyclic graph. Recall this paragraph from the introduction:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies implemented in terms of earlier modules as higher level vocabularies. Each module adds complexity on top of the modules it depends on, both by combining multiple modules, and by combining their abstract datatypes and operations in complex ways. It compensates for the additional complexity by sealing: hiding its new datatype definitions behind abstract types of its own, and defining laws that govern the way its operations interact with those datatypes.
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Internally, each module is more complex than the ones it depends on, since it combines their datatypes and operations in new ways. Externally, it can be simpler: by sealing, it hides its new representations behind abstract types of its own and states laws governing its operations, so that clients work in its vocabulary alone rather than in the vocabularies of everything beneath it.
 </code></pre></div></div>
 
 <p>The graph above shows us that the “lower level vocabularies” (<code class="language-plaintext highlighter-rouge">AlphabetIter</code> and <code class="language-plaintext highlighter-rouge">NumCounter</code>) that “higher level vocabularies” (<code class="language-plaintext highlighter-rouge">HappyChild</code>) are defined from need not be independent. In this case, one of <code class="language-plaintext highlighter-rouge">HappyChild</code>’s dependencies <code class="language-plaintext highlighter-rouge">AlphabetIter</code> was defined from another of its dependencies <code class="language-plaintext highlighter-rouge">NumCounter</code>.</p>
@@ -855,7 +885,7 @@ module Main = struct
   ...
 end
 </code></pre></div></div>
-<p>The operational semantics of our full project then amounts to initializing the modules in the above syntax tree from top-to-bottom. In this way, we can view a multi-file OCaml project as a single syntactic object amenable to formal reasoning.</p>
+<p>The operational semantics of our full project then amounts to initializing the modules in the above syntax tree from top to bottom. In this way, we can view a multi-file OCaml project as a single syntactic object amenable to formal reasoning.</p>
 
 <h1 id="conclusion">Conclusion</h1>
 

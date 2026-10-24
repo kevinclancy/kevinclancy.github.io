@@ -29,7 +29,7 @@
 
 <p>In OCaml, it may be necessary to initialize a module before it is used. A counter module, for example, may need to allocate an integer reference storing the starting value.</p>
 
-<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>. The OCaml compiler rejects cyclic dependency graphs, which conveniently guarantees that every module is initialized before it is used.</p>
+<p>We say that module <code class="language-plaintext highlighter-rouge">A</code> depends on module <code class="language-plaintext highlighter-rouge">B</code> if module <code class="language-plaintext highlighter-rouge">B</code> is referenced anywhere from within the definition of module <code class="language-plaintext highlighter-rouge">A</code>. The graph whose edges comprise the “depends on” relation is called the <em>module dependency graph</em>. The OCaml compiler rejects cyclic top-level module dependency graphs, which guarantees that every module is initialized before it is used.</p>
 
 <p>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Internally, each module is more complex than the ones it depends on, since it combines their datatypes and operations in new ways. Externally, it can be simpler: by sealing, it hides its new representations behind abstract types of its own and states laws governing its operations, so that clients work in its vocabulary alone rather than in the vocabularies of everything beneath it.</p>
 
@@ -42,7 +42,7 @@
 <p>Consider this signature:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val tie : unit -&gt; unit
 (** Tie shoes
-    Preconditions: check_tied () = false *)
+    Precondition: check_tied () = false *)
 
 val untie : unit -&gt; unit
 (** Untie shoes
@@ -90,9 +90,9 @@ let untie () =
   shoe_state := Untied
 </code></pre></div></div>
 
-<p>OCaml initializes modules by normalizing each of the expressions on the right-hand side of its let bindings to values. It processes the let bindings from top to bottom. <code class="language-plaintext highlighter-rouge">shoe_state</code> is bound to the expression <code class="language-plaintext highlighter-rouge">ref Untied</code>, which executes by allocating a reference cell and storing the value <code class="language-plaintext highlighter-rouge">Untied</code> in the reference cell. However, <code class="language-plaintext highlighter-rouge">check_tied</code>, <code class="language-plaintext highlighter-rouge">tie</code>, and <code class="language-plaintext highlighter-rouge">untie</code> are function abstractions, so they are already in normal form.</p>
+<p>OCaml initializes a module by normalizing each of the expressions on the right-hand side of its let bindings to values. It processes the let bindings from top to bottom. <code class="language-plaintext highlighter-rouge">shoe_state</code> is bound to the expression <code class="language-plaintext highlighter-rouge">ref Untied</code>, which executes by allocating a reference cell and storing the value <code class="language-plaintext highlighter-rouge">Untied</code> in the reference cell. However, <code class="language-plaintext highlighter-rouge">check_tied</code>, <code class="language-plaintext highlighter-rouge">tie</code>, and <code class="language-plaintext highlighter-rouge">untie</code> are function abstractions, so they are already in normal form.</p>
 
-<p>Unlike the modules defined in previous posts, this module’s <code class="language-plaintext highlighter-rouge">tie</code> and <code class="language-plaintext highlighter-rouge">untie</code> operations perform side effects. Since they only perform effects on a single piece of global state (the allocated reference cell), it would be extremely easy for two different modules to interfere with each other’s usage of <code class="language-plaintext highlighter-rouge">Shoes</code>, so creating modules like this is ill-advised; the remedy for this will be presented later.</p>
+<p>Unlike the modules defined in previous posts, this module’s <code class="language-plaintext highlighter-rouge">tie</code> and <code class="language-plaintext highlighter-rouge">untie</code> operations perform side effects. Since they only perform effects on a single piece of global state (the allocated reference cell), it would be extremely easy for two different modules to interfere with each other’s usage of <code class="language-plaintext highlighter-rouge">Shoes</code>. Therefore, creating modules like this is ill-advised; a better alternative to this will be presented later.</p>
 
 <h2 id="the-happy-child-module-take-1">The Happy Child Module, Take 1</h2>
 
@@ -101,7 +101,7 @@ let untie () =
 (** Brag about skills via standard output *)
 </code></pre></div></div>
 
-<p>Here is its implementation</p>
+<p>Here is its implementation:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let show_off () =
   (match Shoes.check_tied () with
   | false -&gt;
@@ -154,7 +154,7 @@ let get_next (counter : t) : int =
   ret
 </code></pre></div></div>
 
-<p>Unlike <code class="language-plaintext highlighter-rouge">Shoes</code>, this struct’s fields consist solely of function abstractions, so no initialization is performed. Its operations do perform mutable state updates, but the state is mediated by values of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code>: reference cells hidden behind an abstract type. These values are created by the calls to the <code class="language-plaintext highlighter-rouge">create</code> operation. Even though <code class="language-plaintext highlighter-rouge">NumCounter</code> is globally accessible, each client can keep its own value of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code> private so that other modules can’t interfere with its state.</p>
+<p>Unlike <code class="language-plaintext highlighter-rouge">Shoes</code>, this struct’s value fields consist solely of function abstractions, so no initialization is performed. Its operations do perform mutable state updates, but the state is mediated by values of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code>: reference cells hidden behind an abstract type. These values are created by the calls to the <code class="language-plaintext highlighter-rouge">create</code> operation. Even though <code class="language-plaintext highlighter-rouge">NumCounter</code> is globally accessible, each client can keep its own value of type <code class="language-plaintext highlighter-rouge">NumCounter.t</code> private so that other modules can’t interfere with its state.</p>
 
 <h2 id="the-happy-child-module-take-2">The Happy Child Module, Take 2</h2>
 
@@ -183,7 +183,7 @@ let get_next (counter : t) : int =
   HappyChild.show_off ()
 </code></pre></div></div>
 
-<p>OCaml’s build system Dune culls out any modules that <code class="language-plaintext highlighter-rouge">Main</code> does not transitively depend on and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
+<p>Dune culls out any modules that <code class="language-plaintext highlighter-rouge">Main</code> does not transitively depend on and then topologically sorts them into an initialization order. It starts with a module dependency DAG which looks like this:</p>
 <figure>
 <img src="/assets/images/building-a-program-from-modules/module-dag.png" style="margin-top: 30px; margin-bottom: 30px" />
 </figure>
@@ -194,7 +194,7 @@ Shoes
 HappyChild
 Main
 </code></pre></div></div>
-<p>Execution then initializes each module from top to bottom, where modules are initialized by evaluating the right-hand-sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
+<p>Execution then initializes each module from top to bottom, where a module is initialized by evaluating the right-hand sides of each of its let bindings from top to bottom. By the time <code class="language-plaintext highlighter-rouge">Main</code> is initialized, <code class="language-plaintext highlighter-rouge">HappyChild</code> has already been initialized (and transitively both <code class="language-plaintext highlighter-rouge">NumCounter</code> and <code class="language-plaintext highlighter-rouge">Shoes</code>) so that we can invoke its <code class="language-plaintext highlighter-rouge">show_off</code> operation.</p>
 
 <p>I’m not sure if I like that initialization of independent modules is ordered alphabetically. That seems chaotic. It may be better to require the programmer to provide an initialization list themselves. But that’s not how Dune handles things.</p>
 
@@ -219,9 +219,9 @@ let get_next () : char option =
     None
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">AlphabetIter</code> initializes itself by creating a <code class="language-plaintext highlighter-rouge">NumCounter.t</code> value called <code class="language-plaintext highlighter-rouge">counter</code>. This is used to offset the ascii codes for alphabetic characters starting at <code class="language-plaintext highlighter-rouge">A</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">AlphabetIter</code> initializes itself by creating a <code class="language-plaintext highlighter-rouge">NumCounter.t</code> value called <code class="language-plaintext highlighter-rouge">counter</code>. This is used to offset the ASCII codes for alphabetic characters starting at <code class="language-plaintext highlighter-rouge">A</code>.</p>
 
-<p>Unlike the <code class="language-plaintext highlighter-rouge">NumCounter</code> module, which serves as a “factory” that has no initialized mutable state, but allocates new pieces of mutable state each time <code class="language-plaintext highlighter-rouge">create</code> is called, the <code class="language-plaintext highlighter-rouge">AlphabetIter</code> module serves as an “object”, allocating a single piece of mutable state during its initialization, similar to the <code class="language-plaintext highlighter-rouge">Shoes</code> module. As explained in the <code class="language-plaintext highlighter-rouge">Shoes</code> section, making top-level modules object-style modules that own mutable state is often a bad idea, as its various client modules have no effective way of coordinating their state updates.</p>
+<p>Unlike the <code class="language-plaintext highlighter-rouge">NumCounter</code> module, which serves as a “factory” that has no initialized mutable state but allocates new pieces of mutable state each time <code class="language-plaintext highlighter-rouge">create</code> is called, the <code class="language-plaintext highlighter-rouge">AlphabetIter</code> module serves as an “object”. It allocates a single piece of mutable state during its initialization, similar to the <code class="language-plaintext highlighter-rouge">Shoes</code> module. As explained in the <code class="language-plaintext highlighter-rouge">Shoes</code> section, making top-level modules object-style modules that own mutable state is often a bad idea, as their various client modules have no effective way of coordinating their state updates.</p>
 
 <p>We update <code class="language-plaintext highlighter-rouge">HappyChild</code> to use <code class="language-plaintext highlighter-rouge">AlphabetIter</code>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let show_off () =
@@ -248,13 +248,13 @@ let get_next () : char option =
   Printf.fprintf stdout "%c\n" (Option.get (AlphabetIter.get_next ()))
 </code></pre></div></div>
 
-<p>The reason <code class="language-plaintext highlighter-rouge">AlphabetIter</code> has been included in this post is because of the way it affects the module dependency graph:</p>
+<p>The reason <code class="language-plaintext highlighter-rouge">AlphabetIter</code> has been included in this post is the way it affects the module dependency graph:</p>
 <figure>
 <img src="/assets/images/building-a-program-from-modules/module-dag-alphabet.png" style="margin-top: 30px; margin-bottom: 30px" />
 </figure>
 
 <p>This shows that a module dependency graph need not be a tree, but can be any directed acyclic graph. Recall this paragraph from the introduction:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies implemented in terms of earlier modules as higher level vocabularies. Each module adds complexity on top of the modules it depends on, both by combining multiple modules, and by combining their abstract datatypes and operations in complex ways. It compensates for the additional complexity by sealing: hiding its new datatype definitions behind abstract types of its own, and defining laws that govern the way its operations interact with those datatypes.
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Roughly, we can think of modules that occur earlier in the topological sorting of the module dependency graph as lower level vocabularies and modules occurring later as higher level vocabularies. Internally, each module is more complex than the ones it depends on, since it combines their datatypes and operations in new ways. Externally, it can be simpler: by sealing, it hides its new representations behind abstract types of its own and states laws governing its operations, so that clients work in its vocabulary alone rather than in the vocabularies of everything beneath it.
 </code></pre></div></div>
 
 <p>The graph above shows us that the “lower level vocabularies” (<code class="language-plaintext highlighter-rouge">AlphabetIter</code> and <code class="language-plaintext highlighter-rouge">NumCounter</code>) that “higher level vocabularies” (<code class="language-plaintext highlighter-rouge">HappyChild</code>) are defined from need not be independent. In this case, one of <code class="language-plaintext highlighter-rouge">HappyChild</code>’s dependencies <code class="language-plaintext highlighter-rouge">AlphabetIter</code> was defined from another of its dependencies <code class="language-plaintext highlighter-rouge">NumCounter</code>.</p>
@@ -290,7 +290,7 @@ module Main = struct
   ...
 end
 </code></pre></div></div>
-<p>The operational semantics of our full project then amounts to initializing the modules in the above syntax tree from top-to-bottom. In this way, we can view a multi-file OCaml project as a single syntactic object amenable to formal reasoning.</p>
+<p>The operational semantics of our full project then amounts to initializing the modules in the above syntax tree from top to bottom. In this way, we can view a multi-file OCaml project as a single syntactic object amenable to formal reasoning.</p>
 
 <h1 id="conclusion">Conclusion</h1>
 
