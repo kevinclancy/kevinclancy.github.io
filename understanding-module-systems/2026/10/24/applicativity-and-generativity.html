@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+  <link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://kevinclancy.github.io/feed.xml" title="Kevin Clancy" />
+
+<meta name="google-site-verification" content="h95FdKfMe_sIUc78XvKO9eiblSziF0vQ_lcLfQeDQ0o" />
+<link rel="canonical" href="https://kevinclancy.github.io/understanding-module-systems/2026/10/24/applicativity-and-generativity.html" /></head>
+<body>
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header-classic">
+    <h1 class="post-title p-name" itemprop="name headline">6. Applicativity and Generativity</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2026-10-24T09:00:00-07:00" itemprop="datePublished">
+        Oct 24, 2026
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Given two applications of the same functor <code class="language-plaintext highlighter-rouge">F</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module M = F(X)
+module N = F(Y)
+</code></pre></div></div>
+<p>should <code class="language-plaintext highlighter-rouge">M.t</code> and <code class="language-plaintext highlighter-rouge">N.t</code> be considered the same type? This post explores this question in depth and presents OCaml’s answer.</p>
+
+<h1 id="invariants">Invariants</h1>
+
+<p>Consider the following signature and functor:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type SymbolTable = sig
+  type symbol
+  (** A symbol which occurs one or more times in a program *)
+
+  val get_symbol : string -&gt; symbol
+  (** [get_symbol str] Looks up a symbol named [str],
+      or generates and returns a new one if no such symbol exists *)
+
+  val get_name : symbol -&gt; string
+  (** [get_name sym] Returns the string name of symbol [sym] *)
+end
+
+module MakeSymbolTable () : SymbolTable = struct
+  type symbol = int
+
+  let string2sym : (string, symbol) Hashtbl.t = Hashtbl.create 64
+  let sym2string : (symbol, string) Hashtbl.t = Hashtbl.create 64
+  let next_sym : int ref = ref 0
+
+  let get_symbol (name : string) : symbol =
+    match Hashtbl.find_opt string2sym name with
+    | Some sym -&gt;
+      sym
+    | None -&gt;
+      let sym = !next_sym in
+      next_sym := !next_sym + 1;
+      Hashtbl.add string2sym name sym;
+      Hashtbl.add sym2string sym name;
+      sym
+
+  let get_name (sym : symbol) : string =
+    Hashtbl.find sym2string sym
+end
+</code></pre></div></div>
+
+<p>A <code class="language-plaintext highlighter-rouge">SymbolTable</code> is used by a compiler. It associates string identifiers read in by a parser with <em>symbols</em> for comparatively efficient equality testing and storage. Since languages generally have multiple namespaces (for example, OCaml has separate namespaces for terms, types, and modules), we want the ability to instantiate multiple modules which all implement the <code class="language-plaintext highlighter-rouge">SymbolTable</code> interface. For this, we have created the functor <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, which produces a different symbol table at each application:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module TermSymbolTable = MakeSymbolTable ()
+module TypeSymbolTable = MakeSymbolTable ()
+module ModuleSymbolTable = MakeSymbolTable ()
+</code></pre></div></div>
+
+<p>An important aspect of the <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> definition is that the <code class="language-plaintext highlighter-rouge">get_name</code> function is total: regardless of what argument is passed to it, it never throws an exception. But it’s implemented in terms of <code class="language-plaintext highlighter-rouge">Hashtbl.find</code>, which <em>does</em> throw an exception when its key argument <code class="language-plaintext highlighter-rouge">sym</code> is not contained as a key in its table argument <code class="language-plaintext highlighter-rouge">sym2string</code>. How can this be?</p>
+
+<p><code class="language-plaintext highlighter-rouge">get_name</code> is total despite being implemented in terms of <code class="language-plaintext highlighter-rouge">Hashtbl.find</code> because of an <em>invariant</em> the struct ensures: all values of type <code class="language-plaintext highlighter-rouge">symbol</code> are integers that occur as keys in <code class="language-plaintext highlighter-rouge">sym2string</code>. The invariant can be proven by examining the definition of the struct produced by <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>. First, we make note of another invariant, which is easily proven as an exercise: any symbol value stored in <code class="language-plaintext highlighter-rouge">string2sym</code> is stored as a key in <code class="language-plaintext highlighter-rouge">sym2string</code>. Then, we note that the struct only emits <code class="language-plaintext highlighter-rouge">symbol</code> values via its <code class="language-plaintext highlighter-rouge">get_symbol</code> method, but in both branches of this method, the emitted symbol is a key in <code class="language-plaintext highlighter-rouge">sym2string</code>. In the first branch, the emitted symbol was already stored as a value in <code class="language-plaintext highlighter-rouge">string2sym</code> before <code class="language-plaintext highlighter-rouge">get_symbol</code> was called, and hence it was already stored as a key in <code class="language-plaintext highlighter-rouge">sym2string</code>. In the second branch, the returned symbol is added as key by the call <code class="language-plaintext highlighter-rouge">Hashtbl.add sym2string sym name</code> immediately before it is returned.</p>
+
+<h1 id="generative-functors">Generative Functors</h1>
+
+<p>Now, we choose to view this invariant as an informal refinement on the <code class="language-plaintext highlighter-rouge">int</code> type used as the definition of <code class="language-plaintext highlighter-rouge">symbol</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module MakeSymbolTable () : SymbolTable = struct
+  type symbol = int (* Refinement: symbol is the type of integers x such that x occurs as a key in sym2string *)
+  ...
+end
+</code></pre></div></div>
+<p>This <em>refinement</em> is an “informal subtype” of <code class="language-plaintext highlighter-rouge">int</code> that is too precise for OCaml’s type system to track. However, as the implementor of the body of <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, we were able to verify in the discussion above that the refinement is indeed valid. Stepping back, this demonstrates an important aspect of the power of module systems. Because the refinement refers to <code class="language-plaintext highlighter-rouge">sym2string</code>, it doesn’t make sense in contexts outside of the functor body, for which <code class="language-plaintext highlighter-rouge">sym2string</code> is not in scope. Contexts outside the functor body are nonetheless still able to refer to this type <em>abstractly</em> as <code class="language-plaintext highlighter-rouge">symbol</code>.</p>
+
+<p>Now, consider the following code:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module TermSymbolTable = MakeSymbolTable ()
+module TypeSymbolTable = MakeSymbolTable ()
+let () =
+  let sym_a = TermSymbolTable.get_symbol "a" in
+  let str_a = TypeSymbolTable.get_name sym_a in
+  Printf.printf "%s" str_a
+</code></pre></div></div>
+
+<p>This code, if it were well typed, would raise a <code class="language-plaintext highlighter-rouge">Not_found</code> exception during the call <code class="language-plaintext highlighter-rouge">TypeSymbolTable.get_name sym_a</code>. The problem is that <code class="language-plaintext highlighter-rouge">sym_a</code> was produced by the <code class="language-plaintext highlighter-rouge">TermSymbolTable</code> module, which guarantees that all symbols are keys of the <code class="language-plaintext highlighter-rouge">sym2string</code> hash table <em>contained in</em> <code class="language-plaintext highlighter-rouge">TermSymbolTable</code>. However, the <code class="language-plaintext highlighter-rouge">TypeSymbolTable</code> module contains a <em>distinct</em> <code class="language-plaintext highlighter-rouge">sym2string</code> hash table, which is empty at the time of the call to <code class="language-plaintext highlighter-rouge">TypeSymbolTable.get_name sym_a</code>.</p>
+
+<p>More precisely, while the refined view of the concrete representations underlying <code class="language-plaintext highlighter-rouge">TermSymbolTable.symbol</code> and <code class="language-plaintext highlighter-rouge">TypeSymbolTable.symbol</code> may both look like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type symbol = int (* Refinement: symbol is the type of integers x such that x occurs as a key in sym2string *)
+</code></pre></div></div>
+
+<p>They are in fact distinct representations, because <code class="language-plaintext highlighter-rouge">sym2string</code> refers to distinct hash tables in each representation. The issue is that <code class="language-plaintext highlighter-rouge">sym2string</code> is defined in the body of <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> using an <em>effectful</em> expression:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let sym2string : (symbol, string) Hashtbl.t = Hashtbl.create 64
+</code></pre></div></div>
+
+<p>The function <code class="language-plaintext highlighter-rouge">Hashtbl.create</code> is effectful in the sense that its result is determined not just by its arguments, but by <em>state</em> that is implicitly threaded through every expression in our OCaml code. This state influences <code class="language-plaintext highlighter-rouge">Hashtbl.create</code> to allocate distinct hash tables each time it is called, and to return references to these distinct hash tables.</p>
+
+<p>So the type <code class="language-plaintext highlighter-rouge">symbol</code> depends on the value <code class="language-plaintext highlighter-rouge">sym2string</code>, which in turn depends on the effect of allocating a new hash table, which happens each time the functor is applied. Thus, a fresh opaque type <code class="language-plaintext highlighter-rouge">X.symbol</code> must be generated each time we apply <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, as in <code class="language-plaintext highlighter-rouge">module X = MakeSymbolTable ()</code>. Thus, in the above example, <code class="language-plaintext highlighter-rouge">TermSymbolTable.symbol</code> and <code class="language-plaintext highlighter-rouge">TypeSymbolTable.symbol</code> are distinct types. A functor that generates abstract types, like <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> does, is said to be a <em>generative functor</em>. OCaml doesn’t automatically infer what functors are generative by tracking effects; instead, we tell OCaml to make a functor such as <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> generative by declaring it with a unit parameter <code class="language-plaintext highlighter-rouge">()</code>.</p>
+
+<p>Because some functors, like <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, must be generative due to effects in their bodies, we could imagine a language in which all functors are generative. While that would be sound (in fact, Standard ML is one such language), it’s inconvenient. In addition to generative functors like <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, OCaml allows us to define non-generative functors. These functors are called <em>applicative functors</em>, and will be described next.</p>
+
+<h1 id="applicative-functors">Applicative Functors</h1>
+
+<p>Recall our <code class="language-plaintext highlighter-rouge">MakeSet</code> functor from the previous post. It references the following signatures <code class="language-plaintext highlighter-rouge">Equatable</code> and <code class="language-plaintext highlighter-rouge">Set</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Equatable = sig
+  type t
+  (** The type of comparable values *)
+
+  val eq : t -&gt; t -&gt; bool
+  (** [eq a b] Is [a] equal to [b]? *)
+
+  (* LAW:
+     The relation Eq defined such that
+
+     n Eq m &lt;=&gt; (eq n m) = true
+
+     is an equivalence relation (reflexive, symmetric, and transitive)
+  *)
+end
+
+module type Set = sig
+  (**
+    A signature for manipulating *sets*, which are unordered collections of unique elements
+  *)
+
+  type t
+  (** An unordered collection of unique elements *)
+
+  module Item : Equatable
+  (** Defines a type [Item.t] of elements contained in sets of type [t],
+      and provides [Item.t] with an equality test operator *)
+
+  val emptyset : t
+  (** [emptyset] is a set containing no elements *)
+
+  val member : t -&gt; Item.t -&gt; bool
+  (** [member s v] Is [v] a member of [s]? *)
+
+  val insert : t -&gt; Item.t -&gt; t
+  (** [insert s v] returns the smallest set containing [v] and all elements of [s] *)
+
+  (* LAW: for all (v : Item.t),
+           (member emptyset v) = false
+  *)
+
+  (* LAW: for all (v : Item.t) and (set : t),
+           (member (insert set v) v) = true
+  *)
+
+  (* LAW: for all (v : Item.t) (w : Item.t) and (set : t),
+           (Item.eq v w) =&gt; (member set v) = (member set w)
+  *)
+
+  (* LAW: for all (v : Item.t), (w : Item.t), and (set : t) with (Item.eq v w) = false,
+           (member (insert set v) w) = (member set w)
+  *)
+end
+</code></pre></div></div>
+
+<p>and its implementation follows:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module MakeSet (Eq : Equatable) : (Set with module Item = Eq) = struct
+  type t = Eq.t list
+
+  module Item = Eq
+
+  let emptyset = []
+
+  let rec member (set : t) (item : Item.t) : bool =
+    match set with
+    | w :: rest -&gt;
+      begin match Eq.eq w item with
+      | true -&gt;
+        true
+      | _ -&gt;
+        member rest item
+      end
+    | [] -&gt;
+      false
+
+  let insert (set : t) (item : Item.t) : t =
+    match (member set item) with
+    | true -&gt;
+      set
+    | false -&gt;
+      item :: set
+end
+</code></pre></div></div>
+
+<p>First, notice that the body of <code class="language-plaintext highlighter-rouge">MakeSet</code> produces no effects as it evaluates, because the right-hand sides of its let bindings are values: <code class="language-plaintext highlighter-rouge">emptyset</code> is bound to an empty list value, and <code class="language-plaintext highlighter-rouge">member</code> and <code class="language-plaintext highlighter-rouge">insert</code> are bound to function values. Therefore, the type <code class="language-plaintext highlighter-rouge">t</code> defined in the functor body does not depend on effects. However, it does rely on a refinement, namely that the elements of the list are equivalent to the elements inserted into the set according to <code class="language-plaintext highlighter-rouge">Eq.eq</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type t = Eq.t list
+(* Refinement: For all Eq.t lists l of type t,
+
+    For all elements a of type Eq.t,
+    there exists an element c in l such that `(Eq.eq a c) = true` if and only if some element
+    b such that `(Eq.eq a b) = true` was inserted into the set earlier.
+*)
+</code></pre></div></div>
+
+<p>Clearly, not all applications of <code class="language-plaintext highlighter-rouge">MakeSet</code> can share the same abstract type field <code class="language-plaintext highlighter-rouge">t</code>, because <code class="language-plaintext highlighter-rouge">t</code> has a different refinement depending on the comparison function of the argument module <code class="language-plaintext highlighter-rouge">Eq</code>. However, two applications <em>to the same argument</em> indeed yield the same refinement for <code class="language-plaintext highlighter-rouge">t</code>, so when we seal the modules resulting from the applications, the <code class="language-plaintext highlighter-rouge">t</code> type fields should be treated as identical by the type checker. OCaml takes a conservative approach to recognizing that two applications of the same functor have equal arguments: it only treats them as equal if they are <em>paths</em> which are syntactically identical. A path (written P or Q below) is either:</p>
+
+<ul>
+  <li>A bound module identifier (like <code class="language-plaintext highlighter-rouge">IntEq</code>)</li>
+  <li>or, a projection of a module field from a path (like <code class="language-plaintext highlighter-rouge">P.X</code>)</li>
+  <li>or, a functor application of a path to a path (like <code class="language-plaintext highlighter-rouge">P(Q)</code>)</li>
+</ul>
+
+<p>As an example, we have the equality <code class="language-plaintext highlighter-rouge">MakeSet(IntEq).t = MakeSet(IntEq).t</code> but not <code class="language-plaintext highlighter-rouge">MakeSet(struct type t = int let eq a b = (a = b) end).t = MakeSet(struct type t = int let eq a b = (a = b) end).t</code>.</p>
+
+<p>Functors like <code class="language-plaintext highlighter-rouge">MakeSet</code>, which produce abstract type fields that are identified across multiple applications to the same arguments, are called <em>applicative functors</em>. Any functor <em>without</em> a unit parameter <code class="language-plaintext highlighter-rouge">()</code> is treated as applicative by OCaml. The following code demonstrates how applicative functors work:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module IntEq : (Equatable with type t = int) = struct
+  (** Integers, compared by ordinary numeric equality *)
+  type t = int
+  let eq (a : int) (b : int) : bool = a = b
+end
+
+module TrivialIntEq : (Equatable with type t = int) = struct
+  (** Collapsed integer equality where all integers are equal  *)
+  type t = int
+  let eq (a : int) (b : int) : bool = true
+end
+
+module SetA = MakeSet(IntEq)
+module SetB = MakeSet(IntEq)
+module SetC = MakeSet(TrivialIntEq)
+
+let _ = SetA.insert SetB.emptyset 3 (* Allowed, because SetA.t = SetB.t *)
+let _ = SetA.insert SetC.emptyset 3 (* Type error, because SetA.t is not equal to SetC.t *)
+</code></pre></div></div>
+
+<p>Above, the type checker considers <code class="language-plaintext highlighter-rouge">SetA.t</code> and <code class="language-plaintext highlighter-rouge">SetB.t</code> as equal, because they were obtained by applying <code class="language-plaintext highlighter-rouge">MakeSet</code> to the same path. However, <code class="language-plaintext highlighter-rouge">SetC</code> was obtained by applying <code class="language-plaintext highlighter-rouge">MakeSet</code> to a distinct path, so the type checker rejects the last line <code class="language-plaintext highlighter-rouge">SetA.insert SetC.emptyset 3</code>.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Module sealing allows the module implementor to maintain precise invariants, or “refinements”, on the values of abstract types. These invariants influence which abstract types can be viewed as identical from the perspective of a client using the sealed module.</p>
+
+<p>When a type field’s invariant depends on an effect (such as memory allocation) that is performed each time a functor is applied, each application of the functor must generate fresh abstract types. The programmer must “mark” such type-generating functors as <em>generative</em> by declaring them with a unit parameter <code class="language-plaintext highlighter-rouge">()</code>.</p>
+
+<p>Even when declared type fields do not depend on effects, they may still depend on value fields of functor arguments. For example, the <code class="language-plaintext highlighter-rouge">MakeSet</code> functor produces a result whose <code class="language-plaintext highlighter-rouge">t</code> field has an invariant that depends on the argument module <code class="language-plaintext highlighter-rouge">Eq</code>’s <code class="language-plaintext highlighter-rouge">eq</code> field. Therefore, if a functor’s body has no initialization effects then distinct applications to the same argument should yield identical abstract types. Such functors are called <em>applicative</em>. The programmer communicates to the OCaml compiler that a functor should be applicative by <em>refraining</em> from declaring the functor with a unit parameter <code class="language-plaintext highlighter-rouge">()</code>. The OCaml compiler takes a simplified, conservative view of when two functor arguments are equal: it only considers them equal if they are syntactically equal paths.</p>
+
+  </div><a class="u-url" href="/understanding-module-systems/2026/10/24/applicativity-and-generativity.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <ul class="contact-list">
+          
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p></p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
