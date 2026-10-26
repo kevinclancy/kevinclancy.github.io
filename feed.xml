@@ -1,4 +1,229 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-10-24T10:23:20-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://kevinclancy.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://kevinclancy.github.io/" rel="alternate" type="text/html" /><updated>2026-10-26T09:21:41-07:00</updated><id>https://kevinclancy.github.io/feed.xml</id><title type="html">Kevin Clancy</title><subtitle></subtitle><author><name></name></author><entry><title type="html">6. Applicativity and Generativity</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/10/24/applicativity-and-generativity.html" rel="alternate" type="text/html" title="6. Applicativity and Generativity" /><published>2026-10-24T09:00:00-07:00</published><updated>2026-10-24T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/10/24/applicativity-and-generativity</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/10/24/applicativity-and-generativity.html"><![CDATA[<p>Given two applications of the same functor <code class="language-plaintext highlighter-rouge">F</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module M = F(X)
+module N = F(Y)
+</code></pre></div></div>
+<p>should <code class="language-plaintext highlighter-rouge">M.t</code> and <code class="language-plaintext highlighter-rouge">N.t</code> be considered the same type? This post explores this question in depth and presents OCaml’s answer.</p>
+
+<h1 id="invariants">Invariants</h1>
+
+<p>Consider the following signature and functor:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type SymbolTable = sig
+  type symbol
+  (** A symbol which occurs one or more times in a program *)
+
+  val get_symbol : string -&gt; symbol
+  (** [get_symbol str] Looks up a symbol named [str],
+      or generates and returns a new one if no such symbol exists *)
+
+  val get_name : symbol -&gt; string
+  (** [get_name sym] Returns the string name of symbol [sym] *)
+end
+
+module MakeSymbolTable () : SymbolTable = struct
+  type symbol = int
+
+  let string2sym : (string, symbol) Hashtbl.t = Hashtbl.create 64
+  let sym2string : (symbol, string) Hashtbl.t = Hashtbl.create 64
+  let next_sym : int ref = ref 0
+
+  let get_symbol (name : string) : symbol =
+    match Hashtbl.find_opt string2sym name with
+    | Some sym -&gt;
+      sym
+    | None -&gt;
+      let sym = !next_sym in
+      next_sym := !next_sym + 1;
+      Hashtbl.add string2sym name sym;
+      Hashtbl.add sym2string sym name;
+      sym
+
+  let get_name (sym : symbol) : string =
+    Hashtbl.find sym2string sym
+end
+</code></pre></div></div>
+
+<p>A <code class="language-plaintext highlighter-rouge">SymbolTable</code> is used by a compiler. It associates string identifiers read in by a parser with <em>symbols</em> for comparatively efficient equality testing and storage. Since languages generally have multiple namespaces (for example, OCaml has separate namespaces for terms, types, and modules), we want the ability to instantiate multiple modules which all implement the <code class="language-plaintext highlighter-rouge">SymbolTable</code> interface. For this, we have created the functor <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, which produces a different symbol table at each application:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module TermSymbolTable = MakeSymbolTable ()
+module TypeSymbolTable = MakeSymbolTable ()
+module ModuleSymbolTable = MakeSymbolTable ()
+</code></pre></div></div>
+
+<p>An important aspect of the <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> definition is that the <code class="language-plaintext highlighter-rouge">get_name</code> function is total: regardless of what argument is passed to it, it never throws an exception. But it’s implemented in terms of <code class="language-plaintext highlighter-rouge">Hashtbl.find</code>, which <em>does</em> throw an exception when its key argument <code class="language-plaintext highlighter-rouge">sym</code> is not contained as a key in its table argument <code class="language-plaintext highlighter-rouge">sym2string</code>. How can this be?</p>
+
+<p><code class="language-plaintext highlighter-rouge">get_name</code> is total despite being implemented in terms of <code class="language-plaintext highlighter-rouge">Hashtbl.find</code> because of an <em>invariant</em> the struct ensures: all values of type <code class="language-plaintext highlighter-rouge">symbol</code> are integers that occur as keys in <code class="language-plaintext highlighter-rouge">sym2string</code>. The invariant can be proven by examining the definition of the struct produced by <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>. First, we make note of another invariant, which is easily proven as an exercise: any symbol value stored in <code class="language-plaintext highlighter-rouge">string2sym</code> is stored as a key in <code class="language-plaintext highlighter-rouge">sym2string</code>. Then, we note that the struct only emits <code class="language-plaintext highlighter-rouge">symbol</code> values via its <code class="language-plaintext highlighter-rouge">get_symbol</code> method, but in both branches of this method, the emitted symbol is a key in <code class="language-plaintext highlighter-rouge">sym2string</code>. In the first branch, the emitted symbol was already stored as a value in <code class="language-plaintext highlighter-rouge">string2sym</code> before <code class="language-plaintext highlighter-rouge">get_symbol</code> was called, and hence it was already stored as a key in <code class="language-plaintext highlighter-rouge">sym2string</code>. In the second branch, the returned symbol is added as key by the call <code class="language-plaintext highlighter-rouge">Hashtbl.add sym2string sym name</code> immediately before it is returned.</p>
+
+<h1 id="generative-functors">Generative Functors</h1>
+
+<p>Now, we choose to view this invariant as an informal refinement on the <code class="language-plaintext highlighter-rouge">int</code> type used as the definition of <code class="language-plaintext highlighter-rouge">symbol</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module MakeSymbolTable () : SymbolTable = struct
+  type symbol = int (* Refinement: symbol is the type of integers x such that x occurs as a key in sym2string *)
+  ...
+end
+</code></pre></div></div>
+<p>This <em>refinement</em> is an “informal subtype” of <code class="language-plaintext highlighter-rouge">int</code> that is too precise for OCaml’s type system to track. However, as the implementor of the body of <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, we were able to verify in the discussion above that the refinement is indeed valid. Stepping back, this demonstrates an important aspect of the power of module systems. Because the refinement refers to <code class="language-plaintext highlighter-rouge">sym2string</code>, it doesn’t make sense in contexts outside of the functor body, for which <code class="language-plaintext highlighter-rouge">sym2string</code> is not in scope. Contexts outside the functor body are nonetheless still able to refer to this type <em>abstractly</em> as <code class="language-plaintext highlighter-rouge">symbol</code>.</p>
+
+<p>Now, consider the following code:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module TermSymbolTable = MakeSymbolTable ()
+module TypeSymbolTable = MakeSymbolTable ()
+let () =
+  let sym_a = TermSymbolTable.get_symbol "a" in
+  let str_a = TypeSymbolTable.get_name sym_a in
+  Printf.printf "%s" str_a
+</code></pre></div></div>
+
+<p>This code, if it were well typed, would raise a <code class="language-plaintext highlighter-rouge">Not_found</code> exception during the call <code class="language-plaintext highlighter-rouge">TypeSymbolTable.get_name sym_a</code>. The problem is that <code class="language-plaintext highlighter-rouge">sym_a</code> was produced by the <code class="language-plaintext highlighter-rouge">TermSymbolTable</code> module, which guarantees that all symbols are keys of the <code class="language-plaintext highlighter-rouge">sym2string</code> hash table <em>contained in</em> <code class="language-plaintext highlighter-rouge">TermSymbolTable</code>. However, the <code class="language-plaintext highlighter-rouge">TypeSymbolTable</code> module contains a <em>distinct</em> <code class="language-plaintext highlighter-rouge">sym2string</code> hash table, which is empty at the time of the call to <code class="language-plaintext highlighter-rouge">TypeSymbolTable.get_name sym_a</code>.</p>
+
+<p>More precisely, while the refined view of the concrete representations underlying <code class="language-plaintext highlighter-rouge">TermSymbolTable.symbol</code> and <code class="language-plaintext highlighter-rouge">TypeSymbolTable.symbol</code> may both look like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type symbol = int (* Refinement: symbol is the type of integers x such that x occurs as a key in sym2string *)
+</code></pre></div></div>
+
+<p>They are in fact distinct representations, because <code class="language-plaintext highlighter-rouge">sym2string</code> refers to distinct hash tables in each representation. The issue is that <code class="language-plaintext highlighter-rouge">sym2string</code> is defined in the body of <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> using an <em>effectful</em> expression:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let sym2string : (symbol, string) Hashtbl.t = Hashtbl.create 64
+</code></pre></div></div>
+
+<p>The function <code class="language-plaintext highlighter-rouge">Hashtbl.create</code> is effectful in the sense that its result is determined not just by its arguments, but by <em>state</em> that is implicitly threaded through every expression in our OCaml code. This state influences <code class="language-plaintext highlighter-rouge">Hashtbl.create</code> to allocate distinct hash tables each time it is called, and to return references to these distinct hash tables.</p>
+
+<p>So the type <code class="language-plaintext highlighter-rouge">symbol</code> depends on the value <code class="language-plaintext highlighter-rouge">sym2string</code>, which in turn depends on the effect of allocating a new hash table, which happens each time the functor is applied. Thus, a fresh opaque type <code class="language-plaintext highlighter-rouge">X.symbol</code> must be generated each time we apply <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, as in <code class="language-plaintext highlighter-rouge">module X = MakeSymbolTable ()</code>. Thus, in the above example, <code class="language-plaintext highlighter-rouge">TermSymbolTable.symbol</code> and <code class="language-plaintext highlighter-rouge">TypeSymbolTable.symbol</code> are distinct types. A functor that generates abstract types, like <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> does, is said to be a <em>generative functor</em>. OCaml doesn’t automatically infer what functors are generative by tracking effects; instead, we tell OCaml to make a functor such as <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code> generative by declaring it with a unit parameter <code class="language-plaintext highlighter-rouge">()</code>.</p>
+
+<p>Because some functors, like <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, must be generative due to effects in their bodies, we could imagine a language in which all functors are generative. While that would be sound (in fact, Standard ML is one such language), it’s inconvenient. In addition to generative functors like <code class="language-plaintext highlighter-rouge">MakeSymbolTable</code>, OCaml allows us to define non-generative functors. These functors are called <em>applicative functors</em>, and will be described next.</p>
+
+<h1 id="applicative-functors">Applicative Functors</h1>
+
+<p>Recall our <code class="language-plaintext highlighter-rouge">MakeSet</code> functor from the previous post. It references the following signatures <code class="language-plaintext highlighter-rouge">Equatable</code> and <code class="language-plaintext highlighter-rouge">Set</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module type Equatable = sig
+  type t
+  (** The type of comparable values *)
+
+  val eq : t -&gt; t -&gt; bool
+  (** [eq a b] Is [a] equal to [b]? *)
+
+  (* LAW:
+     The relation Eq defined such that
+
+     n Eq m &lt;=&gt; (eq n m) = true
+
+     is an equivalence relation (reflexive, symmetric, and transitive)
+  *)
+end
+
+module type Set = sig
+  (**
+    A signature for manipulating *sets*, which are unordered collections of unique elements
+  *)
+
+  type t
+  (** An unordered collection of unique elements *)
+
+  module Item : Equatable
+  (** Defines a type [Item.t] of elements contained in sets of type [t],
+      and provides [Item.t] with an equality test operator *)
+
+  val emptyset : t
+  (** [emptyset] is a set containing no elements *)
+
+  val member : t -&gt; Item.t -&gt; bool
+  (** [member s v] Is [v] a member of [s]? *)
+
+  val insert : t -&gt; Item.t -&gt; t
+  (** [insert s v] returns the smallest set containing [v] and all elements of [s] *)
+
+  (* LAW: for all (v : Item.t),
+           (member emptyset v) = false
+  *)
+
+  (* LAW: for all (v : Item.t) and (set : t),
+           (member (insert set v) v) = true
+  *)
+
+  (* LAW: for all (v : Item.t) (w : Item.t) and (set : t),
+           (Item.eq v w) =&gt; (member set v) = (member set w)
+  *)
+
+  (* LAW: for all (v : Item.t), (w : Item.t), and (set : t) with (Item.eq v w) = false,
+           (member (insert set v) w) = (member set w)
+  *)
+end
+</code></pre></div></div>
+
+<p>and its implementation follows:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module MakeSet (Eq : Equatable) : (Set with module Item = Eq) = struct
+  type t = Eq.t list
+
+  module Item = Eq
+
+  let emptyset = []
+
+  let rec member (set : t) (item : Item.t) : bool =
+    match set with
+    | w :: rest -&gt;
+      begin match Eq.eq w item with
+      | true -&gt;
+        true
+      | _ -&gt;
+        member rest item
+      end
+    | [] -&gt;
+      false
+
+  let insert (set : t) (item : Item.t) : t =
+    match (member set item) with
+    | true -&gt;
+      set
+    | false -&gt;
+      item :: set
+end
+</code></pre></div></div>
+
+<p>First, notice that the body of <code class="language-plaintext highlighter-rouge">MakeSet</code> produces no effects as it evaluates, because the right-hand sides of its let bindings are values: <code class="language-plaintext highlighter-rouge">emptyset</code> is bound to an empty list value, and <code class="language-plaintext highlighter-rouge">member</code> and <code class="language-plaintext highlighter-rouge">insert</code> are bound to function values. Therefore, the type <code class="language-plaintext highlighter-rouge">t</code> defined in the functor body does not depend on effects. However, it does rely on a refinement, namely that the elements of the list are equivalent to the elements inserted into the set according to <code class="language-plaintext highlighter-rouge">Eq.eq</code>:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type t = Eq.t list
+(* Refinement: For all Eq.t lists l of type t,
+
+    For all elements a of type Eq.t,
+    there exists an element c in l such that `(Eq.eq a c) = true` if and only if some element
+    b such that `(Eq.eq a b) = true` was inserted into the set earlier.
+*)
+</code></pre></div></div>
+
+<p>Clearly, not all applications of <code class="language-plaintext highlighter-rouge">MakeSet</code> can share the same abstract type field <code class="language-plaintext highlighter-rouge">t</code>, because <code class="language-plaintext highlighter-rouge">t</code> has a different refinement depending on the comparison function of the argument module <code class="language-plaintext highlighter-rouge">Eq</code>. However, two applications <em>to the same argument</em> indeed yield the same refinement for <code class="language-plaintext highlighter-rouge">t</code>, so when we seal the modules resulting from the applications, the <code class="language-plaintext highlighter-rouge">t</code> type fields should be treated as identical by the type checker. OCaml takes a conservative approach to recognizing that two applications of the same functor have equal arguments: it only treats them as equal if they are <em>paths</em> which are syntactically identical. A path (written P or Q below) is either:</p>
+
+<ul>
+  <li>A bound module identifier (like <code class="language-plaintext highlighter-rouge">IntEq</code>)</li>
+  <li>or, a projection of a module field from a path (like <code class="language-plaintext highlighter-rouge">P.X</code>)</li>
+  <li>or, a functor application of a path to a path (like <code class="language-plaintext highlighter-rouge">P(Q)</code>)</li>
+</ul>
+
+<p>As an example, we have the equality <code class="language-plaintext highlighter-rouge">MakeSet(IntEq).t = MakeSet(IntEq).t</code> but not <code class="language-plaintext highlighter-rouge">MakeSet(struct type t = int let eq a b = (a = b) end).t = MakeSet(struct type t = int let eq a b = (a = b) end).t</code>.</p>
+
+<p>Functors like <code class="language-plaintext highlighter-rouge">MakeSet</code>, which produce abstract type fields that are identified across multiple applications to the same arguments, are called <em>applicative functors</em>. Any functor <em>without</em> a unit parameter <code class="language-plaintext highlighter-rouge">()</code> is treated as applicative by OCaml. The following code demonstrates how applicative functors work:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module IntEq : (Equatable with type t = int) = struct
+  (** Integers, compared by ordinary numeric equality *)
+  type t = int
+  let eq (a : int) (b : int) : bool = a = b
+end
+
+module TrivialIntEq : (Equatable with type t = int) = struct
+  (** Collapsed integer equality where all integers are equal  *)
+  type t = int
+  let eq (a : int) (b : int) : bool = true
+end
+
+module SetA = MakeSet(IntEq)
+module SetB = MakeSet(IntEq)
+module SetC = MakeSet(TrivialIntEq)
+
+let _ = SetA.insert SetB.emptyset 3 (* Allowed, because SetA.t = SetB.t *)
+let _ = SetA.insert SetC.emptyset 3 (* Type error, because SetA.t is not equal to SetC.t *)
+</code></pre></div></div>
+
+<p>Above, the type checker considers <code class="language-plaintext highlighter-rouge">SetA.t</code> and <code class="language-plaintext highlighter-rouge">SetB.t</code> as equal, because they were obtained by applying <code class="language-plaintext highlighter-rouge">MakeSet</code> to the same path. However, <code class="language-plaintext highlighter-rouge">SetC</code> was obtained by applying <code class="language-plaintext highlighter-rouge">MakeSet</code> to a distinct path, so the type checker rejects the last line <code class="language-plaintext highlighter-rouge">SetA.insert SetC.emptyset 3</code>.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Module sealing allows the module implementor to maintain precise invariants, or “refinements”, on the values of abstract types. These invariants influence which abstract types can be viewed as identical from the perspective of a client using the sealed module.</p>
+
+<p>When a type field’s invariant depends on an effect (such as memory allocation) that is performed each time a functor is applied, each application of the functor must generate fresh abstract types. The programmer must “mark” such type-generating functors as <em>generative</em> by declaring them with a unit parameter <code class="language-plaintext highlighter-rouge">()</code>.</p>
+
+<p>Even when declared type fields do not depend on effects, they may still depend on value fields of functor arguments. For example, the <code class="language-plaintext highlighter-rouge">MakeSet</code> functor produces a result whose <code class="language-plaintext highlighter-rouge">t</code> field has an invariant that depends on the argument module <code class="language-plaintext highlighter-rouge">Eq</code>’s <code class="language-plaintext highlighter-rouge">eq</code> field. Therefore, if a functor’s body has no initialization effects then distinct applications to the same argument should yield identical abstract types. Such functors are called <em>applicative</em>. The programmer communicates to the OCaml compiler that a functor should be applicative by <em>refraining</em> from declaring the functor with a unit parameter <code class="language-plaintext highlighter-rouge">()</code>. The OCaml compiler takes a simplified, conservative view of when two functor arguments are equal: it only considers them equal if they are syntactically equal paths.</p>]]></content><author><name></name></author><category term="understanding-module-systems" /><summary type="html"><![CDATA[Given two applications of the same functor F: module M = F(X) module N = F(Y) should M.t and N.t be considered the same type? This post explores this question in depth and presents OCaml’s answer.]]></summary></entry><entry><title type="html">5. Module Nesting and Introduction to Functors</title><link href="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html" rel="alternate" type="text/html" title="5. Module Nesting and Introduction to Functors" /><published>2026-09-03T09:00:00-07:00</published><updated>2026-09-03T09:00:00-07:00</updated><id>https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors</id><content type="html" xml:base="https://kevinclancy.github.io/understanding-module-systems/2026/09/03/functors.html"><![CDATA[<p>In a previous post, I <a href="/understanding-module-systems/2026/08/23/introduction.html#implementing-modules-using-parameter-modules">noted the inclusion of the “functor” feature</a> in OCaml, which allows us to define functions from modules to modules. This post will demonstrate how to use functors. The ability to define functors depends on the ability to define modules nested inside of other modules, which this post will also explain.</p>
 
 <h1 id="nested-modules-and-signatures">Nested Modules and Signatures</h1>
 
@@ -3210,432 +3435,4 @@ n &amp; \text{if } k = \ell
 
 <hr />
 
-<p><strong>Next:</strong> <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a></p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\) \(\newcommand{am}{\text{a.m.}}\) \(\newcommand{pm}{\text{p.m.}}\)]]></summary></entry><entry><title type="html">Towards a Mathematical Model of Computer Games</title><link href="https://kevinclancy.github.io/modelling-computer-games/2025/07/11/towards-mathematical-model.html" rel="alternate" type="text/html" title="Towards a Mathematical Model of Computer Games" /><published>2025-07-11T20:56:48-07:00</published><updated>2025-07-11T20:56:48-07:00</updated><id>https://kevinclancy.github.io/modelling-computer-games/2025/07/11/towards-mathematical-model</id><content type="html" xml:base="https://kevinclancy.github.io/modelling-computer-games/2025/07/11/towards-mathematical-model.html"><![CDATA[<h1 id="seeking-a-mathematical-model-of-computer-games">Seeking a mathematical model of computer games</h1>
-
-<p>Many years ago, I worked in the computer game industry as a gameplay programmer. My intuition was that the languages I used, C++ and Lua, were not suitable for gameplay programming.</p>
-
-<p>There were a few reasons for this. First, not only did C++ and Lua lack in-built notions of space and time, but they also lacked general purpose features for reasoning about them. For example, I could represent a 3D vector as an object in C++, but the C++ type system had no means to specify which basis (a.k.a. “coordinate system”) the vector belonged to, making it easy to perform the invalid operation of adding two vectors belonging to different bases. Second, despite game characters needing to dynamically adjust their goals in response to stimulus from their environment, C++ and Lua had no in-built notion of things like imperfect perception and goal setting.</p>
-
-<p>It would be fallacious to claim that the above features are better off built in to a language instead of implemented using general purpose features. In most mainstream languages, we can implement some sort of state machine system for controlling game characters, where each state represents a distinct goal that a character is pursuing. We <em>could</em> tag each vector with a basis identifier and tag each point with its affine frame, dynamically enforcing proper usage at runtime. Perhaps we could even use some sort of indexed type system to enforce proper vector operations statically, though I’m not sure if any mainstream languages are capable of this.</p>
-
-<p>Nonetheless, I think it’s worth experimenting with the design of game specific languages. Even if it turns out that the abstractions of general purpose languages are sufficient for game specific needs, our game specific experimentation may clarify exactly what is needed and how it should be structured.</p>
-
-<p>There are a few ways we could go about experimenting with game specific languages:</p>
-
-<ul>
-  <li>
-    <p>Implement a real game specific language that compiles to executable games. This would require an enormous amount of work. We would evaluate our experiment by using our language to create games. This too would require an enormous amount of work. The iteration time for this approach is simply too lengthy to be an effective form of experimentation.</p>
-  </li>
-  <li>
-    <p>Model computer games, or simplified approximations of computer games, as mathematical objects. Then design a language that compiles to such mathematical objects. Evaluate our language by designing a logical system to reason about the game models. If this logic is expressive, we evaluate the language positively, because it implies that humans can reason about it easily.</p>
-  </li>
-</ul>
-
-<p>The first approach has the advantage of being real, while the second approach provides deeper understanding and faster iteration times. In this series of posts, I’m going to pursue the second approach, but I’m only going to take the first step: <strong>I will model computer games, or simplified approximations of computer games, as mathematical objects.</strong> I’ve never created mathematical models of computer games before, so I’m going to try modelling some of the simplest games I can find that still feature space, time, and interacting agents. To this end, I’ve chosen to use a 90s game creation system called <em>MegaZeux</em> as an inspiration for my model. The convenient thing about MegaZeux is that, despite feeling like a standard real-time computer game, its time and space are discrete and can therefore be modeled entirely by integers rather than floating point numbers. I will present my model using elementary mathematics; it should be accessible to anyone who knows what sets, functions, set-builder notation, and cartesian products are.</p>
-
-<h1 id="understanding-the-problem">Understanding the problem</h1>
-
-<p>This post is going to analyze MegaZeux using intuition rather than rigor, trying to isolate the essence of what a MegaZeux game is. It will specifically focus on how multiple simulated agents interact with other agents and the game world, identifying some fundamental features of gameplay programming by exploring a concrete scenario in a MegaZeux game called <em>Weirdness</em>.</p>
-
-<p>The primary purpose of this post is to motivate my next few posts, in which I create a mathematical model of a MegaZeux-style computer game. However, it might also be a fun read for people who are interested in computer games and have never heard of MegaZeux, or gaming fans who want to consider computer games from an analytical perspective.</p>
-
-<h2 id="megazeux">MegaZeux</h2>
-
-<p><em>MegaZeux</em> is a game creation system from the 90s, whose games take place on a grid of 8x14 pixel images. That’s right: in a typical MegaZeux game, every significant object, whether a goblin, a wall, or a tree, is depicted using an 8x14 image. This extreme constraint comes from DOS text-mode graphics, where textual documents were displayed in grids of 8x14 pixel characters. While 8x14 might be a reasonable size to depict a single letter of the Roman alphabet, depicting something more complex, like a human, is much more challenging. As a result, players do not expect the graphics of a MegaZeux game to look good. For a game developer, depicting a game world using simple abstract art rather than poring over complex visual details greatly reduces the effort used to bring a game world to life.</p>
-
-<p>In MegaZeux, scriptable game characters are idosyncratically called <em>robots</em>. However, we will often refer to them as agents. Each robot is controlled by a <em>robotic script</em>. Because robotic scripting is not the state of the art in game character scripting, I will intentionally avoid discussing it comprehensively. I care about what robotic scripting accomplishes rather than how robotic scripting works.</p>
-
-<p>Here are a few examples of MegaZeux games:</p>
-
-<p><img src="/assets/images/gameloop/mzx-depot-dungeons.png" /></p>
-
-<p><a href="https://www.digitalmzx.com/show.php?id=2097">Depot Dungeons</a> is a puzzle game where the player must traverse a dungeon while solving puzzles involving lever pulling and crate pushing, all the while fighting off aggressive mutant cockroaches.</p>
-
-<p><img src="/assets/images/gameloop/mzx-kikan-intro.png" /></p>
-
-<p><a href="https://www.digitalmzx.com/show.php?id=1539">Kikan</a> is a turn based, story driven RPG similar to games in the Final Fantasy series. Unlike most RPGs, it features a semi-realistic modern setting.</p>
-
-<h2 id="roy-a-typical-gameplay-scenario">Roy: A Typical Gameplay Scenario</h2>
-
-<p>It’s extraordinary that MegaZeux was created by a high school kid, Alexis Janson. In addition to creating <em>MegaZeux</em>, she used <em>MegaZeux</em> to create the <em>Zeux</em> series of action adventure games. Then, she created her final <em>MegaZeux</em> game, <em>Weirdness</em>. <em>Weirdness</em> is a puzzle adventure that pushes <em>MegaZeux</em> scripting system to its limits, featuring complex character behaviors and even a first-person maze.</p>
-
-<p>A typical game scripting scenario can be found at the beginning of <em>Weirdness</em>. A character named Roy sits at his computer in his house. If the player touches him, he says “Not now, Jace, I’m busy making UltraZeux games”.</p>
-
-<p><img src="/assets/images/gameloop/mzx-weirdness-roy-computer.png" /></p>
-
-<p>If the player goes into the basement, he can turn off the fuse box, causing the lights in the house to shut off and destroying Roy’s UltraZeux work.</p>
-
-<p><img src="/assets/images/gameloop/mzx-weirdness-fusebox-off.png" /></p>
-
-<p>Roy then walks into the basement and turns the fuse box back on.</p>
-
-<p><img src="/assets/images/gameloop/mzx-weirdness-fusebox-on.png" /></p>
-
-<p>In this scenario, the fuse box itself is a robot. Each robot has a <em>robotic script</em>, which is a program pairing several <em>labels</em>, which are names of events to respond to, with <em>handlers</em>, which are sequences of instructions that the robot should execute in response to these events. When the player attempts to move into the grid cell occupied by the fuse box, the game triggers the fuse box script’s “touch” handler, which spawns a dialog asking the player if they want to turn the fuse box off. If they choose “yes” then another handler inside the fuse box’s script is executed. This handler sends a “fuse box off” message to Roy. Upon receiving the “fuse box off” message, Roy’s robotic script executes its “fuse box off” handler, causing him to express his frustration and walk into the basement to turn the fuse box back on.</p>
-
-<p>Let’s take a step back and think about what’s going on here, using intuition rather than deep analysis. <em>MegaZeux</em> is simulating the physical world in a rough manner. The robots in this scenario, Roy and the fuse box, represent physical things in the world. Robotic scripts are an abstraction of the physical things’ “brains”: both actual brains, as in the case of Roy, and pseudo brains, as in the case of the fuse box. A pseudo brain is a subset of a physical object’s characteristics that determine how the object interacts with other objects. But a pseudo brain only includes physical characteristics too fine grained to fall within the scope of the game system, thus requiring custom code; in this sense, a brain is a specific type of pseudo brain. For example, the fuse box occupies a grid cell at a (row,column) location understood by the game system. But the position of the switch <em>within</em> the cell is too fine grained and therefore must be dealt with using <em>Weirdness</em>-specific pseudo brain code, a robotic script.</p>
-
-<p>Each handler in a robotic script issues commands instructing its robot to interact with the world in various ways. For example, <code class="language-plaintext highlighter-rouge">go SOUTH</code> instructs the robot Roy to attempt walking to the grid cell whose \(y\)-coordinate is one greater than Roy’s current \(y\)-coordinate. This will only happen if the cell to the south of Roy is currently unoccupied. For this reason, we can view a command such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> as a message sent from Roy’s brain to the physical world, which we will call the <em>environment</em>. Upon receiving the message, the environment may or may not choose to move Roy, depending on whether such movement is compatible with its laws of physics, which are <em>dictated by the environment</em>. For example, a request by Roy to move into a cell occupied by a wall would be rejected by the environment, because the environment’s laws of physics do not allow a robot and a wall to occupy the same grid cell.</p>
-
-<p>From this discussion, we extract some key features we would like to model.</p>
-<ul>
-  <li>Robots that affect the physical world by making requests to an environment. The environment may or may not honor these requests at its discretion.</li>
-  <li>A specific type of request a Robot can make to the environment is <em>message sending</em> to another agent, as when the fuse box sends the “fuse box off” message to Roy.</li>
-  <li>Agents receive messages from the environment and other agents; these message may affect their behavior. The environment can be viewed as a mediator, so that all messages received by robot \(B\) from robot \(A\) can be viewed as coming directly from the environment and indirectly from robot \(A\).</li>
-</ul>
-
-<h1 id="computer-games-as-dynamical-systems">Computer games as dynamical systems</h1>
-
-<p>Now that we’ve highlighted the features that we wish to focus on modelling by taking inspiration from <em>MegaZeux</em> and <em>Weirdness</em>, let’s consider the structure of a computer game.</p>
-
-<figure>
-<img src="/assets/images/gameloop/game-system.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
-<figcaption>Diagram 1</figcaption>
-</figure>
-
-<p>We can view the game’s state as encapsulated in the game stepper; nothing outside of the game stepper may modify its internal state. The game evolves over a sequence of discrete time steps. At each time step, the game stepper must compute two quantities:</p>
-
-<ul>
-  <li>From the game’s current state, the game stepper must compute its output, a matrix of color values to display to the screen.</li>
-  <li>The game stepper must also compute the game’s next state from its input and its current state.  Its input might be a mapping from key identifiers to booleans indicating whether each key is pressed. The game’s state might contain a matrix of physical locations, where each location contains an identifier denoting either a game character, a wall, or an empty space.</li>
-</ul>
-
-<p>Put differently, the game stepper is a pair of two functions:</p>
-
-\[\mathit{output} : \mathit{GameState} \to \mathit{Output}\]
-
-<p>and</p>
-
-\[\mathit{nextState} : \mathit{Input} \times \mathit{GameState} \to \mathit{GameState}\]
-
-<p>Such a system is called <em>open</em>, because the source of the \(\mathit{Input}\) wire and the destination of the \(\mathit{Output}\) wire are left unspecified.</p>
-
-<p>Computing the \(\mathit{output}\) function is often called <em>computer graphics</em>.
-From the discussion above, you may have inferred that computer graphics is not what I’m interested in, nor am I interested in processing the input. The perspective I’d like to take on computer games actually looks more like this:</p>
-
-<figure>
-<img src="/assets/images/gameloop/game-closed-system.drawio.png" style="margin-top: 30px; margin-bottom: 30px" />
-<figcaption>Diagram 2</figcaption>
-</figure>
-
-<p>Without input or output, what we have is more of a closed simulation than a game. Now, at each time step, the game stepper no longer computes an output. It still must compute a next state. But because it no longer receives input, only its current state is used to compute its next state. So this diagram depicts a function from game states to game states.</p>
-
-\[\mathit{nextState} : \mathit{GameState} \to \mathit{GameState}\]
-
-<p>Let \(1\) be the singleton set \(\{ \ast \}\), where \(\ast\) is some non-descript set element.
-A closed simulation is essentially just a special case of an open one, where both \(\mathit{Input}\) and \(\mathit{Output}\) are equal to the set \(1\).</p>
-
-\[\mathit{output} : \mathit{GameState} \to 1\]
-
-<p>and</p>
-
-\[\mathit{nextState} : 1 \times \mathit{GameState} \to \mathit{GameState}\]
-
-<p>The idea here is that computing an output in the set \(1\) is equivalent to not computing an output at all, because choosing an element of a one-element set does not involve making a decision. Likewise an element of \((\ast, s)\) of \(1 \times \mathit{GameState}\) is equivalent to \(s\) since \(\ast\) is the only choice for the first component of the pair.</p>
-
-<p>A box isn’t very interesting as a diagram. It becomes interesting when we compose it from stateful subcomponents. Each subcomponent is a dynamical system that transforms, at each point in a sequence of time steps, its current state into output and its input and internal state into the next internal state.</p>
-
-<p>What are the stateful subcomponents? As a first approximation, they are:</p>
-
-<ul>
-  <li>The environment, whose state consists of the grid of available and occupied cells.</li>
-  <li>The robots. The internal state of the fuse box may track whether it is on or off. The internal state of Roy may contain a program counter that determines which of the instructions such as <code class="language-plaintext highlighter-rouge">go SOUTH</code> or <code class="language-plaintext highlighter-rouge">go EAST</code> he will perform at the next time step.</li>
-</ul>
-
-<p>Note that the position of each robot is part of the simulated “physical world” and is thus contained in the internal state of the environment rather than the internal state of the robot itself. This is why a robot can only make a <em>request</em> to move to an adjacent grid cell, and it is ultimately the environment’s decision whether or not to honor that request.</p>
-
-<h1 id="conclusion">Conclusion</h1>
-
-<p>We’ve examined MegaZeux’s <em>robot</em> system, which is used to simulate complex objects, both sentient and non-sentient, interacting in a simulated world. Some notable features are:</p>
-
-<ul>
-  <li>A robot performs physical actions by submitting requests to an environment. The environment decides whether to honor these requests.</li>
-  <li>A robot has internal state, but it’s a purely “mental” state that is used to make decisions. Physical properties of the robot are stored in the environment’s internal state.</li>
-  <li>A robot may send a message to another robot, which represents information sent along some physical communication medium.</li>
-</ul>
-
-<p>In my next post, I will define a game stepper for tic-tac-toe, which resembles MegaZeux in a few different ways:</p>
-
-<ul>
-  <li>The environment is the game board.</li>
-  <li>The two players, like robots, submit requests to the environment. Their internal state can be used for planning and decision making, but is isolated from the physical rules of the game board.</li>
-</ul>
-
-<p>Just for fun, I will leave you with the source code for the robot Roy from Weirdness. Reading it is optional. It demonstrates what I’m trying to avoid. The code that controls a robot or agent should communicate intent to the reader. Its evolution over time and interactions with the world should be formally summarizable with assertions. It should provide high level constructs to perform complex tasks simply. Implementing Roy using a modern state machine or behavior tree system would improve things in this direction, but by having a mathematical model of the agents and the environment they interact with, I think we can improve things even more.</p>
-
-<details>
-<summary>Roy's Robotic Script (Click to expand)</summary>
-<p style="white-space:pre-line;background-color:lightgray;">: "do"
-set "loopcount" to random 140 to 142
-char "loopcount"
-wait for 2
-goto "do"
-: "touch"
-* "~5Roy: Not now, Jace, I'm busy making UltraZeux games."
-send "msg" to "fad"
-goto "do"
-: "fboff"
-lockself
-char 'ç'
-wait for 25
-* "~5Roy: $%#&amp;&amp;*! I haven't saved my game yet!"
-send "msg" to "fad"
-: "fboff2"
-wait for 45
-char 'á'
-cycle 2
-* "~5Roy: I'd better go check the fuse box..."
-send "msg" to "fad"
-go SOUTH for 3
-: "mv1r"
-if touching SOUTH then "mv1"
-go SOUTH for 1
-go WEST for 2
-: "mv2r"
-if touching WEST then "mv2"
-go WEST for 1
-: "dr1r"
-if c?? Space p?? at WEST then "dr1"
-if touching WEST then "mvx5"
-open at WEST
-wait for 1
-color c8e
-go WEST for 4
-go SOUTH for 8
-rel to self
-: "mv4r"
-if player at 222 -12 "mv4"
-rel to self
-gotoxy 222 -12
-go SOUTH for 7
-go WEST for 12
-: "dr2r"
-if c?? Space p?? at NORTH then "dr2"
-if touching NORTH then "mvx6"
-open at NORTH
-wait for 1
-go NORTH for 4
-go EAST for 6
-: "mv5r"
-if touching EAST then "mv5"
-go EAST for 1
-rel to self
-: "mv6r"
-if player at 74 0 "mv6"
-rel to self
-gotoxy 74 0
-go WEST for 11
-: "mv7r"
-if touching WEST then "mv7"
-go WEST for 1
-wait for 10
-if "darkness" = 0 then "noprob"
-if "wire" = 1 then "nowire"
-* "~5Roy: Ahh, here's the problem."
-send "msg" to "fad"
-wait for 10
-send at WEST to "fix"
-wait for 5
-: "noprobr"
-go EAST for 11
-: "mv8r"
-if touching EAST then "mv8"
-go EAST for 1
-rel to self
-: "mv9r"
-if player at -74 0 "mv9"
-rel to self
-gotoxy -74 0
-go WEST for 7
-: "mvx1r"
-if touching SOUTH then "mvx1"
-go SOUTH for 1
-: "mvx2r"
-if touching SOUTH then "mvx2"
-: "dr4r"
-if c?? OpenDoor p?? at SOUTH then "dr3"
-rel to self
-if c?? OpenDoor p?? at -1 1 then "dr4"
-go SOUTH for 1
-put c0f Door p04 to SOUTH
-open at SOUTH
-wait for 1
-go SOUTH for 2
-if "tostore" = 1 then "toss"
-go EAST for 12
-go NORTH for 7
-rel to self
-: "mvBr"
-if player at -222 12 "mvB"
-rel to self
-gotoxy -222 12
-go NORTH for 7
-: "mvCr"
-if touching NORTH then "mvC"
-go NORTH for 1
-: "mvx3r"
-if touching EAST then "mvx3"
-go EAST for 1
-: "mvx4r"
-if touching EAST then "mvx4"
-: "dr6r"
-if c?? OpenDoor p?? at EAST then "dr5"
-rel to self
-if c?? OpenDoor p?? at 1 1 then "dr6"
-go EAST for 1
-put c0f Door p03 to EAST
-open at EAST
-color c1e
-wait for 1
-go EAST for 5
-go NORTH for 4
-cycle 1
-send "dthing" to "check"
-unlockself
-if "darkness" = 1 then "fboff2"
-goto "do"
-: "mvx1"
-cycle 1
-move player to EAST
-cycle 2
-goto "mvx1r"
-: "mvx2"
-cycle 1
-move player to EAST
-cycle 2
-goto "mvx2r"
-: "mvx3"
-cycle 1
-move player to SOUTH
-cycle 2
-goto "mvx3r"
-: "mvx4"
-cycle 1
-put player SOUTH
-cycle 2
-goto "mvx4r"
-: "mvx5"
-cycle 1
-put player EAST
-cycle 2
-goto "dr1"
-: "mvx6"
-cycle 1
-put player SOUTH
-cycle 2
-goto "dr2"
-: "dr1"
-rel to self
-put c01 Floor p?? at -2 0
-rel to self
-put c01 Floor p?? at -2 1
-put c0f Door p05 to WEST
-goto "dr1r"
-: "dr2"
-rel to self
-put c04 Floor p?? at 0 -2
-rel to self
-put c04 Floor p?? at -1 -2
-put c0f Door p00 to NORTH
-goto "dr2r"
-: "dr3"
-: "dr4"
-rel to self
-put c04 Floor p?? at -1 1
-put c04 Floor p?? to SOUTH
-rel to self
-put c0f Door p04 at 0 2
-goto "dr4r"
-: "dr5"
-: "dr6"
-rel to self
-put c01 Floor p?? at 1 1
-put c01 Floor p?? to EAST
-rel to self
-put c0f Door p03 at 2 0
-goto "dr6r"
-: "mv1"
-cycle 1
-move player to EAST
-cycle 2
-goto "mv1r"
-: "mv2"
-cycle 1
-move player to NORTH
-cycle 2
-goto "mv2r"
-: "mv4"
-cycle 1
-move player to WEST
-cycle 2
-goto "mv4r"
-: "mv5"
-cycle 1
-move player to SOUTH
-cycle 2
-goto "mv5r"
-: "mv6"
-cycle 1
-move player to NORTH
-cycle 2
-goto "mv6r"
-: "mv7"
-cycle 1
-move player to NORTH
-cycle 2
-goto "mv7r"
-: "mv8"
-cycle 1
-move player to NORTH
-cycle 2
-goto "mv8r"
-: "mv9"
-cycle 1
-move player to SOUTH
-cycle 2
-goto "mv9r"
-: "mvB"
-cycle 1
-move player to WEST
-cycle 2
-goto "mvBr"
-: "mvC"
-cycle 1
-move player to WEST
-cycle 2
-goto "mvCr"
-: "noprob"
-* "~5Roy: Hmmm... nothing wrong here."
-send "msg" to "fad"
-wait for 15
-goto "noprobr"
-: "nowire"
-* "~5Roy: Is this somebody's idea of a joke!?"
-send "msg" to "fad"
-wait for 15
-* "~5Roy: I guess I'll go buy a new wire..."
-send "msg" to "fad"
-wait for 5
-set "tostore" to 1
-goto "noprobr"
-: "toss"
-go SOUTH for 3
-: "ts1r"
-if touching SOUTH then "ts1"
-go SOUTH for 1
-* "~5Roy: I'll be back later, Jace, DON'T touch my computer!"
-send "msg" to "fad"
-send "dthing" to "check"
-set "tostore" to 0
-die
-: "ts1"
-cycle 1
-move player to EAST
-cycle 2
-goto "ts1r"
-</p>
-</details>
-
-<hr />
-
-<p><strong>Next:</strong> <a href="/modelling-computer-games/2025/10/18/modelling-tic-tac-toe.html">Modelling Tic-Tac-Toe</a></p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[Seeking a mathematical model of computer games]]></summary></entry></feed>
+<p><strong>Next:</strong> <a href="/modelling-computer-games/2025/10/25/partial-systems.html">Partial Systems</a></p>]]></content><author><name></name></author><category term="modelling-computer-games" /><summary type="html"><![CDATA[\(\newcommand{vrt}[2]{\left ( \begin{array}{l} #1 \\ #2 \end{array} \right )}\) \(\newcommand{defeq}{\overset{\mathit{def}}{=}}\) \(\newcommand{am}{\text{a.m.}}\) \(\newcommand{pm}{\text{p.m.}}\)]]></summary></entry></feed>
